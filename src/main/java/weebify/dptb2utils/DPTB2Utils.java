@@ -35,10 +35,9 @@ import weebify.dptb2utils.utils.DelayedTask;
 import weebify.dptb2utils.utils.DiscordWebSocketClient;
 import weebify.dptb2utils.utils.WaypointManager;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.net.URI;
+import java.net.URL;
 import java.util.*;
 import java.util.List;
 
@@ -89,6 +88,9 @@ public class DPTB2Utils implements ClientModInitializer {
 
 		this.initializeCommands();
 		this.initializeEvents();
+
+		this.fetchDPTBotIP();
+
 		WaypointManager.initializeEvents();
 		WaypointManager.initializeWaypoints();
 	}
@@ -103,6 +105,35 @@ public class DPTB2Utils implements ClientModInitializer {
 		ButtonTimerManager.isChaos = false;
 		ButtonTimerManager.isDisabled = false;
 		ButtonTimerManager.chaosCounter = 0;
+	}
+
+	public void fetchDPTBotIP() {
+		new Thread(() -> {
+			try {
+				LOGGER.info("Fetching DPTBot IP from https://github.com/Weebifying/Weebifying/blob/main/dptbot.host");
+				URL url = URI.create("https://raw.githubusercontent.com/Weebifying/Weebifying/refs/heads/main/dptbot.host").toURL();
+				BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+
+				StringBuilder sb = new StringBuilder();
+				String line;
+				while ((line = reader.readLine()) != null) {
+					sb.append(line).append("\n");
+				}
+
+				String address = sb.toString().trim();
+				String[] split = address.split(":");
+				if (split.length == 2) {
+					this.setDPTBotHost(split[0]);
+					this.setDPTBotPort(Integer.parseInt(split[1]));
+					LOGGER.info("Fetched DPTBot IP: {}:{}", this.getDPTBotHost(), this.getDPTBotPort());
+				} else {
+					LOGGER.error("Failed to fetch DPTBot IP! Invalid format: {}", address);
+				}
+
+			} catch (Exception e) {
+				LOGGER.error("Failed to fetch DPTBot IP!", e);
+			}
+		}).start();
 	}
 
 	private void initializeEvents() {
