@@ -45,16 +45,17 @@ public class DiscordWebSocketClient extends WebSocketClient {
         Map<?, ?> data = GSON.fromJson(message, Map.class);
         String type = (String) data.get("type");
         String text = (String) data.get("text");
+        Integer col = (Integer) data.get("color");
         MinecraftClient.getInstance().execute(() -> {
                 if (type.equalsIgnoreCase("delegate")) {
                     if (mod.getDiscordRamper() && MC.player != null) {
-                        MC.getToastManager().add(new NotificationToast("DPTBot", text, Colors.WHITE, SoundEvents.ENTITY_BAT_TAKEOFF));
+                        MC.getToastManager().add(new NotificationToast("DPTBot", text, col != null ? col : 0xFF50DF50, SoundEvents.ENTITY_BAT_TAKEOFF));
                         mod.isRamper = true;
                         this.sendModMessage("confirm", Map.of("text", MC.player.getGameProfile().getName()));
                     }
                 } else if (type.equalsIgnoreCase("revoke")) {
                     if (mod.getDiscordRamper()) {
-                        MC.getToastManager().add(new NotificationToast("DPTBot", text, Colors.WHITE, SoundEvents.ENTITY_BAT_TAKEOFF));
+                        MC.getToastManager().add(new NotificationToast("DPTBot", text, col != null ? col : Colors.LIGHT_RED, SoundEvents.ENTITY_BAT_TAKEOFF));
                         mod.isRamper = false;
                     }
                 } else if (type.equalsIgnoreCase("broadcast")) {
@@ -75,7 +76,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
 
                     if (mod.getBroadcastToast()) {
                         int color = source.equalsIgnoreCase("DISC") ? 0xFF5555FF : (source.equalsIgnoreCase("WPTB") ? 0xFFFFAA00 : (source.equalsIgnoreCase("CONSOLE") ? 0xFFFF5555 : 0xFFFFFFFF));
-                        MC.getToastManager().add(new NotificationToast(String.format("[%s] %s", source, name), text, color, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value()));
+                        MC.getToastManager().add(new NotificationToast(String.format("[%s] %s", source, name), text, col != null ? col : color, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value()));
                     }
 
                     if (MC.player != null && mod.getBroadcastChat()) {
@@ -101,7 +102,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
     @Override
     public void onClose(int code, String reason, boolean remote) {
         if (!mod.tryingToConnect) {
-            MC.getToastManager().add(new NotificationToast("DPTBot", String.format("Disconnected: %s (code:%s)", reason, code), Colors.WHITE, SoundEvents.ENTITY_BAT_TAKEOFF));
+            MC.getToastManager().add(new NotificationToast("DPTBot", String.format("Disconnected: %s (code:%s)", reason, code), Colors.ALTERNATE_WHITE, SoundEvents.ENTITY_BAT_TAKEOFF));
         }
         DPTB2Utils.LOGGER.error("WebSocket connection closed: {} (code:{}, remote:{})", reason, code, remote);
         this.retryConnection();
@@ -110,7 +111,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
     @Override
     public void onError(Exception ex) {
         if (!mod.tryingToConnect) {
-            MC.execute(() -> MC.getToastManager().add(new NotificationToast("DPTBot", "Connecting to DPTBot failed!", Colors.WHITE, SoundEvents.ENTITY_BAT_TAKEOFF)));
+            MC.execute(() -> MC.getToastManager().add(new NotificationToast("DPTBot", "Connecting to DPTBot failed!", Colors.RED, SoundEvents.ENTITY_BAT_TAKEOFF)));
         }
         ex.printStackTrace();
         this.retryConnection();
