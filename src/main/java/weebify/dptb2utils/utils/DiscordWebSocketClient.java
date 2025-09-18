@@ -13,6 +13,7 @@ import org.java_websocket.handshake.ServerHandshake;
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.gui.widget.NotificationToast;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
     private static final Gson GSON = new Gson();
     private static final MinecraftClient MC = MinecraftClient.getInstance();
     private static final DPTB2Utils mod = DPTB2Utils.getInstance();
+    public List<String> clientsList = new ArrayList<>();
 
     public DiscordWebSocketClient(String uri) {
         super(URI.create(uri));
@@ -90,6 +92,8 @@ public class DiscordWebSocketClient extends WebSocketClient {
                                 .toList();
                         this.sendModMessage("tabList", Map.of("id", id, "players", players));
                     }
+                } else if (type.equalsIgnoreCase("updateClients")) {
+                    this.clientsList = (List<String>) data.get("clients");
                 }
         });
     }

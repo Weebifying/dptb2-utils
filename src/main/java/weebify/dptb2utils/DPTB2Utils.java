@@ -44,7 +44,7 @@ import java.util.List;
 
 public class DPTB2Utils implements ClientModInitializer {	
 	public static final String MOD_ID = "dptb2-utils";
-	public static final String VERSION = "1.1.2";
+	public static final String VERSION = "1.1.3";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	public ModConfigs config;
@@ -89,8 +89,8 @@ public class DPTB2Utils implements ClientModInitializer {
 
 		this.initializeCommands();
 		this.initializeEvents();
-//		WaypointManager.initializeEvents();
-//		WaypointManager.initializeWaypoints();
+		WaypointManager.initializeEvents();
+		WaypointManager.initializeWaypoints();
 	}
 
 	public void scheduleTask(int ticks, Runnable task) {
@@ -351,6 +351,9 @@ public class DPTB2Utils implements ClientModInitializer {
 	public <T> T getItemCooldownConfigs(String key, Class<T> clazz) {
 		return this.getConfig(this.config.itemCooldownMap, ModConfigs.itemCooldownDefaultMap, key, clazz);
 	}
+	public <T> T getWaypointsConfigs(String key, Class<T> clazz) {
+		return this.getConfig(this.config.waypointsMap, ModConfigs.waypointsDefaultMap, key, clazz);
+	}
 	public boolean getAutoCheer() {
 		return this.getConfig(this.config.othersMap, ModConfigs.othersDefaultMap, "autoCheer", Boolean.class);
 	}
@@ -414,6 +417,9 @@ public class DPTB2Utils implements ClientModInitializer {
 	}
 	public <T> T setItemCooldownConfigs(String key, T value, Class<T> clazz) {
 		return this.setConfig(this.config.itemCooldownMap, key, value, clazz);
+	}
+	public <T> T setWaypointsConfigs(String key, T value, Class<T> clazz) {
+		return this.setConfig(this.config.waypointsMap, key, value, clazz);
 	}
 	public boolean setBoolNotifs(String key, boolean value) {
 		return this.setNotifs(key, value, Boolean.class);
