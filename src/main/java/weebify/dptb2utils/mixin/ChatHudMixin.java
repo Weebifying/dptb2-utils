@@ -6,7 +6,6 @@ import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.toast.ToastManager;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -31,7 +30,7 @@ public class ChatHudMixin {
     @Unique
     private static final Random rand = new Random();
     @Unique
-    private static boolean isTravel = false;
+    private static boolean excludeThisAndNext = false;
     @Unique
     private static int counter = 0;
     @Unique
@@ -250,13 +249,13 @@ public class ChatHudMixin {
                 return;
             }
 
-            if (content.startsWith("*   SEWER TRAVEL!") || content.startsWith("*   CANNON")) {
-                isTravel = true;
+            if (content.startsWith("*   SEWER TRAVEL!") || content.startsWith("*   CANNON") || content.contains("ACHIEVEMENT UNLOCKED!")) {
+                excludeThisAndNext = true;
                 return;
             }
 
             if (filter(content)) {
-                if (isTravel) isTravel = false;
+                if (excludeThisAndNext) excludeThisAndNext = false;
                 else {
                     DPTB2Utils.getInstance().websocketClient.sendModMessage("chat", Map.of("text", message));
                 }
@@ -277,6 +276,7 @@ public class ChatHudMixin {
             && !lower.contains("s remaining")
             && !lower.startsWith("*  - ")
             && !lower.startsWith("* - ")
+            && !lower.startsWith("* reopened")
             && !lower.startsWith("* [stats]")
             && !lower.startsWith("* [debug]")
             && !lower.startsWith("* [npc]")
@@ -321,7 +321,7 @@ public class ChatHudMixin {
             && !lower.startsWith("* join our discord")
             && !lower.startsWith("* https://")
             && !lower.startsWith("* apply for staff")
-            && !lower.startsWith("* [!] that was a slow run")
+            && !lower.startsWith("* [!] ")
             && !lower.matches("\\* [0-9,]+⛂ gold & [0-9,]+xp from that completion streak!")
             && !lower.matches("\\* successfully converted [0-9,]+⛂ gold into stat form!")
             && !lower.matches("\\* total: [0-9,]+⛂ gold")
