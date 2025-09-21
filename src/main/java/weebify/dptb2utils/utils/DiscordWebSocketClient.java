@@ -105,6 +105,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
             MC.getToastManager().add(new NotificationToast("DPTBot", String.format("Disconnected: %s (code:%s)", reason, code), Colors.ALTERNATE_WHITE, SoundEvents.ENTITY_BAT_TAKEOFF));
         }
         DPTB2Utils.LOGGER.error("WebSocket connection closed: {} (code:{}, remote:{})", reason, code, remote);
+        this.clientsList = new ArrayList<>();
         this.retryConnection();
     }
 
