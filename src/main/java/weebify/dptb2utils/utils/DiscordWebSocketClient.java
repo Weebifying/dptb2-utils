@@ -13,6 +13,7 @@ import org.java_websocket.handshake.ServerHandshake;
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.gui.widget.NotificationToast;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
     private static final Gson GSON = new Gson();
     private static final MinecraftClient MC = MinecraftClient.getInstance();
     private static final DPTB2Utils mod = DPTB2Utils.getInstance();
+    public List<String> clientsList = new ArrayList<>();
 
     public DiscordWebSocketClient(String uri) {
         super(URI.create(uri));
@@ -43,16 +45,17 @@ public class DiscordWebSocketClient extends WebSocketClient {
         Map<?, ?> data = GSON.fromJson(message, Map.class);
         String type = (String) data.get("type");
         String text = (String) data.get("text");
+        Integer col = (Integer) data.get("color");
         MinecraftClient.getInstance().execute(() -> {
                 if (type.equalsIgnoreCase("delegate")) {
                     if (mod.getDiscordRamper() && MC.player != null) {
-                        MC.getToastManager().add(new NotificationToast("DPTBot", text, Colors.WHITE, SoundEvents.ENTITY_BAT_TAKEOFF));
+                        MC.getToastManager().add(new NotificationToast("DPTBot", text, col != null ? col : 0xFFC8FFC8, SoundEvents.ENTITY_BAT_TAKEOFF));
                         mod.isRamper = true;
                         this.sendModMessage("confirm", Map.of("text", MC.player.getGameProfile().getName()));
                     }
                 } else if (type.equalsIgnoreCase("revoke")) {
                     if (mod.getDiscordRamper()) {
-                        MC.getToastManager().add(new NotificationToast("DPTBot", text, Colors.WHITE, SoundEvents.ENTITY_BAT_TAKEOFF));
+                        MC.getToastManager().add(new NotificationToast("DPTBot", text, col != null ? col : 0xFFFFC8C8, SoundEvents.ENTITY_BAT_TAKEOFF));
                         mod.isRamper = false;
                     }
                 } else if (type.equalsIgnoreCase("broadcast")) {
@@ -73,7 +76,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
 
                     if (mod.getBroadcastToast()) {
                         int color = source.equalsIgnoreCase("DISC") ? 0xFF5555FF : (source.equalsIgnoreCase("WPTB") ? 0xFFFFAA00 : (source.equalsIgnoreCase("CONSOLE") ? 0xFFFF5555 : 0xFFFFFFFF));
-                        MC.getToastManager().add(new NotificationToast(String.format("[%s] %s", source, name), text, color, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value()));
+                        MC.getToastManager().add(new NotificationToast(String.format("[%s] %s", source, name), text, col != null ? col : color, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value()));
                     }
 
                     if (MC.player != null && mod.getBroadcastChat()) {
@@ -90,6 +93,8 @@ public class DiscordWebSocketClient extends WebSocketClient {
                                 .toList();
                         this.sendModMessage("tabList", Map.of("id", id, "players", players));
                     }
+                } else if (type.equalsIgnoreCase("updateClients")) {
+                    this.clientsList = (List<String>) data.get("clients");
                 }
         });
     }
@@ -97,16 +102,17 @@ public class DiscordWebSocketClient extends WebSocketClient {
     @Override
     public void onClose(int code, String reason, boolean remote) {
         if (!mod.tryingToConnect) {
-            MC.getToastManager().add(new NotificationToast("DPTBot", String.format("Disconnected: %s (code:%s)", reason, code), Colors.WHITE, SoundEvents.ENTITY_BAT_TAKEOFF));
+            MC.getToastManager().add(new NotificationToast("DPTBot", String.format("Disconnected: %s (code:%s)", reason, code), Colors.ALTERNATE_WHITE, SoundEvents.ENTITY_BAT_TAKEOFF));
         }
         DPTB2Utils.LOGGER.error("WebSocket connection closed: {} (code:{}, remote:{})", reason, code, remote);
+        this.clientsList = new ArrayList<>();
         this.retryConnection();
     }
 
     @Override
     public void onError(Exception ex) {
         if (!mod.tryingToConnect) {
-            MC.execute(() -> MC.getToastManager().add(new NotificationToast("DPTBot", "Connecting to DPTBot failed!", Colors.WHITE, SoundEvents.ENTITY_BAT_TAKEOFF)));
+            MC.execute(() -> MC.getToastManager().add(new NotificationToast("DPTBot", "Connecting to DPTBot failed!", Colors.RED, SoundEvents.ENTITY_BAT_TAKEOFF)));
         }
         ex.printStackTrace();
         this.retryConnection();

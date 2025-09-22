@@ -3,6 +3,7 @@ package weebify.dptb2utils.gui.screen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.EditBox;
+import net.minecraft.client.gui.hud.PlayerListHud;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.EditBoxWidget;
@@ -43,6 +44,9 @@ public class ModMenuScreen extends Screen {
             mc.setScreen(new DPTBotConfigScreen(this, mod));
         }).dimensions(this.width/2 - 80 - 75, 125, 150, 20).build());
 
+//        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Waypoints: %s", mod.getWaypointsConfigs("enabled", Boolean.class) ? "ON" : "OFF")), (btn) -> {
+//            btn.setMessage(Text.of(String.format("Waypoints: %s", !mod.setWaypointsConfigs("enabled", !mod.getWaypointsConfigs("enabled", Boolean.class), Boolean.class) ? "ON" : "OFF")));
+//        }).dimensions(this.width/2 + 80 - 75, 125, 150, 20).build());
 
         this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), (btn) -> {
             this.close();

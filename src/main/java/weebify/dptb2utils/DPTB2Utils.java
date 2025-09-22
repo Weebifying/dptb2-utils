@@ -18,12 +18,14 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.scoreboard.*;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,16 +37,15 @@ import weebify.dptb2utils.utils.DelayedTask;
 import weebify.dptb2utils.utils.DiscordWebSocketClient;
 import weebify.dptb2utils.utils.WaypointManager;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.net.URI;
+import java.net.URL;
 import java.util.*;
 import java.util.List;
 
 public class DPTB2Utils implements ClientModInitializer {	
 	public static final String MOD_ID = "dptb2-utils";
-	public static final String VERSION = "1.1.2";
+	public static final String VERSION = "1.1.3";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	public ModConfigs config;
@@ -89,8 +90,11 @@ public class DPTB2Utils implements ClientModInitializer {
 
 		this.initializeCommands();
 		this.initializeEvents();
-//		WaypointManager.initializeEvents();
-//		WaypointManager.initializeWaypoints();
+
+		this.fetchDPTBotIP();
+
+		WaypointManager.initializeEvents();
+		WaypointManager.initializeWaypoints();
 	}
 
 	public void scheduleTask(int ticks, Runnable task) {
@@ -103,6 +107,35 @@ public class DPTB2Utils implements ClientModInitializer {
 		ButtonTimerManager.isChaos = false;
 		ButtonTimerManager.isDisabled = false;
 		ButtonTimerManager.chaosCounter = 0;
+	}
+
+	public void fetchDPTBotIP() {
+		new Thread(() -> {
+			try {
+				LOGGER.info("Fetching DPTBot IP from https://github.com/Weebifying/Weebifying/blob/main/dptbot.host");
+				URL url = URI.create("https://raw.githubusercontent.com/Weebifying/Weebifying/refs/heads/main/dptbot.host").toURL();
+				BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+
+				StringBuilder sb = new StringBuilder();
+				String line;
+				while ((line = reader.readLine()) != null) {
+					sb.append(line).append("\n");
+				}
+
+				String address = sb.toString().trim();
+				String[] split = address.split(":");
+				if (split.length == 2) {
+					this.setDPTBotHost(split[0]);
+					this.setDPTBotPort(Integer.parseInt(split[1]));
+					LOGGER.info("Fetched DPTBot IP: {}:{}", this.getDPTBotHost(), this.getDPTBotPort());
+				} else {
+					LOGGER.error("Failed to fetch DPTBot IP! Invalid format: {}", address);
+				}
+
+			} catch (Exception e) {
+				LOGGER.error("Failed to fetch DPTBot IP!", e);
+			}
+		}).start();
 	}
 
 	private void initializeEvents() {
@@ -351,6 +384,9 @@ public class DPTB2Utils implements ClientModInitializer {
 	public <T> T getItemCooldownConfigs(String key, Class<T> clazz) {
 		return this.getConfig(this.config.itemCooldownMap, ModConfigs.itemCooldownDefaultMap, key, clazz);
 	}
+	public <T> T getWaypointsConfigs(String key, Class<T> clazz) {
+		return this.getConfig(this.config.waypointsMap, ModConfigs.waypointsDefaultMap, key, clazz);
+	}
 	public boolean getAutoCheer() {
 		return this.getConfig(this.config.othersMap, ModConfigs.othersDefaultMap, "autoCheer", Boolean.class);
 	}
@@ -414,6 +450,9 @@ public class DPTB2Utils implements ClientModInitializer {
 	}
 	public <T> T setItemCooldownConfigs(String key, T value, Class<T> clazz) {
 		return this.setConfig(this.config.itemCooldownMap, key, value, clazz);
+	}
+	public <T> T setWaypointsConfigs(String key, T value, Class<T> clazz) {
+		return this.setConfig(this.config.waypointsMap, key, value, clazz);
 	}
 	public boolean setBoolNotifs(String key, boolean value) {
 		return this.setNotifs(key, value, Boolean.class);

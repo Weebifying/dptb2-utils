@@ -1,14 +1,15 @@
 {
-	"required": true,
-	"package": "weebify.dptb2utils.mixin",
-	"compatibilityLevel": "JAVA_21",
-	"injectors": {
-		"defaultRequire": 1
-	},
-	"overwrites": {
-		"requireAnnotations": true
-	},
-	"client": [
-		"ChatHudMixin"
-	]
+  "required": true,
+  "package": "weebify.dptb2utils.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  },
+  "client": [
+    "ChatHudMixin",
+    "PlayerListHudMixin"
+    ]
 }

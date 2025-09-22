@@ -9,16 +9,20 @@ import java.util.Map;
 
 public class ModConfigs {
     // TODO: a map specifically for class of properties
+    // like Map<String, Class<?>> propertyTypes = new LinkedHashMap<>();
+    // propertyTypes.put("shopUpdate", Boolean.class);
 
-    public Map<String, JsonElement> notifsMap = new LinkedHashMap<>();
     public Map<String, JsonElement> othersMap = new LinkedHashMap<>();
+    public Map<String, JsonElement> notifsMap = new LinkedHashMap<>();
     public Map<String, JsonElement> buttonTimerMap = new LinkedHashMap<>();
     public Map<String, JsonElement> itemCooldownMap = new LinkedHashMap<>();
+    public Map<String, JsonElement> waypointsMap = new LinkedHashMap<>();
 
-    public static final Map<String, JsonElement> notifsDefaultMap = new LinkedHashMap<>();
     public static final Map<String, JsonElement> othersDefaultMap = new LinkedHashMap<>();
+    public static final Map<String, JsonElement> notifsDefaultMap = new LinkedHashMap<>();
     public static final Map<String, JsonElement> buttonTimerDefaultMap = new LinkedHashMap<>();
     public static final Map<String, JsonElement> itemCooldownDefaultMap = new LinkedHashMap<>();
+    public static final Map<String, JsonElement> waypointsDefaultMap = new LinkedHashMap<>();
 
     static <T> void createNewConfig(Map<String, JsonElement> map, Map<String, JsonElement> defaultMap, String key, String defaultValue, Class<T> clazz) {
         Type type = TypeToken.get(clazz).getType();
@@ -60,5 +64,7 @@ public class ModConfigs {
         createNewConfig(itemCooldownMap, itemCooldownDefaultMap, "enabled", "false", Boolean.class);
         createNewConfig(itemCooldownMap, itemCooldownDefaultMap, "posX", "0", Float.class);
         createNewConfig(itemCooldownMap, itemCooldownDefaultMap, "posY", "0.5", Float.class);
+
+        createNewConfig(waypointsMap, waypointsDefaultMap, "enabled", "false", Boolean.class);
     }
 }
