@@ -93,8 +93,8 @@ public class DPTB2Utils implements ClientModInitializer {
 
 		this.fetchDPTBotIP();
 
-		WaypointManager.initializeEvents();
-		WaypointManager.initializeWaypoints();
+//		WaypointManager.initializeEvents();
+//		WaypointManager.initializeWaypoints();
 	}
 
 	public void scheduleTask(int ticks, Runnable task) {

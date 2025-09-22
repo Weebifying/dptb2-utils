@@ -1,6 +1,7 @@
 package weebify.dptb2utils.utils;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -70,88 +71,89 @@ public class WaypointManager {
 
     public static void initializeEvents() {
         WorldRenderEvents.AFTER_ENTITIES.register((context) -> {
-            if (!DPTB2Utils.getInstance().isInDPTB2) return;
-
-            MatrixStack matrices = context.matrixStack();
-            Camera camera = context.camera();
-            Vec3d cameraPos = camera.getPos();
-            TextRenderer tr = MC.textRenderer;
-            BufferBuilder buffer;
-
-            if (DPTB2Utils.getInstance().getWaypointsConfigs("enabled", Boolean.class)) {
-
-                for (Waypoint wp : waypoints.values()) {
-                    double cx = wp.x() - cameraPos.x;
-                    double cy = wp.y() - cameraPos.y;
-                    double cz = wp.z() - cameraPos.z;
-
-                    double distance = Math.sqrt(cx * cx + cy * cy + cz * cz);
-                    if (distance > 12 * 16) continue;
-                    // distance = 0 -> scale = 0.02f
-                    // distance >= 32 -> scale = 0.04f
-                    float scale = (float) (0.02f + Math.min(distance, 32) * (0.04f - 0.02f) / 32.f);
-                    float alpha = (float) Math.max(0.5f, 0.8f - distance / (8 * 16));
-
-                    matrices.push();
-                    // Rotate the waypoint to face the camera
-                    matrices.translate(cx, cy + 3.5 - Math.max(0.04f - scale, 0) / 0.02f, cz);
-                    matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-camera.getYaw()));
-                    matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(camera.getPitch() * 0.4f));
-                    matrices.scale(-scale, -scale, scale);
-
-
-                    //                String label = String.format("%s (%sm)", wp.name, (int) distance);
-                    int color = (wp.color() & 0xFFFFFF) | ((int) (alpha * 255) << 24);
-
-                    if (renderThroughWalls) RenderSystem.disableDepthTest();
-                    Matrix4f mat = matrices.peek().getPositionMatrix();
-                    VertexConsumerProvider.Immediate vcp = MC.getBufferBuilders().getEntityVertexConsumers();
-
-                    int width = Math.max(tr.getWidth(wp.name()), tr.getWidth(String.format("%dm", (int) distance)));
-                    float padding = 2.f;
-
-                    RenderSystem.enableBlend();
-                    RenderSystem.defaultBlendFunc();
-                    RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
-                    RenderSystem.setShaderColor(1.f, 1.f, 1.f, 1.f);
-
-                    // rectangle behind text
-                    buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-                    float bgLeft = -width / 2.f - padding;
-                    float bgRight = width / 2.f + padding;
-                    float bgTop = -2.f;
-                    float bgBottom = tr.fontHeight * 2 + 2.f;
-
-                    buffer.vertex(mat, bgLeft, bgTop, 0).color(color);
-                    buffer.vertex(mat, bgLeft, bgBottom, 0).color(color);
-                    buffer.vertex(mat, bgRight, bgBottom, 0).color(color);
-                    buffer.vertex(mat, bgRight, bgTop, 0).color(color);
-                    BufferRenderer.drawWithGlobalProgram(buffer.end());
-
-                    // triangle below text
-                    buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
-                    float triSize = width + padding * 2;
-                    //                float triHeight = (float) (Math.sqrt(3) * triSize / 2);
-                    float triHeight = 20.f;
-                    float triYTop = bgBottom + padding;
-                    float triYBottom = triYTop + triHeight;
-
-                    buffer.vertex(mat, 0, triYBottom, 0).color(color);
-                    buffer.vertex(mat, triSize / 2, triYTop, 0).color(color);
-                    buffer.vertex(mat, -triSize / 2, triYTop, 0).color(color);
-                    BufferRenderer.drawWithGlobalProgram(buffer.end());
-
-                    RenderSystem.disableBlend();
-
-                    // text
-                    tr.draw(wp.name(), -tr.getWidth(wp.name()) / 2.f, 0, Colors.WHITE, false, mat, vcp, renderThroughWalls ? TextRenderer.TextLayerType.SEE_THROUGH : TextRenderer.TextLayerType.NORMAL, 0, 0xF000F0);
-                    tr.draw(String.format("%dm", (int) distance), -tr.getWidth(String.format("%dm", (int) distance)) / 2.f, tr.fontHeight + 2, Colors.WHITE, false, mat, vcp, renderThroughWalls ? TextRenderer.TextLayerType.SEE_THROUGH : TextRenderer.TextLayerType.NORMAL, 0, 0xF000F0);
-                    vcp.draw(); // actually draws the text!!
-
-                    if (renderThroughWalls) RenderSystem.enableDepthTest();
-                    matrices.pop();
-                }
-            }
+//            if (!DPTB2Utils.getInstance().isInDPTB2) return;
+//
+//            MatrixStack matrices = context.matrixStack();
+//            Camera camera = context.camera();
+//            Vec3d cameraPos = camera.getPos();
+//            TextRenderer tr = MC.textRenderer;
+//            BufferBuilder buffer;
+//
+//            if (DPTB2Utils.getInstance().getWaypointsConfigs("enabled", Boolean.class)) {
+//                for (Waypoint wp : waypoints.values()) {
+//                    double cx = wp.x() - cameraPos.x;
+//                    double cy = wp.y() - cameraPos.y;
+//                    double cz = wp.z() - cameraPos.z;
+//
+//                    double distance = Math.sqrt(cx * cx + cy * cy + cz * cz);
+//                    if (distance > 12 * 16) continue;
+//                    // distance = 0 -> scale = 0.02f
+//                    // distance >= 32 -> scale = 0.04f
+//                    float scale = (float) (0.02f + Math.min(distance, 32) * (0.04f - 0.02f) / 32.f);
+//                    float alpha = (float) Math.max(0.5f, 0.8f - distance / (8 * 16));
+//
+//                    matrices.push();
+//                    // Rotate the waypoint to face the camera
+//                    matrices.translate(cx, cy + 3.5 - Math.max(0.04f - scale, 0) / 0.02f, cz);
+//                    matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-camera.getYaw()));
+//                    matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(camera.getPitch() * 0.4f));
+//                    matrices.scale(-scale, -scale, scale);
+//
+//
+//                    // String label = String.format("%s (%sm)", wp.name, (int) distance);
+//                    int color = (wp.color() & 0xFFFFFF) | ((int) (alpha * 255) << 24);
+//
+//                    if (renderThroughWalls) RenderSystem.disableDepthTest();
+//                    Matrix4f mat = matrices.peek().getPositionMatrix();
+//                    VertexConsumerProvider.Immediate vcp = MC.getBufferBuilders().getEntityVertexConsumers();
+//
+//                    int width = Math.max(tr.getWidth(wp.name()), tr.getWidth(String.format("%dm", (int) distance)));
+//                    float padding = 2.f;
+//
+//                    RenderSystem.enableBlend();
+//                    RenderSystem.defaultBlendFunc();
+//                    RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+//                    RenderSystem.setShaderColor(1.f, 1.f, 1.f, 1.f);
+//
+//
+//
+//                    // rectangle behind text
+//                    buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+//                    float bgLeft = -width / 2.f - padding;
+//                    float bgRight = width / 2.f + padding;
+//                    float bgTop = -2.f;
+//                    float bgBottom = tr.fontHeight * 2 + 2.f;
+//
+//                    buffer.vertex(mat, bgLeft, bgTop, 0).color(color);
+//                    buffer.vertex(mat, bgLeft, bgBottom, 0).color(color);
+//                    buffer.vertex(mat, bgRight, bgBottom, 0).color(color);
+//                    buffer.vertex(mat, bgRight, bgTop, 0).color(color);
+//                    BufferRenderer.drawWithGlobalProgram(buffer.end());
+//
+//                    // triangle below text
+//                    buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
+//                    float triSize = width + padding * 2;
+//                    //                float triHeight = (float) (Math.sqrt(3) * triSize / 2);
+//                    float triHeight = 20.f;
+//                    float triYTop = bgBottom + padding;
+//                    float triYBottom = triYTop + triHeight;
+//
+//                    buffer.vertex(mat, 0, triYBottom, 0).color(color);
+//                    buffer.vertex(mat, triSize / 2, triYTop, 0).color(color);
+//                    buffer.vertex(mat, -triSize / 2, triYTop, 0).color(color);
+//                    BufferRenderer.drawWithGlobalProgram(buffer.end());
+//
+//                    RenderSystem.disableBlend();
+//
+//                    // text
+//                    tr.draw(wp.name(), -tr.getWidth(wp.name()) / 2.f, 0, Colors.WHITE, false, mat, vcp, renderThroughWalls ? TextRenderer.TextLayerType.SEE_THROUGH : TextRenderer.TextLayerType.NORMAL, 0, 0xF000F0);
+//                    tr.draw(String.format("%dm", (int) distance), -tr.getWidth(String.format("%dm", (int) distance)) / 2.f, tr.fontHeight + 2, Colors.WHITE, false, mat, vcp, renderThroughWalls ? TextRenderer.TextLayerType.SEE_THROUGH : TextRenderer.TextLayerType.NORMAL, 0, 0xF000F0);
+//                    vcp.draw(); // actually draws the text!!
+//
+//                    if (renderThroughWalls) RenderSystem.enableDepthTest();
+//                    matrices.pop();
+//                }
+//            }
         });
     }
 }

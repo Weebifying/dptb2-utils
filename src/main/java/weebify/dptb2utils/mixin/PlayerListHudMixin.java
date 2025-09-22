@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.authlib.GameProfile;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.PlayerListHud;
 import net.minecraft.client.render.RenderLayer;
@@ -25,7 +26,7 @@ public class PlayerListHudMixin {
     private void renderInject(DrawContext context, int scaledWindowWidth, Scoreboard scoreboard, ScoreboardObjective objective, CallbackInfo ci, @Local(ordinal = 16) int localX, @Local(ordinal = 17) int localY, @Local GameProfile localProfile) {
         if (DPTB2Utils.getInstance().websocketClient != null && DPTB2Utils.getInstance().websocketClient.clientsList.contains(localProfile.getName())) {
             isClient = true;
-            context.drawTexture(RenderLayer::getGuiTextured, Identifier.of(DPTB2Utils.MOD_ID, "icon.png"), localX + 9, localY, 0, 0, 9, 9, 256, 256, 256, 256);
+            context.drawTexture(RenderPipelines.GUI_TEXTURED, Identifier.of(DPTB2Utils.MOD_ID, "icon.png"), localX + 9, localY, 0, 0, 9, 9, 256, 256, 256, 256);
         } else {
             isClient = false;
         }
@@ -33,7 +34,7 @@ public class PlayerListHudMixin {
 
     @ModifyArg(
             method = "render",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawTextWithShadow(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/text/Text;III)I"),
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawTextWithShadow(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/text/Text;III)V"),
             slice = @Slice(
                     from = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/PlayerSkinDrawer;draw(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/util/Identifier;IIIZZI)V"),
                     to = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/PlayerListHud;renderScoreboardObjective(Lnet/minecraft/scoreboard/ScoreboardObjective;ILnet/minecraft/client/gui/hud/PlayerListHud$ScoreDisplayEntry;IILjava/util/UUID;Lnet/minecraft/client/gui/DrawContext;)V")
