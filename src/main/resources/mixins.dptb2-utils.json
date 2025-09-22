@@ -4,12 +4,11 @@
   "package": "weebify.dptb2utils.mixins",
   "refmap": "mixins.dptb2-utils.refmap.json",
   "compatibilityLevel": "JAVA_8",
-  "client": [
-  ],
   "injectors": {
     "defaultRequire": 1
   },
-  "mixins": [
-    "GuiNewChatMixin"
+  "client": [
+    "GuiNewChatMixin",
+    "GuiPlayerTabOverlayMixin"
   ]
 }

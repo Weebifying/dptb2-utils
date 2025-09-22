@@ -37,16 +37,15 @@ import weebify.dptb2utils.utils.DelayedTask;
 import weebify.dptb2utils.utils.DiscordWebSocketClient;
 import weebify.dptb2utils.utils.NotificationManager;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.net.URI;
+import java.net.URL;
 import java.util.*;
 
 @Mod(modid = DPTB2Utils.MOD_ID, version = DPTB2Utils.VERSION)
 public class DPTB2Utils {
     public static final String MOD_ID = "dptb2-utils";
-    public static final String VERSION = "1.1.2";
+    public static final String VERSION = "1.1.3";
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
     public ModConfigs config;
@@ -91,6 +90,8 @@ public class DPTB2Utils {
 
         this.initializeCommands();
         MinecraftForge.EVENT_BUS.register(this);
+
+        this.fetchDPTBotIP();
     }
 
     public void scheduleTask(int ticks, Runnable task) {
@@ -103,6 +104,36 @@ public class DPTB2Utils {
         ButtonTimerManager.isChaos = false;
         ButtonTimerManager.isDisabled = false;
         ButtonTimerManager.chaosCounter = 0;
+    }
+
+
+    public void fetchDPTBotIP() {
+        new Thread(() -> {
+            try {
+                LOGGER.info("Fetching DPTBot IP from https://github.com/Weebifying/Weebifying/blob/main/dptbot.host");
+                URL url = URI.create("https://raw.githubusercontent.com/Weebifying/Weebifying/refs/heads/main/dptbot.host").toURL();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append("\n");
+                }
+
+                String address = sb.toString().trim();
+                String[] split = address.split(":");
+                if (split.length == 2) {
+                    this.setDPTBotHost(split[0]);
+                    this.setDPTBotPort(Integer.parseInt(split[1]));
+                    LOGGER.info("Fetched DPTBot IP: {}:{}", this.getDPTBotHost(), this.getDPTBotPort());
+                } else {
+                    LOGGER.error("Failed to fetch DPTBot IP! Invalid format: {}", address);
+                }
+
+            } catch (Exception e) {
+                LOGGER.error("Failed to fetch DPTBot IP!", e);
+            }
+        }).start();
     }
 
     @SubscribeEvent
@@ -227,7 +258,7 @@ public class DPTB2Utils {
             return "/" +getCommandName();
         }
         @Override
-        public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+        public void processCommand(ICommandSender sender, String[] args) {
             MinecraftForge.EVENT_BUS.register(this);
         }
         @SubscribeEvent
@@ -261,7 +292,7 @@ public class DPTB2Utils {
             return "/" +getCommandName();
         }
         @Override
-        public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+        public void processCommand(ICommandSender sender, String[] args) {
             DPTB2Utils mod = DPTB2Utils.getInstance();
             if (mc.thePlayer != null) {
                 if (mod.websocketClient != null && mod.websocketClient.isOpen()) {

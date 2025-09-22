@@ -16,17 +16,16 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Mixin({GuiNewChat.class})
+@Mixin(GuiNewChat.class)
 public class GuiNewChatMixin {
     @Unique
     private static final Random rand = new Random();
     @Unique
-    private static boolean isTravel = false;
+    private static boolean excludeThisAndNext = false;
     @Unique
     private static int counter = 0;
     @Unique
@@ -203,13 +202,13 @@ public class GuiNewChatMixin {
                 return;
             }
 
-            if (content.startsWith("*   SEWER TRAVEL!") || content.startsWith("*   CANNON")) {
-                isTravel = true;
+            if (content.startsWith("*   SEWER TRAVEL!") || content.startsWith("*   CANNON") || content.contains("ACHIEVEMENT UNLOCKED!")) {
+                excludeThisAndNext = true;
                 return;
             }
 
             if (filter(content)) {
-                if (isTravel) isTravel = false;
+                if (excludeThisAndNext) excludeThisAndNext = false;
                 else {
                     DPTB2Utils.getInstance().websocketClient.sendModMessage("chat", DPTB2Utils.mapOf("text", message));
                 }
@@ -230,6 +229,7 @@ public class GuiNewChatMixin {
                 && !lower.contains("s remaining")
                 && !lower.startsWith("*  - ")
                 && !lower.startsWith("* - ")
+                && !lower.startsWith("* reopened")
                 && !lower.startsWith("* [stats]")
                 && !lower.startsWith("* [debug]")
                 && !lower.startsWith("* [npc]")
@@ -274,7 +274,7 @@ public class GuiNewChatMixin {
                 && !lower.startsWith("* join our discord")
                 && !lower.startsWith("* https://")
                 && !lower.startsWith("* apply for staff")
-                && !lower.startsWith("* [!] that was a slow run")
+                && !lower.startsWith("* [!] ")
                 && !lower.matches("\\* [0-9,]+⛂ gold & [0-9,]+xp from that completion streak!")
                 && !lower.matches("\\* successfully converted [0-9,]+⛂ gold into stat form!")
                 && !lower.matches("\\* total: [0-9,]+⛂ gold")

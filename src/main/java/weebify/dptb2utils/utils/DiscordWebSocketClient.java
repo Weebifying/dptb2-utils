@@ -2,6 +2,7 @@ package weebify.dptb2utils.utils;
 
 import com.google.gson.Gson;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiPlayerTabOverlay;
 import net.minecraft.util.ChatComponentText;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -9,6 +10,7 @@ import weebify.dptb2utils.DPTB2Utils;
 
 import java.awt.*;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +20,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
     private static final Gson GSON = new Gson();
     private static final Minecraft MC = Minecraft.getMinecraft();
     private static final DPTB2Utils mod = DPTB2Utils.getInstance();
+    public List<String> clientsList = new ArrayList<>();
 
     public DiscordWebSocketClient(String serverUri) {
         super(URI.create(serverUri));
@@ -38,16 +41,17 @@ public class DiscordWebSocketClient extends WebSocketClient {
         NotificationManager notifManager = NotificationManager.getInstance();
         String type = (String) data.get("type");
         String text = (String) data.get("text");
+        Integer col = (Integer) data.get("color");
         Minecraft.getMinecraft().addScheduledTask(() -> {
             if (type.equalsIgnoreCase("delegate")) {
                 if (mod.getDiscordRamper() && MC.thePlayer != null) {
-                    notifManager.add("DPTBot", text, 0xFFFFFFFF, "mob.bat.takeoff");
+                    notifManager.add("DPTBot", text, col != null ? col : 0xFFC8FFC8, "mob.bat.takeoff");
                     mod.isRamper = true;
                     this.sendModMessage("confirm", DPTB2Utils.mapOf("text", MC.thePlayer.getGameProfile().getName()));
                 }
             } else if (type.equalsIgnoreCase("revoke")) {
                 if (mod.getDiscordRamper()) {
-                    notifManager.add("DPTBot", text, 0xFFFFFFFF, "mob.bat.takeoff");
+                    notifManager.add("DPTBot", text, col != null ? col : 0xFFFFC8C8, "mob.bat.takeoff");
                     mod.isRamper = false;
                 }
             } else if (type.equalsIgnoreCase("broadcast")) {
@@ -68,7 +72,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
 
                 if (mod.getBroadcastToast()) {
                     int color = source.equalsIgnoreCase("DISC") ? 0xFF5555FF : (source.equalsIgnoreCase("WPTB") ? 0xFFFFAA00 : (source.equalsIgnoreCase("CONSOLE") ? 0xFFFF5555 : 0xFFFFFFFF));
-                    notifManager.add(String.format("[%s] %s", source, name), text, color, "note.pling");
+                    notifManager.add(String.format("[%s] %s", source, name), text, col != null ? col : color, "note.pling");
                 }
 
                 if (MC.thePlayer != null && mod.getBroadcastChat()) {
@@ -85,6 +89,8 @@ public class DiscordWebSocketClient extends WebSocketClient {
                             .collect(Collectors.toList());
                     this.sendModMessage("tabList", DPTB2Utils.mapOf("id", id, "players", players));
                 }
+            } else if (type.equalsIgnoreCase("updateClients")) {
+                this.clientsList = (List<String>) data.get("clients");
             }
         });
     }
@@ -92,16 +98,17 @@ public class DiscordWebSocketClient extends WebSocketClient {
     @Override
     public void onClose(int code, String reason, boolean remote) {
         if (!mod.tryingToConnect) {
-            NotificationManager.getInstance().add("DPTBot", String.format("Disconnected: %s (code:%s)", reason, code), 0xFFFFFFFF, "mob.bat.takeoff");
+            NotificationManager.getInstance().add("DPTBot", String.format("Disconnected: %s (code:%s)", reason, code), 0xFFBABABA, "mob.bat.takeoff");
         }
         DPTB2Utils.LOGGER.error("WebSocket connection closed: {} (code:{}, remote:{})", reason, code, remote);
+        this.clientsList = new ArrayList<>();
         this.retryConnection();
     }
 
     @Override
     public void onError(Exception ex) {
         if (!mod.tryingToConnect) {
-            MC.addScheduledTask(() -> NotificationManager.getInstance().add("DPTBot", "Connecting to DPTBot failed!", 0xFFFFFFFF, "mob.bat.takeoff"));
+            MC.addScheduledTask(() -> NotificationManager.getInstance().add("DPTBot", "Connecting to DPTBot failed!", 0xFFFF0000, "mob.bat.takeoff"));
         }
         ex.printStackTrace();
         this.retryConnection();
