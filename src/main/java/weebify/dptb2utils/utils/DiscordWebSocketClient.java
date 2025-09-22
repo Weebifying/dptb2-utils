@@ -49,13 +49,13 @@ public class DiscordWebSocketClient extends WebSocketClient {
         MinecraftClient.getInstance().execute(() -> {
                 if (type.equalsIgnoreCase("delegate")) {
                     if (mod.getDiscordRamper() && MC.player != null) {
-                        MC.getToastManager().add(new NotificationToast("DPTBot", text, col != null ? col : 0xFF50DF50, SoundEvents.ENTITY_BAT_TAKEOFF));
+                        MC.getToastManager().add(new NotificationToast("DPTBot", text, col != null ? col : 0xFFC8FFC8, SoundEvents.ENTITY_BAT_TAKEOFF));
                         mod.isRamper = true;
                         this.sendModMessage("confirm", Map.of("text", MC.player.getGameProfile().getName()));
                     }
                 } else if (type.equalsIgnoreCase("revoke")) {
                     if (mod.getDiscordRamper()) {
-                        MC.getToastManager().add(new NotificationToast("DPTBot", text, col != null ? col : Colors.LIGHT_RED, SoundEvents.ENTITY_BAT_TAKEOFF));
+                        MC.getToastManager().add(new NotificationToast("DPTBot", text, col != null ? col : 0xFFFFC8C8, SoundEvents.ENTITY_BAT_TAKEOFF));
                         mod.isRamper = false;
                     }
                 } else if (type.equalsIgnoreCase("broadcast")) {
