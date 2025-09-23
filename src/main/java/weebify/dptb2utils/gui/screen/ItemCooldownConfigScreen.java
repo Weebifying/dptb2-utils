@@ -12,6 +12,7 @@ import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.gui.widget.DraggableTextWidget;
 import weebify.dptb2utils.utils.ButtonTimerManager;
 
+// placeholder
 public class ItemCooldownConfigScreen extends Screen {
     private final DPTB2Utils mod;
     public Screen parent;
@@ -25,15 +26,21 @@ public class ItemCooldownConfigScreen extends Screen {
 
     @Override
     protected void init() {
-        MinecraftClient mc = MinecraftClient.getInstance();
-
-        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Enabled: %s", mod.getButtonTimerEnabled() ? "ON" : "OFF")), (btn) -> {
-            btn.setMessage(Text.of(String.format("Enabled: %s", !mod.setButtonTimerEnabled(!mod.getButtonTimerEnabled()) ? "ON" : "OFF")));
+        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Enabled: %s", mod.getBoolConfig("buttonTimer.enabled") ? "ON" : "OFF")), (btn) -> {
+            btn.setMessage(Text.of(String.format("Enabled: %s", mod.toggleBoolConfig("buttonTimer.enabled") ? "ON" : "OFF")));
         }).dimensions(this.width/2 - 80 - 75, 75, 150, 20).build());
 
+        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Text Shadow: %s", mod.getBoolConfig("buttonTimer.textShadow") ? "ON" : "OFF")), (btn) -> {
+            btn.setMessage(Text.of(String.format("Text Shadow: %s", mod.toggleBoolConfig("buttonTimer.textShadow") ? "ON" : "OFF")));
+        }).dimensions(this.width/2 + 80 - 75, 75, 150, 20).build());
+
+        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Render Background: %s", mod.getBoolConfig("buttonTimer.renderBackground") ? "ON" : "OFF")), (btn) -> {
+            btn.setMessage(Text.of(String.format("Render Background: %s", mod.toggleBoolConfig("buttonTimer.renderBackground") ? "ON" : "OFF")));
+        }).dimensions(this.width/2 - 80 - 75, 100, 150, 20).build());
+
         this.textWidget = new DraggableTextWidget(
-                mod.getButtonTimerConfigs("posX", Float.class),
-                mod.getButtonTimerConfigs("posY", Float.class),
+                mod.getFloatConfig("buttonTimer.posX"),
+                mod.getFloatConfig("buttonTimer.posY"),
                 ButtonTimerManager.tickToTime((!mod.isInDPTB2 || ButtonTimerManager.buttonTimer < 0) ? MathHelper.nextInt(Random.create(), 0, 400) : ButtonTimerManager.buttonTimer)
         );
         this.textWidget.updatePosition(this.width, this.height);
@@ -42,8 +49,8 @@ public class ItemCooldownConfigScreen extends Screen {
 
         this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), (btn) -> {
             assert this.client != null;
-            this.mod.setButtonTimerConfigs("posX", this.textWidget.relX, Float.class);
-            this.mod.setButtonTimerConfigs("posY", this.textWidget.relY, Float.class);
+            this.mod.setFloatConfig("buttonTimer.posX", this.textWidget.relX);
+            this.mod.setFloatConfig("buttonTimer.posY", this.textWidget.relY);
             this.client.setScreen(parent);
         }).dimensions(this.width / 2 - 75, this.height - 30 - 10, 150, 20).build());
     }
@@ -55,8 +62,8 @@ public class ItemCooldownConfigScreen extends Screen {
 
     @Override
     public void close() {
-        this.mod.setButtonTimerConfigs("posX", this.textWidget.relX, Float.class);
-        this.mod.setButtonTimerConfigs("posY", this.textWidget.relY, Float.class);
+        this.mod.setFloatConfig("buttonTimer.posX", this.textWidget.relX);
+        this.mod.setFloatConfig("buttonTimer.posY", this.textWidget.relY);
         this.mod.saveSettings();
         super.close();
     }

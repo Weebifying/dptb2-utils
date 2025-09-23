@@ -24,8 +24,8 @@ public class DPTBotConfigScreen extends Screen {
 
     @Override
     protected void init() {
-        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("DPTBot Connection: %s", mod.getDiscordRamper() ? "ON" : "OFF")), (btn) -> {
-            btn.setMessage(Text.of(String.format("DPTBot Connection: %s", !mod.setDiscordRamper(!mod.getDiscordRamper()) ? "ON" : "OFF")));
+        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("DPTBot Connection: %s", mod.getBoolConfig("others.discordRamper") ? "ON" : "OFF")), (btn) -> {
+            btn.setMessage(Text.of(String.format("DPTBot Connection: %s", mod.toggleBoolConfig("others.discordRamper") ? "ON" : "OFF")));
             mod.refreshRamperStatus();
         }).dimensions(this.width/2 - 80 - 75, 75, 150, 20).build());
 
@@ -36,21 +36,21 @@ public class DPTBotConfigScreen extends Screen {
             this.port.visible = this.showIPOptions;
         }).dimensions(this.width/2 + 80 - 75, 75, 150, 20).build());
 
-        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Broadcast Notifs: %s", mod.getBroadcastToast() ? "ON" : "OFF")), (btn) -> {
-            btn.setMessage(Text.of(String.format("Broadcast Notifs: %s", !mod.setBroadcastToast(!mod.getBroadcastToast()) ? "ON" : "OFF")));
+        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Broadcast Notifs: %s", mod.getBoolConfig("others.broadcastToast") ? "ON" : "OFF")), (btn) -> {
+            btn.setMessage(Text.of(String.format("Broadcast Notifs: %s", mod.toggleBoolConfig("others.broadcastToast") ? "ON" : "OFF")));
         }).dimensions(this.width/2 - 80 - 75, 100, 150, 20).build());
 
-        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Broadcast Chat: %s", mod.getBroadcastChat() ? "ON" : "OFF")), (btn) -> {
-            btn.setMessage(Text.of(String.format("Broadcast Chat: %s", !mod.setBroadcastChat(!mod.getBroadcastChat()) ? "ON" : "OFF")));
+        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Broadcast Chat: %s", mod.getBoolConfig("others.broadcastChat") ? "ON" : "OFF")), (btn) -> {
+            btn.setMessage(Text.of(String.format("Broadcast Chat: %s", mod.toggleBoolConfig("others.broadcastChat") ? "ON" : "OFF")));
         }).dimensions(this.width/2 + 80 - 75, 100, 150, 20).build());
 
         this.host = new EditBoxWidget(this.textRenderer, this.width / 2 - 80 - 75, 125, 150, 20, Text.of("Websocket Host"), Text.empty());
-        this.host.setText(mod.getDPTBotHost());
+        this.host.setText(mod.getStringConfig("others.dptbotHost"));
         this.host.visible = false;
         this.addDrawableChild(this.host);
 
         this.port = new EditBoxWidget(this.textRenderer, this.width / 2 + 80 - 75, 125, 150, 20, Text.of("Websocket Port"), Text.empty());
-        this.port.setText(Integer.toString(mod.getDPTBotPort()));
+        this.port.setText(Integer.toString(mod.getIntConfig("others.dptbotPort")));
         this.port.visible = false;
         this.addDrawableChild(this.port);
 
@@ -86,9 +86,9 @@ public class DPTBotConfigScreen extends Screen {
     }
 
     private void saveIPSettings() {
-        mod.setDPTBotHost(this.host.getText());
+        mod.setStringConfig("others.dptbotHost", this.host.getText());
         try {
-            mod.setDPTBotPort(Integer.parseInt(this.port.getText()));
+            mod.setIntConfig("others.dptbotPort", Integer.parseInt(this.port.getText()));
         } catch (NumberFormatException e) {
             // Handle invalid port input
         }

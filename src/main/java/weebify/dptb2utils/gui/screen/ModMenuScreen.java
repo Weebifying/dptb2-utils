@@ -28,8 +28,8 @@ public class ModMenuScreen extends Screen {
             this.client.setScreen(new BootsListScreen(this, mod));
         }).dimensions(this.width/2 - 80 - 75, 75, 150, 20).build());
 
-        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("AutoCheer: %s", mod.getAutoCheer() ? "ON" : "OFF")), (btn) -> {
-            btn.setMessage(Text.of(String.format("AutoCheer: %s", !mod.setAutoCheer(!mod.getAutoCheer()) ? "ON" : "OFF")));
+        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("AutoCheer: %s", mod.getBoolConfig("others.autoCheer") ? "ON" : "OFF")), (btn) -> {
+            btn.setMessage(Text.of(String.format("AutoCheer: %s", mod.toggleBoolConfig("others.autoCheer") ? "ON" : "OFF")));
         }).dimensions(this.width/2 + 80 - 75, 75, 150, 20).build());
 
         this.addDrawableChild(ButtonWidget.builder(Text.of("Notifications Config"), (btn) -> {
@@ -44,9 +44,9 @@ public class ModMenuScreen extends Screen {
             mc.setScreen(new DPTBotConfigScreen(this, mod));
         }).dimensions(this.width/2 - 80 - 75, 125, 150, 20).build());
 
-//        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Waypoints: %s", mod.getWaypointsConfigs("enabled", Boolean.class) ? "ON" : "OFF")), (btn) -> {
-//            btn.setMessage(Text.of(String.format("Waypoints: %s", !mod.setWaypointsConfigs("enabled", !mod.getWaypointsConfigs("enabled", Boolean.class), Boolean.class) ? "ON" : "OFF")));
-//        }).dimensions(this.width/2 + 80 - 75, 125, 150, 20).build());
+        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Waypoints: %s", mod.getBoolConfig("waypoints.enabled") ? "ON" : "OFF")), (btn) -> {
+            btn.setMessage(Text.of(String.format("Waypoints: %s", mod.toggleBoolConfig("waypoints.enabled") ? "ON" : "OFF")));
+        }).dimensions(this.width/2 + 80 - 75, 125, 150, 20).build());
 
         this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), (btn) -> {
             this.close();

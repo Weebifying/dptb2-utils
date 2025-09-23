@@ -77,8 +77,7 @@ public class WaypointManager {
             TextRenderer tr = MC.textRenderer;
             BufferBuilder buffer;
 
-            if (DPTB2Utils.getInstance().getWaypointsConfigs("enabled", Boolean.class)) {
-
+            if (DPTB2Utils.getInstance().getBoolConfig("waypoints.enabled")) {
                 for (Waypoint wp : waypoints.values()) {
                     double cx = wp.x() - cameraPos.x;
                     double cy = wp.y() - cameraPos.y;

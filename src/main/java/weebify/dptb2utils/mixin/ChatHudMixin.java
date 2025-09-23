@@ -41,10 +41,10 @@ public class ChatHudMixin {
         DPTB2Utils mod = DPTB2Utils.getInstance();
         MinecraftClient mc = MinecraftClient.getInstance();
         ToastManager toastManager = mc.getToastManager();
-        if (mod.getBoolNotifs("dontDelaySfx")) {
+        if (mod.getBoolConfig("notifs.dontDelaySfx")) {
             mc.getSoundManager().play(PositionedSoundInstance.master(sfx, 1, 1));
         }
-        toastManager.add(new NotificationToast(title, message, color, mod.getBoolNotifs("dontDelaySfx") ? null : sfx));
+        toastManager.add(new NotificationToast(title, message, color, mod.getBoolConfig("notifs.dontDelaySfx") ? null : sfx));
     }
 
     @Unique
@@ -86,24 +86,24 @@ public class ChatHudMixin {
         String content = msg.replaceAll("§[0-9a-fk-or]", "").trim();
         SoundEvent sound = SoundEvents.ENTITY_PLAYER_LEVELUP;
 
-        if (mod.getBoolNotifs("shopUpdate") && content.startsWith("* SHOP! New items available at the Rotating Shop!")) {
+        if (mod.getBoolConfig("notifs.shopUpdate") && content.startsWith("* SHOP! New items available at the Rotating Shop!")) {
             triggerNotif("Shop Update!", "New items available at the Rotating Shop!", 0xFF55FF, sound);
         } else if (content.startsWith("* [!] MAYHEM! The BUTTON has no cooldown for 10s!")) {
             ButtonTimerManager.isMayhem = true;
             mod.scheduleTask(200, () -> ButtonTimerManager.isMayhem = false);
-            if (mod.getBoolNotifs("buttonMayhem")) {
+            if (mod.getBoolConfig("notifs.buttonMayhem")) {
                 triggerNotif("Button Mayhem!", "The BUTTON has no cooldown for 10s!", 0xFF0000, sound);
             }
         } else if (content.startsWith("* [!] The BUTTON has been disabled for 5s!")) {
             ButtonTimerManager.isDisabled = true;
             mod.scheduleTask(100, () -> ButtonTimerManager.isDisabled = false);
-            if (mod.getBoolNotifs("buttonDisable")) {
+            if (mod.getBoolConfig("notifs.buttonDisable")) {
                 triggerNotif("Button Disabled!", "The BUTTON has been disabled for 5s!", 0x00FF00, sound);
             }
-        } else if (mod.getBoolNotifs("buttonImmunity") && content.startsWith("* [!] Whoever clicks the BUTTON next will not die!")) {
+        } else if (mod.getBoolConfig("notifs.buttonImmunity") && content.startsWith("* [!] Whoever clicks the BUTTON next will not die!")) {
             triggerNotif("Button Immunity!", "Whoever clicks the BUTTON next will not die!", 0x55FFFF, sound);
         } else if (content.startsWith("* WOAH")) {
-            if (mod.getBoolNotifs("bootsCollected")) {
+            if (mod.getBoolConfig("notifs.bootsCollected")) {
                 // placeholders in case shit goes down
                 String t = "Someone just found a rare boots!";
                 String b = "Boots";
@@ -126,7 +126,7 @@ public class ChatHudMixin {
                     b = matcher3.group(3);
                 }
 
-                if (mod.getBoolNotifs("slimeBoots") || !b.equalsIgnoreCase("Slime Boots")) {
+                if (mod.getBoolConfig("notifs.slimeBoots") || !b.equalsIgnoreCase("Slime Boots")) {
                     triggerNotif(b + " Found!", t, 0xFFFF55, sound);
                 }
             }
@@ -136,9 +136,9 @@ public class ChatHudMixin {
                     .append(Text.literal(String.format("[%s] ", timestamp)).formatted(Formatting.GRAY)
                             .append(message));
             mod.bootsList.add(text);
-        } else if (mod.getBoolNotifs("doorSwitch") && content.startsWith("* [!] The DOOR has cycled! Which one is it now?")) {
+        } else if (mod.getBoolConfig("notifs.doorSwitch") && content.startsWith("* [!] The DOOR has cycled! Which one is it now?")) {
             triggerNotif("Door Switch!", "The DOOR has cycled! Which one is it now?", 0xFFAA00, sound);
-        } else if (mod.getAutoCheer() && content.startsWith("* COMMUNITY GOAL!")) {
+        } else if (mod.getBoolConfig("others.autoCheer") && content.startsWith("* COMMUNITY GOAL!")) {
             if (mc.getNetworkHandler() != null) {
                 mod.scheduleTask(rand.nextInt(26) + 5, () -> mc.getNetworkHandler().sendChatCommand("cheer"));
             }

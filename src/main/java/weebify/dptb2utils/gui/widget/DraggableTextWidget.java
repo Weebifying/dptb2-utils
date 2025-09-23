@@ -30,10 +30,10 @@ public class DraggableTextWidget extends ClickableWidget {
         // Draw centered text manually
         TextRenderer renderer = MinecraftClient.getInstance().textRenderer;
         DPTB2Utils mod = DPTB2Utils.getInstance();
-        if (mod.getButtonTimerRenderBG()) {
+        if (mod.getBoolConfig("buttonTimer.renderBackground")) {
             context.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), 0x63000000);
         }
-        context.drawText(renderer, getMessage(), getX() + 4, getY() + 4, Colors.WHITE, mod.getButtonTimerTextShadow());
+        context.drawText(renderer, getMessage(), getX() + 4, getY() + 4, Colors.WHITE, mod.getBoolConfig("buttonTimer.textShadow"));
     }
 
     @Override
