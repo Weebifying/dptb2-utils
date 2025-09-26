@@ -98,6 +98,9 @@ public class ModConfigs {
         createNewConfig("buttonTimer.posY", "0.5", Float.class);
 
         createNewConfig("itemCooldown.enabled", "false", Boolean.class);
+        createNewConfig("itemCooldown.textShadow", "false", Boolean.class);
+        createNewConfig("itemCooldown.renderBackground", "true", Boolean.class);
+        createNewConfig("itemCooldown.textAlign", "center", String.class);
         createNewConfig("itemCooldown.posX", "0", Float.class);
         createNewConfig("itemCooldown.posY", "0.5", Float.class);
 

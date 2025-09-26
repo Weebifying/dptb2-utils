@@ -26,10 +26,7 @@ import org.slf4j.LoggerFactory;
 import weebify.dptb2utils.gui.screen.ButtonTimerConfigScreen;
 import weebify.dptb2utils.gui.widget.NotificationToast;
 import weebify.dptb2utils.gui.screen.ModMenuScreen;
-import weebify.dptb2utils.utils.ButtonTimerManager;
-import weebify.dptb2utils.utils.DelayedTask;
-import weebify.dptb2utils.utils.DiscordWebSocketClient;
-import weebify.dptb2utils.utils.WaypointManager;
+import weebify.dptb2utils.utils.*;
 
 import java.io.*;
 import java.net.URI;
@@ -84,6 +81,8 @@ public class DPTB2Utils implements ClientModInitializer {
 
 		this.initializeCommands();
 		this.initializeEvents();
+		ButtonTimerManager.initialize();
+		ItemCooldownManager.initialize();
 
 		this.fetchDPTBotIP();
 
@@ -149,34 +148,6 @@ public class DPTB2Utils implements ClientModInitializer {
 				websocketClient.close();
 			}
 		});
-
-		// button timer hud
-		HudRenderCallback.EVENT.register(((drawContext, renderTickCounter) -> {
-			MinecraftClient mc = MinecraftClient.getInstance();
-			if (this.isInDPTB2 && this.getBoolConfig("buttonTimer.enabled") && !(mc.currentScreen instanceof ButtonTimerConfigScreen)) {
-				int width = mc.getWindow().getScaledWidth();
-				int height = mc.getWindow().getScaledHeight();
-				Text text = ButtonTimerManager.tickToTime(ButtonTimerManager.buttonTimer);
-				int textWidth = mc.textRenderer.getWidth(text);
-				if (this.getBoolConfig("buttonTimer.renderBackground")) {
-					drawContext.fill(
-							(int)(this.getFloatConfig("buttonTimer.posX")*width),
-							(int)(this.getFloatConfig("buttonTimer.posY")*height),
-							(int)(this.getFloatConfig("buttonTimer.posX")*width + textWidth + 8),
-							(int)(this.getFloatConfig("buttonTimer.posY")*height + 15),
-							0x63000000 // ballin it, worked ig
-					);
-				}
-
-				drawContext.drawText(
-						mc.textRenderer, text,
-						(int)(this.getFloatConfig("buttonTimer.posX")*width + 4),
-						(int)(this.getFloatConfig("buttonTimer.posY")*height + 4),
-						Colors.WHITE,
-						this.getBoolConfig("buttonTimer.textShadow")
-				);
-			}
-		}));
 	}
 
 	public void dptb2Check(MinecraftClient client) {
@@ -198,7 +169,7 @@ public class DPTB2Utils implements ClientModInitializer {
 
 			if (objective != null) {
 				String title = objective.getDisplayName().getString().toLowerCase();
-				Text[] sidebarEntries =scoreboard.getScoreboardEntries(objective)
+				Text[] sidebarEntries = scoreboard.getScoreboardEntries(objective)
 						.stream()
 						.filter(score -> !score.hidden())
 						.sorted(Comparator.comparing(ScoreboardEntry::value).reversed().thenComparing(ScoreboardEntry::owner, String.CASE_INSENSITIVE_ORDER))
@@ -239,12 +210,6 @@ public class DPTB2Utils implements ClientModInitializer {
 		if (this.displayScreen) {
 			this.displayScreen = false;
 			mc.setScreen(new ModMenuScreen(this));
-		}
-
-		if (this.isInDPTB2) {
-			if (ButtonTimerManager.buttonTimer >= 0) {
-				ButtonTimerManager.buttonTimer += 1;
-			}
 		}
 	}
 

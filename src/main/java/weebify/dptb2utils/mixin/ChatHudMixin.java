@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.gui.widget.NotificationToast;
 import weebify.dptb2utils.utils.ButtonTimerManager;
+import weebify.dptb2utils.utils.ItemCooldownManager;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -161,6 +162,11 @@ public class ChatHudMixin {
             ButtonTimerManager.buttonTimer = 0;
             ButtonTimerManager.isChaos = true;
             ButtonTimerManager.chaosCounter = 33;
+        }
+
+        if (content.startsWith("* Uh oh... No target found.") && (ItemCooldownManager.lastAdded.equals("Swap Crystal") || ItemCooldownManager.lastAdded.equals("Freeze Ray"))) {
+            ItemCooldownManager.currentCooldowns.remove(ItemCooldownManager.lastAdded);
+            ItemCooldownManager.lastAdded = "";
         }
 
         if (mod.isRamper && !content.isBlank()) {

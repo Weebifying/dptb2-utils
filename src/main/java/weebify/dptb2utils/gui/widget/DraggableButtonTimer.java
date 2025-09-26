@@ -9,12 +9,12 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import weebify.dptb2utils.DPTB2Utils;
 
-public class DraggableTextWidget extends ClickableWidget {
+public class DraggableButtonTimer extends ClickableWidget {
     private boolean dragging = false;
     private int dragOffsetX, dragOffsetY;
     public float relX, relY;
 
-    public DraggableTextWidget(float relX, float relY, Text message) {
+    public DraggableButtonTimer(float relX, float relY, Text message) {
         super(0, 0, MinecraftClient.getInstance().textRenderer.getWidth(message) + 8, 15, message);
         this.relX = relX;
         this.relY = relY;
@@ -31,9 +31,21 @@ public class DraggableTextWidget extends ClickableWidget {
         TextRenderer renderer = MinecraftClient.getInstance().textRenderer;
         DPTB2Utils mod = DPTB2Utils.getInstance();
         if (mod.getBoolConfig("buttonTimer.renderBackground")) {
-            context.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), 0x63000000);
+            context.fill(
+                    getX(),
+                    getY(),
+                    getX() + getWidth(),
+                    getY() + getHeight(),
+                    0x63000000
+            );
         }
-        context.drawText(renderer, getMessage(), getX() + 4, getY() + 4, Colors.WHITE, mod.getBoolConfig("buttonTimer.textShadow"));
+        context.drawText(
+                renderer, getMessage(),
+                getX() + 4,
+                getY() + 4,
+                Colors.WHITE,
+                mod.getBoolConfig("buttonTimer.textShadow")
+        );
     }
 
     @Override
