@@ -30,7 +30,8 @@ public abstract class EntityRendererMixin<T extends Entity, S extends EntityRend
                 float x = textRenderer.getWidth(text.getString()) / 2.f + 2;
                 float y = "deadmau5".equals(text.getString()) ? -10.f : 0.f;
                 Matrix4f matrix4f = matrices.peek().getPositionMatrix();
-                Identifier id = Identifier.of(DPTB2Utils.MOD_ID, "icon.png");
+                Identifier id = Identifier.of(DPTB2Utils.MOD_ID, mod.getStringConfig("others.indicatorPath"));
+
 
                 RenderLayer rl = bl ? RenderLayer.getTextSeeThrough(id) : RenderLayer.getText(id);
                 VertexConsumer vc = vertexConsumers.getBuffer(rl);

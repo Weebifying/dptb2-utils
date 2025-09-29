@@ -164,7 +164,7 @@ public class ChatHudMixin {
             ButtonTimerManager.chaosCounter = 33;
         }
 
-        if (content.startsWith("* Uh oh... No target found.") && (ItemCooldownManager.lastAdded.equals("Swap Crystal") || ItemCooldownManager.lastAdded.equals("Freeze Ray"))) {
+        if (content.startsWith("* Uh oh... No target found.") && (ItemCooldownManager.lastAdded.equals("Swap Crystal") || ItemCooldownManager.lastAdded.equals("Freeze Ray") || ItemCooldownManager.lastAdded.equals("Lasso"))) {
             ItemCooldownManager.currentCooldowns.remove(ItemCooldownManager.lastAdded);
             ItemCooldownManager.lastAdded = "";
         }

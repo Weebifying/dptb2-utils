@@ -90,6 +90,8 @@ public class ModConfigs {
         createNewConfig("others.dptbotPort", "6212", Integer.class);
         createNewConfig("others.broadcastToast", "true", Boolean.class);
         createNewConfig("others.broadcastChat", "true", Boolean.class);
+        createNewConfig("others.woahSecretSetting", "false", Boolean.class);
+        createNewConfig("others.indicatorPath", "textures/indicator/icon.png", String.class);
 
         createNewConfig("buttonTimer.enabled", "false", Boolean.class);
         createNewConfig("buttonTimer.textShadow", "false", Boolean.class);
@@ -132,5 +134,15 @@ public class ModConfigs {
         JsonElement jsonValue = DPTB2Utils.GSON.toJsonTree(value, clazz);
         JsonElement oldValue = map.put(key, jsonValue);
         return oldValue == null ? null : DPTB2Utils.GSON.fromJson(oldValue, clazz);
+    }
+
+    public <T> T getDefaultConfig(String prop) {
+        Map<String, JsonElement>[] maps = getMap(prop);
+        String key = prop.split("\\.")[1];
+        if (maps == null) return null;
+        Map<String, JsonElement> defaultMap = maps[1];
+        Class<T> clazz = (Class<T>) propertyTypes.get(prop);
+
+        return DPTB2Utils.GSON.fromJson(defaultMap.get(key), clazz);
     }
 }

@@ -29,6 +29,7 @@ import weebify.dptb2utils.gui.widget.NotificationToast;
 import weebify.dptb2utils.gui.screen.ModMenuScreen;
 import weebify.dptb2utils.utils.*;
 
+import javax.swing.*;
 import java.io.*;
 import java.net.URI;
 import java.net.URL;
@@ -85,11 +86,19 @@ public class DPTB2Utils implements ClientModInitializer {
 		this.initializeEvents();
 		ButtonTimerManager.initialize();
 		ItemCooldownManager.initialize();
+		ExternalIndicatorManager.initialize();
 
 		this.fetchDPTBotIP();
 
 		WaypointManager.initializeEvents();
 		WaypointManager.initializeWaypoints();
+
+		// for external indicator file chooser
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) {
+			LOGGER.error("Failed to set Swing look and feel!", e);
+		}
 	}
 
 	public void scheduleTask(int ticks, Runnable task) {
@@ -187,9 +196,9 @@ public class DPTB2Utils implements ClientModInitializer {
 					s.append(entry.getString());
 				}
 
-				String content = s.toString().toLowerCase().replaceAll("§\\w", "");
+				String scoreboardContent = s.toString().toLowerCase().replaceAll("§\\w", "");
 
-				this.isInDPTB2 = title.contains("housing") && content.contains("don't press the button 2");
+				this.isInDPTB2 = title.contains("housing") && scoreboardContent.contains("don't press the button 2");
 
 				if (this.isInDPTB2) client.getToastManager().add(new NotificationToast("DPTB2 Utils", "You are in Don't Press The Button 2!", 0xD2FFC8, SoundEvents.ENTITY_PLAYER_LEVELUP	));
 				this.refreshRamperStatus();
