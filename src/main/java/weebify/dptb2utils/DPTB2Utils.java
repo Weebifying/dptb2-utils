@@ -171,6 +171,7 @@ public class DPTB2Utils {
             this.isInDPTB2 = false;
             return;
         }
+        LOGGER.info("server ip: {}", serverData.serverIP);
 
         if (!serverData.serverIP.toLowerCase().contains("hypixel.net")) {
             this.isInDPTB2 = false;
@@ -197,6 +198,8 @@ public class DPTB2Utils {
 
                 String content = s.toString().toLowerCase().replaceAll("§\\w", "").trim();
 
+                LOGGER.info("title: {}", title);
+                LOGGER.info("content: {}", content);
                 this.isInDPTB2 = title.contains("housing") && content.contains("don't press the button 2");
 
                 if (this.isInDPTB2) NotificationManager.getInstance().add("DPTB2 Utils", "You are in Don't Press The Button 2!", 0xD2FFC8, "random.levelup");

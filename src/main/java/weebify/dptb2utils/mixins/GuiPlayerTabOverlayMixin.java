@@ -11,32 +11,64 @@ import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.Slice;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import weebify.dptb2utils.DPTB2Utils;
 
 import java.util.List;
 
-@Mixin(GuiPlayerTabOverlay.class)
+@Mixin(value=GuiPlayerTabOverlay.class, priority=100)
 public class GuiPlayerTabOverlayMixin {
     @Unique
     private boolean isClient = false;
+    @Unique
+    private GameProfile currentGameProfile;
+    @Unique
+    private int currentJ2;
+    @Unique
+    private int currentK2;
+
+    @ModifyVariable(
+            method = "renderPlayerlist",
+            at = @At("STORE"),
+            index = 26
+    )
+    private GameProfile onStoreGameProfile(GameProfile original) {
+        currentGameProfile = original;
+        return original;
+    }
+
+    @ModifyVariable(
+            method = "renderPlayerlist",
+            at = @At("STORE"),
+            index = 22
+    )
+    private int onStoreJ2_index(int original) {
+        currentJ2 = original;
+        return original;
+    }
+
+    @ModifyVariable(
+            method = "renderPlayerlist",
+            at = @At("STORE"),
+            index = 23
+    )
+    private int onStoreK2_index(int original) {
+        currentK2 = original;
+        return original;
+    }
+
 
     @Inject(
             method = "renderPlayerlist",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;drawScaledCustomSizeModalRect(IIFFIIIIFF)V", ordinal = 1, shift = At.Shift.BY, by = 2),
-            locals = LocalCapture.CAPTURE_FAILHARD
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;drawScaledCustomSizeModalRect(IIFFIIIIFF)V", ordinal = 1, shift = At.Shift.BY, by = 2)
     )
-    private void renderPlayerlistInject(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn, CallbackInfo ci,
-                                        NetHandlerPlayClient nethandlerplayclient, List<NetworkPlayerInfo> list, int i, int j, int k, int l3, int i4, boolean flag, int l, int i1, int j1, int k1, int l1, List<String> list1, List<String> l2, int i2, int l4, int i5, int j2, int k2, NetworkPlayerInfo networkplayerinfo1, String s1, GameProfile gameprofile) {
-        if (DPTB2Utils.getInstance().websocketClient != null && DPTB2Utils.getInstance().websocketClient.clientsList.contains(gameprofile.getName())) {
+    private void renderPlayerlistInject(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn, CallbackInfo ci) {
+        if (DPTB2Utils.getInstance().websocketClient != null && DPTB2Utils.getInstance().websocketClient.clientsList.contains(currentGameProfile.getName())) {
             isClient = true;
             Minecraft.getMinecraft().getTextureManager().bindTexture(new ResourceLocation(DPTB2Utils.MOD_ID, "icon.png"));
-            Gui.drawScaledCustomSizeModalRect(j2+9, k2, 0, 0, 256, 256, 9, 9, 256, 256);
+            Gui.drawScaledCustomSizeModalRect(currentJ2+9, currentK2, 0, 0, 256, 256, 9, 9, 256, 256);
         } else {
             isClient = false;
         }
