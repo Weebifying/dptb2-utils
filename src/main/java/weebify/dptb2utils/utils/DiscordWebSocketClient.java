@@ -36,7 +36,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
     public void onOpen(ServerHandshake handshakedata) {
         mod.tryingToConnect = false;
         if (MC.player != null) {
-            this.sendModMessage("greet", Map.of("name", MC.player.getGameProfile().getName(), "version", DPTB2Utils.VERSION, "mc", MC.getGameVersion()));
+            this.sendModMessage("greet", Map.of("name", MC.player.getGameProfile().name(), "version", DPTB2Utils.VERSION, "mc", MC.getGameVersion()));
         }
         MC.execute(() -> MC.getToastManager().add(new NotificationToast("DPTBot", "Connected!", Colors.WHITE, SoundEvents.ENTITY_BAT_TAKEOFF)));
     }
@@ -53,7 +53,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
                     if (mod.getBoolConfig("others.discordRamper") && MC.player != null) {
                         MC.getToastManager().add(new NotificationToast("DPTBot", text, col != null ? col : 0xFFC8FFC8, SoundEvents.ENTITY_BAT_TAKEOFF));
                         mod.isRamper = true;
-                        this.sendModMessage("confirm", Map.of("text", MC.player.getGameProfile().getName()));
+                        this.sendModMessage("confirm", Map.of("text", MC.player.getGameProfile().name()));
                     }
                 } else if (type.equalsIgnoreCase("revoke")) {
                     if (mod.getBoolConfig("others.discordRamper")) {
@@ -91,7 +91,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
                     String id = (String) data.get("id");
                     if (MC.getNetworkHandler() != null) {
                         List<String> players = MC.getNetworkHandler().getPlayerList().stream()
-                                .map(player -> player.getProfile().getName())
+                                .map(player -> player.getProfile().name())
                                 .toList();
                         this.sendModMessage("tabList", Map.of("id", id, "players", players));
                     }

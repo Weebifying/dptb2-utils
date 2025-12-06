@@ -6,6 +6,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.EditBoxWidget;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
@@ -125,13 +126,16 @@ public class DPTBotConfigScreen extends Screen {
         File finalSelected = selected;
         MinecraftClient.getInstance().execute(() -> {
             if (finalSelected != null && ExternalIndicatorManager.registerExternal(finalSelected)) {
+                DPTB2Utils.LOGGER.info("Successfully registered external indicator image.");
                 String name = finalSelected.getName();
-                if (mod.getStringConfig("others.indicatorPath").startsWith("external/")  && !mod.getStringConfig("others.indicatorPath").equals("external/" + name)) {
+                if (mod.getStringConfig("others.indicatorPath").startsWith("external/") && !mod.getStringConfig("others.indicatorPath").equals("external/" + name)) {
                     ExternalIndicatorManager.unregisterTexture(Identifier.of(DPTB2Utils.MOD_ID, mod.getStringConfig("others.indicatorPath")));
                 }
                 this.mod.setStringConfig("others.indicatorPath", "external/" + name);
+                DPTB2Utils.LOGGER.info("Updated indicator path in config to: {}", "external/" + name);
             } else {
                 this.showError = true;
+                DPTB2Utils.LOGGER.error("Error registering external indicator image: {}", ExternalIndicatorManager.errorMessage);
             }
         });
     }
@@ -149,8 +153,8 @@ public class DPTBotConfigScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        boolean res = super.keyPressed(keyCode, scanCode, modifiers);
+    public boolean keyPressed(KeyInput input) {
+        boolean res = super.keyPressed(input);
         this.saveIPSettings();
         return res;
     }

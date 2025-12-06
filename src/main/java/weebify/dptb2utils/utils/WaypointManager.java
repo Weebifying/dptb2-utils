@@ -2,7 +2,6 @@ package weebify.dptb2utils.utils;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 //import net.minecraft.client.gl.ShaderProgramKeys;
@@ -70,7 +69,7 @@ public class WaypointManager {
     }
 
     public static void initializeEvents() {
-        WorldRenderEvents.AFTER_ENTITIES.register((context) -> {
+//        WorldRenderEvents.AFTER_ENTITIES.register((context) -> {
 //            if (!DPTB2Utils.getInstance().isInDPTB2) return;
 //
 //            MatrixStack matrices = context.matrixStack();
@@ -154,6 +153,6 @@ public class WaypointManager {
 //                    matrices.pop();
 //                }
 //            }
-        });
+//        });
     }
 }

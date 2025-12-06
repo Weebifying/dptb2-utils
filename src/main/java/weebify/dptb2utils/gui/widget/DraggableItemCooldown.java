@@ -2,6 +2,7 @@ package weebify.dptb2utils.gui.widget;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
@@ -128,7 +129,11 @@ public class DraggableItemCooldown extends ClickableWidget {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(Click click, boolean doubled) {
+        double mouseX = click.x();
+        double mouseY = click.y();
+        int button = click.button();
+
         if (this.isMouseOver(mouseX, mouseY) && button == 0) {
             dragging = true;
             dragOffsetX = (int)(mouseX - this.getX());
@@ -139,7 +144,9 @@ public class DraggableItemCooldown extends ClickableWidget {
     }
     
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(Click click) {
+        int button = click.button();
+
         if (dragging && button == 0) {
             dragging = false;
             return true;
@@ -148,7 +155,10 @@ public class DraggableItemCooldown extends ClickableWidget {
     }
     
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dx, double dy) {
+    public boolean mouseDragged(Click click, double dx, double dy) {
+        double mouseX = click.x();
+        double mouseY = click.y();
+
         if (dragging) {
             MinecraftClient client = MinecraftClient.getInstance();
             int newX = (int)(mouseX - dragOffsetX);

@@ -2,6 +2,7 @@ package weebify.dptb2utils.gui.widget;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ScrollableWidget;
@@ -42,7 +43,7 @@ public class ScrollableBootsList extends ScrollableWidget {
     @Override
     protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         drawContent(context);
-        drawScrollbar(context);
+        drawScrollbar(context, mouseX, mouseY);
     }
 
     @Override
@@ -51,16 +52,16 @@ public class ScrollableBootsList extends ScrollableWidget {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (checkScrollbarDragged(mouseX, mouseY, button)) {
+    public boolean mouseClicked(Click click, boolean doubled) {
+        if (checkScrollbarDragged(click)) {
             return true;
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, doubled);
     }
 
     @Override
-    public void onRelease(double mouseX, double mouseY) {
-        super.onRelease(mouseX, mouseY);
+    public void onRelease(Click click) {
+        super.onRelease(click);
     }
 
     @Override

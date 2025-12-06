@@ -25,7 +25,7 @@ public class PlayerListHudMixin {
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/PlayerSkinDrawer;draw(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/util/Identifier;IIIZZI)V", shift = At.Shift.BY, by = 2))
     private void renderInject(DrawContext context, int scaledWindowWidth, Scoreboard scoreboard, ScoreboardObjective objective, CallbackInfo ci, @Local(ordinal = 16) int localX, @Local(ordinal = 17) int localY, @Local GameProfile localProfile) {
-        if (DPTB2Utils.getInstance().websocketClient != null && DPTB2Utils.getInstance().websocketClient.clientsList.contains(localProfile.getName())) {
+        if (DPTB2Utils.getInstance().websocketClient != null && DPTB2Utils.getInstance().websocketClient.clientsList.contains(localProfile.name())) {
             isClient = true;
             ((DrawContextInvoker)context).invokeDrawTexturedQuad(RenderPipelines.GUI_TEXTURED, Identifier.of(DPTB2Utils.MOD_ID, DPTB2Utils.getInstance().getStringConfig("others.indicatorPath")), localX + 9, localX + 18, localY, localY + 9, 0.f, 1.f, 0.f, 1.f, Colors.WHITE);
 //            context.drawTexture(RenderPipelines.GUI_TEXTURED, Identifier.of(DPTB2Utils.MOD_ID, "icon.png"), localX + 9, localY, 0, 0, 9, 9, 256, 256, 256, 256);

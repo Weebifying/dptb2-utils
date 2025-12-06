@@ -12,5 +12,5 @@ import java.util.function.Function;
 @Mixin(DrawContext.class)
 public interface DrawContextInvoker {
     @Invoker("drawTexturedQuad")
-    public void invokeDrawTexturedQuad(RenderPipeline pipeline, Identifier sprite, int x1, int x2, int y1, int y2, float u1, float u2, float v1, float v2, int color);
+    void invokeDrawTexturedQuad(RenderPipeline pipeline, Identifier sprite, int x1, int x2, int y1, int y2, float u1, float u2, float v1, float v2, int color);
 }

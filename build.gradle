@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version "${loom_version}"
+	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
 	id 'maven-publish'
 }
 
@@ -29,6 +29,7 @@ dependencies {
 
 	implementation "org.java-websocket:Java-WebSocket:1.6.0"
 	include "org.java-websocket:Java-WebSocket:1.6.0"
+	
 }
 
 processResources {
@@ -77,10 +78,4 @@ publishing {
 		// The repositories here will be used for publishing your artifact, not for
 		// retrieving dependencies.
 	}
-}
-
-task buildAndCopyToMods(type: Copy,dependsOn: 'build') {
-	from "build/libs"
-	into "C:/Users/weebi/OneDrive/Desktop/random shit/MultiMC/instances/1.21.4/.minecraft/mods"
-	include "*.jar"
 }

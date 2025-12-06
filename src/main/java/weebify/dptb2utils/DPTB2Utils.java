@@ -273,7 +273,7 @@ public class DPTB2Utils implements ClientModInitializer {
 			if (websocketClient != null && websocketClient.isOpen()) {
 				String msg = StringArgumentType.getString(context, "message");
 				try {
-					websocketClient.sendModMessage("playerBroadcast", Map.of("text", msg, "name", mc.player.getGameProfile().getName(), "private", this.getBoolConfig("others.incognito")));
+					websocketClient.sendModMessage("playerBroadcast", Map.of("text", msg, "name", mc.player.getGameProfile().name(), "private", this.getBoolConfig("others.incognito")));
 					if (!this.getBoolConfig("others.broadcastChat")) {
 						mc.player.sendMessage(Text.literal("Broadcast message: " + msg).formatted(Formatting.GREEN), false);
 					}
