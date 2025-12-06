@@ -209,7 +209,8 @@ public class DPTB2Utils implements ClientModInitializer {
 
 				String scoreboardContent = s.toString().toLowerCase().replaceAll("§\\w", "");
 
-				this.isInDPTB2 = title.contains("housing") && scoreboardContent.contains("don't press the button 2");
+//				this.isInDPTB2 = title.contains("housing") && scoreboardContent.contains("don't press the button 2");
+				this.isInDPTB2 = scoreboardContent.contains("don't press the button 2") && scoreboardContent.contains("cyborg023") ;
 
 				if (this.isInDPTB2) client.getToastManager().add(new NotificationToast("DPTB2 Utils", "You are in Don't Press The Button 2!", 0xD2FFC8, SoundEvents.ENTITY_PLAYER_LEVELUP	));
 				this.refreshRamperStatus();
