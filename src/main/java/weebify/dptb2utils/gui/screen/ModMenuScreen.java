@@ -48,9 +48,9 @@ public class ModMenuScreen extends Screen {
             mc.setScreen(new ItemCooldownConfigScreen(this, mod));
         }).dimensions(this.width/2 + 80 - 75, 125, 150, 20).build());
 
-        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Waypoints: %s", mod.getBoolConfig("waypoints.enabled") ? "ON" : "OFF")), (btn) -> {
-            btn.setMessage(Text.of(String.format("Waypoints: %s", mod.toggleBoolConfig("waypoints.enabled") ? "ON" : "OFF")));
-        }).dimensions(this.width/2 - 80 - 75, 150, 150, 20).build());
+//        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Waypoints: %s", mod.getBoolConfig("waypoints.enabled") ? "ON" : "OFF")), (btn) -> {
+//            btn.setMessage(Text.of(String.format("Waypoints: %s", mod.toggleBoolConfig("waypoints.enabled") ? "ON" : "OFF")));
+//        }).dimensions(this.width/2 - 80 - 75, 150, 150, 20).build());
 
         this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), (btn) -> {
             this.close();

@@ -193,6 +193,7 @@ public class ChatHudMixin {
         // number of lines
         if (content.startsWith("*   MINOR EVENT! ➜ SANDSTORM")) counter = 5;
         else if (content.startsWith("*   The SANDSTORM has ended!")) counter = 1;
+        else if (content.startsWith("*   MINOR EVENT!  ➜ GOLD RUSH")) counter = 2;
         else if (content.startsWith("*   MINOR EVENT! ➜ HEAT WAVE")) counter = 5;
         else if (content.startsWith("*   MINOR EVENT! ➜ CHAOS BUTTON")) counter = 5;
         else if (content.startsWith("*   MINOR EVENT! ➜ DON'T PRESS THE BUTTON (literally)")) counter = 6;
@@ -280,6 +281,14 @@ public class ChatHudMixin {
             && !lower.contains("your ending bounty")
             && !lower.contains("total from bounty")
             && !lower.contains("s remaining")
+            && !lower.contains("math drill completed!")
+            && !lower.contains("iq points from this drill!")
+            && !lower.startsWith("* bought intellectual boots")
+            && !lower.startsWith("* catalog!")
+            && !lower.startsWith("* coming... soon")
+            && !lower.startsWith("* [✎]")
+            && !lower.startsWith("* your challenge:")
+            && !lower.startsWith("* your drill:")
             && !lower.startsWith("*  - ")
             && !lower.startsWith("* - ")
             && !lower.startsWith("* reopened")

@@ -13,5 +13,8 @@
     "DrawContextInvoker",
     "EntityRendererMixin",
     "PlayerListHudMixin"
+  ],
+  "mixins": [
+    "TextVisitFactoryMixin"
   ]
 }

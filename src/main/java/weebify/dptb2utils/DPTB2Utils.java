@@ -38,7 +38,7 @@ import java.util.List;
 
 public class DPTB2Utils implements ClientModInitializer {	
 	public static final String MOD_ID = "dptb2-utils";
-	public static final String VERSION = "1.1.3";
+	public static final String VERSION = "1.2.0";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	public ModConfigs config;
@@ -98,6 +98,17 @@ public class DPTB2Utils implements ClientModInitializer {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
 			LOGGER.error("Failed to set Swing look and feel!", e);
+		}
+	}
+
+	public static int hexToInt(String hex) {
+		if (hex.startsWith("#")) {
+			hex = hex.substring(1);
+		}
+		try {
+			return ((int) Long.parseLong(hex, 16)) | 0xFF000000;
+		} catch (NumberFormatException e) {
+			return 0;
 		}
 	}
 
@@ -262,7 +273,7 @@ public class DPTB2Utils implements ClientModInitializer {
 			if (websocketClient != null && websocketClient.isOpen()) {
 				String msg = StringArgumentType.getString(context, "message");
 				try {
-					websocketClient.sendModMessage("playerBroadcast", Map.of("text", msg, "name", mc.player.getGameProfile().getName()));
+					websocketClient.sendModMessage("playerBroadcast", Map.of("text", msg, "name", mc.player.getGameProfile().getName(), "private", this.getBoolConfig("others.incognito")));
 					if (!this.getBoolConfig("others.broadcastChat")) {
 						mc.player.sendMessage(Text.literal("Broadcast message: " + msg).formatted(Formatting.GREEN), false);
 					}

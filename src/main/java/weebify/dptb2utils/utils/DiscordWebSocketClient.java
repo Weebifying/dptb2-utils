@@ -2,7 +2,9 @@ package weebify.dptb2utils.utils;
 
 import com.google.gson.Gson;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.sound.PositionedSoundInstance;
+import net.minecraft.component.Component;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -64,9 +66,9 @@ public class DiscordWebSocketClient extends WebSocketClient {
 
                     StringBuilder sb = new StringBuilder("§8[");
                     if (source.equalsIgnoreCase("DISC")) {
-                        sb.append("§9DISC§r").append("§8]§r ").append(String.format("§9%s§r", name));
+                        sb.append("§xDISC§r").append("§8]§r ").append(String.format("§x%s§r", name));
                     } else if (source.equalsIgnoreCase("WPTB")) {
-                        sb.append("§6WPTB§r").append("§8]§r ").append(String.format("§6%s§r", name));
+                        sb.append("§yWPTB§r").append("§8]§r ").append(String.format("§y%s§r", name));
                     } else if (source.equalsIgnoreCase("CONSOLE")) {
                         sb.append("§cCONSOLE§r").append("§8]§r ").append(String.format("§c%s§r", name));
                     } else {
@@ -75,7 +77,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
                     sb.append(": ").append(text);
 
                     if (mod.getBoolConfig("others.broadcastToast")) {
-                        int color = source.equalsIgnoreCase("DISC") ? 0xFF5555FF : (source.equalsIgnoreCase("WPTB") ? 0xFFFFAA00 : (source.equalsIgnoreCase("CONSOLE") ? 0xFFFF5555 : 0xFFFFFFFF));
+                        int color = source.equalsIgnoreCase("DISC") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.discColor")) : (source.equalsIgnoreCase("WPTB") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.wptbColor")) : (source.equalsIgnoreCase("CONSOLE") ? 0xFFFF5555 : 0xFFFFFFFF));
                         MC.getToastManager().add(new NotificationToast(String.format("[%s] %s", source, name), text, col != null ? col : color, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value()));
                     }
 

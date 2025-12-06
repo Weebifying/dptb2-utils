@@ -54,6 +54,51 @@ public class ItemCooldownManager {
     public static Map<String, Integer> currentCooldowns = new HashMap<>();
     public static String lastAdded = "";
 
+    public static boolean isInMap(double x, double y, double z) {
+        // city: 124 7 -113 -> -1 72 140
+        if (x >= -1 && x <= 124 && y >= 7 && y <= 72 && z >= -113 && z <= 140) {
+            return true;
+        }
+        // wild west: -18 120 -108 -> -105 195 138
+        if (x >= -105 && x <= -18 && y >= 120 && y <= 195 && z >= -108 && z <= 138) {
+            return true;
+        }
+
+        return false;
+    }
+    public static boolean isInSpawn(double x, double y, double z) {
+        // city: -1 13 -115 -> 123 72 -85
+        // near spawn: 56 17 -85 -> 66 31 -66
+        if (x >= -1 && x <= 123 && y >= 13 && y <= 72 && z >= -115 && z <= -85) {
+            return true;
+        }
+        if (x >= 56 && x <= 66 && y >= 17 && y <= 31 && z >= -85 && z <= -66) {
+            return true;
+        }
+        // wild west: -105 144 -115 -> -19 194 -80
+        // near spawn: -67 144 -80 -> -57 158 -60
+        if (x >= -105 && x <= -19 && y >= 144 && y <= 194 && z >= -115 && z <= -80) {
+            return true;
+        }
+        if (x >= -67 && x <= -57 && y >= 144 && y <= 158 && z >= -80 && z <= -60) {
+            return true;
+        }
+
+        return false;
+    }
+    public static boolean isInPkCiv(double x, double y, double z) {
+        // city: -1 19 -85 -> 55 72 -67
+        if (x >= -1 && x <= 55 && y >= 19 && y <= 72 && z >= -85 && z <= -67) {
+            return true;
+        }
+        // wild west: -68 194 -75 -> -105 144 -62 (GUESSWORK)
+        if (x >= -105 && x <= -68 && y >= 144 && y <= 194 && z >= -75 && z <= -62) {
+            return true;
+        }
+
+        return false;
+    }
+
     public static void addCooldown(String itemName) {
         if (Items.NAME_MAP.containsKey(itemName) && !currentCooldowns.containsKey(itemName)) {
             currentCooldowns.put(itemName, Items.NAME_MAP.get(itemName).cooldown);
@@ -82,7 +127,14 @@ public class ItemCooldownManager {
                 ItemStack stack = player.getStackInHand(hand);
                 String itemName = stack.getName().getString();
                 if (Items.NAME_MAP.containsKey(itemName)) {
-                    addCooldown(itemName);
+                    double x = player.getX();
+                    double y = player.getY();
+                    double z = player.getZ();
+                    if (!isInPkCiv(x, y, z)) {
+                        if ((itemName.equals("Immune Apple") || !isInSpawn(x, y, z)) && isInMap(x, y, z)) {
+                            addCooldown(itemName);
+                        }
+                    }
                 }
             }
 

@@ -92,6 +92,9 @@ public class ModConfigs {
         createNewConfig("others.broadcastChat", "true", Boolean.class);
         createNewConfig("others.woahSecretSetting", "false", Boolean.class);
         createNewConfig("others.indicatorPath", "textures/indicator/icon.png", String.class);
+        createNewConfig("others.incognito", "false", Boolean.class);
+        createNewConfig("others.discColor", "5555FF", String.class);
+        createNewConfig("others.wptbColor", "D2FFC8", String.class);
 
         createNewConfig("buttonTimer.enabled", "false", Boolean.class);
         createNewConfig("buttonTimer.textShadow", "false", Boolean.class);
@@ -102,7 +105,7 @@ public class ModConfigs {
         createNewConfig("itemCooldown.enabled", "false", Boolean.class);
         createNewConfig("itemCooldown.textShadow", "false", Boolean.class);
         createNewConfig("itemCooldown.renderBackground", "true", Boolean.class);
-        createNewConfig("itemCooldown.textAlign", "center", String.class);
+        createNewConfig("itemCooldown.textAlign", "left", String.class);
         createNewConfig("itemCooldown.posX", "0", Float.class);
         createNewConfig("itemCooldown.posY", "0.5", Float.class);
 
