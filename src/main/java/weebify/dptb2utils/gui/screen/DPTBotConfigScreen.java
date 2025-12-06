@@ -121,7 +121,7 @@ public class DPTBotConfigScreen extends Screen {
 
         if (selected != null && ExternalIndicatorManager.registerExternal(selected)) {
             String name = selected.getName();
-            if (mod.getStringConfig("others.indicatorPath").startsWith("external/")) {
+            if (mod.getStringConfig("others.indicatorPath").startsWith("external/")  && !mod.getStringConfig("others.indicatorPath").equals("external/" + name)) {
                 ExternalIndicatorManager.unregisterTexture(Identifier.of(DPTB2Utils.MOD_ID, mod.getStringConfig("others.indicatorPath")));
             }
             this.mod.setStringConfig("others.indicatorPath", "external/" + name);
