@@ -1,5 +1,6 @@
 package weebify.dptb2utils.gui.screen;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -119,15 +120,20 @@ public class DPTBotConfigScreen extends Screen {
             }
         }
 
-        if (selected != null && ExternalIndicatorManager.registerExternal(selected)) {
-            String name = selected.getName();
-            if (mod.getStringConfig("others.indicatorPath").startsWith("external/")  && !mod.getStringConfig("others.indicatorPath").equals("external/" + name)) {
-                ExternalIndicatorManager.unregisterTexture(Identifier.of(DPTB2Utils.MOD_ID, mod.getStringConfig("others.indicatorPath")));
+        DPTB2Utils.LOGGER.info("Selected indicator file: {}", selected != null ? selected.getAbsolutePath() : "None");
+
+        File finalSelected = selected;
+        MinecraftClient.getInstance().execute(() -> {
+            if (finalSelected != null && ExternalIndicatorManager.registerExternal(finalSelected)) {
+                String name = finalSelected.getName();
+                if (mod.getStringConfig("others.indicatorPath").startsWith("external/")  && !mod.getStringConfig("others.indicatorPath").equals("external/" + name)) {
+                    ExternalIndicatorManager.unregisterTexture(Identifier.of(DPTB2Utils.MOD_ID, mod.getStringConfig("others.indicatorPath")));
+                }
+                this.mod.setStringConfig("others.indicatorPath", "external/" + name);
+            } else {
+                this.showError = true;
             }
-            this.mod.setStringConfig("others.indicatorPath", "external/" + name);
-        } else {
-            this.showError = true;
-        }
+        });
     }
 
     @Override
