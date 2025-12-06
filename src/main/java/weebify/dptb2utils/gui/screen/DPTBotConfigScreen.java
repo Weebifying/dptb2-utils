@@ -1,5 +1,6 @@
 package weebify.dptb2utils.gui.screen;
 
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -73,20 +74,20 @@ public class DPTBotConfigScreen extends Screen {
 //            btn.setMessage(Text.of(String.format("Private Chat: %s", mod.toggleBoolConfig("others.incognito") ? "ON" : "OFF")));
 //        }).dimensions(this.width/2 - 80 - 75, 150, 150, 20).build());
 
-        this.discColorInput = new EditBoxWidget(this.textRenderer, this.width / 2 - 80 - 75, 150,  150, 20, Text.of("[DISC] Color"), Text.empty());
+        this.discColorInput = EditBoxWidget.builder().x(this.width / 2 - 80 - 75).y(150).placeholder(Text.of("[DISC] Color")).build(this.textRenderer, 150, 20, Text.of(mod.getStringConfig("others.discColor")));
         this.discColorInput.setText(mod.getStringConfig("others.discColor"));
         this.addDrawableChild(this.discColorInput);
 
-        this.wptbColorInput = new EditBoxWidget(this.textRenderer, this.width / 2 - 80 - 75, 175, 150, 20, Text.of("[WPTB] Color"), Text.empty());
+        this.wptbColorInput = EditBoxWidget.builder().x(this.width / 2 - 80 - 75).y(175).placeholder(Text.of("[WPTB] Color")).build(this.textRenderer, 150, 20, Text.of(mod.getStringConfig("others.wptbColor")));
         this.wptbColorInput.setText(mod.getStringConfig("others.wptbColor"));
         this.addDrawableChild(this.wptbColorInput);
 
-        this.hostInput = new EditBoxWidget(this.textRenderer, this.width / 2 - 80 - 75, 200,  150, 20, Text.of("Websocket Host"), Text.empty());
+        this.hostInput = EditBoxWidget.builder().x(this.width / 2 - 80 - 75).y(200).placeholder(Text.of("Websocket Host")).build(this.textRenderer, 150, 20, Text.of(mod.getStringConfig("others.dptbotHost")));
         this.hostInput.setText(mod.getStringConfig("others.dptbotHost"));
         this.hostInput.visible = false;
         this.addDrawableChild(this.hostInput);
 
-        this.portInput = new EditBoxWidget(this.textRenderer, this.width / 2 + 80 - 75, 200, 150, 20, Text.of("Websocket Port"), Text.empty());
+        this.portInput = EditBoxWidget.builder().x(this.width / 2 + 80 - 75).y(200).placeholder(Text.of("Websocket Port")).build(this.textRenderer, 150, 20, Text.of(Integer.toString(mod.getIntConfig("others.dptbotPort"))));
         this.portInput.setText(Integer.toString(mod.getIntConfig("others.dptbotPort")));
         this.portInput.visible = false;
         this.addDrawableChild(this.portInput);
@@ -160,7 +161,7 @@ public class DPTBotConfigScreen extends Screen {
             context.drawCenteredTextWithShadow(this.textRenderer, Text.of("Error loading custom indicator image:" + ExternalIndicatorManager.errorMessage), this.width/2, this.height - 70, Colors.RED);
         }
 
-        ((DrawContextInvoker)context).invokeDrawTexturedQuad(RenderLayer::getGuiTextured, Identifier.of(DPTB2Utils.MOD_ID, this.mod.getStringConfig("others.indicatorPath")), this.width/2 + 160, this.width/2 + 180, 125, 145, 0.f, 1.f, 0.f, 1.f, Colors.WHITE);
+        ((DrawContextInvoker)context).invokeDrawTexturedQuad(RenderPipelines.GUI_TEXTURED, Identifier.of(DPTB2Utils.MOD_ID, this.mod.getStringConfig("others.indicatorPath")), this.width/2 + 160, this.width/2 + 180, 125, 145, 0.f, 1.f, 0.f, 1.f, Colors.WHITE);
     }
 
     private void saveIPSettings() {

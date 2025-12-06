@@ -1,16 +1,13 @@
 package weebify.dptb2utils.utils;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import weebify.dptb2utils.DPTB2Utils;
@@ -203,7 +200,7 @@ public class ItemCooldownManager {
 
                 int x = alignLeft ? posX + padding : posX - padding - 16;
                 int y = posY + padding + i * lineHeight;
-                drawContext.drawTexture(RenderLayer::getGuiTextured, item.texture, x, y, 0, 0, 16, 16, 16, 16);
+                drawContext.drawTexture(RenderPipelines.GUI_TEXTURED, item.texture, x, y, 0, 0, 16, 16, 16, 16);
 
                 int barWidth = (int) (0.2 * Items.NAME_MAP.get(itemName).cooldown);
                 int barHeight = 8;

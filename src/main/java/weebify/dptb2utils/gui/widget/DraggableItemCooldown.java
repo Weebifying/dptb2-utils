@@ -1,6 +1,7 @@
 package weebify.dptb2utils.gui.widget;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
@@ -69,7 +70,7 @@ public class DraggableItemCooldown extends ClickableWidget {
 
             int x = alignLeft ? getX() + padding : getX() - padding - 16;
             int y = getY() + padding + i * lineHeight;
-            context.drawTexture(RenderLayer::getGuiTextured, item.texture, x, y, 0, 0, 16, 16, 16, 16);
+            context.drawTexture(RenderPipelines.GUI_TEXTURED, item.texture, x, y, 0, 0, 16, 16, 16, 16);
 
             int barWidth = (int) (0.2 * ItemCooldownManager.Items.NAME_MAP.get(itemName).cooldown);
             int barHeight = 8;

@@ -51,8 +51,8 @@ public class ExternalIndicatorManager {
         try {
             Files.copy(file.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-            NativeImage image = NativeImage.read((new FileInputStream(dest)));
-            NativeImageBackedTexture texture = new NativeImageBackedTexture(image);
+            NativeImage image = NativeImage.read(new FileInputStream(dest));
+            NativeImageBackedTexture texture = new NativeImageBackedTexture(() -> String.format("external/%s", fileName), image);
             Identifier id = Identifier.of(DPTB2Utils.MOD_ID, String.format("external/%s", fileName));
 
             registerTexture(id, texture);
