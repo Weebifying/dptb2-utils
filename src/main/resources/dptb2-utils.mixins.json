@@ -10,6 +10,11 @@
   },
   "client": [
     "ChatHudMixin",
+    "DrawContextInvoker",
+    "EntityRendererMixin",
     "PlayerListHudMixin"
-    ]
+  ],
+  "mixins": [
+    "TextVisitFactoryMixin"
+  ]
 }

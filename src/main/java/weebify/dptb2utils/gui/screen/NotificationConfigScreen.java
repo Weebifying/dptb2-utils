@@ -19,8 +19,8 @@ public class NotificationConfigScreen extends Screen {
 
     @Override
     protected void init() {
-        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Don't Delay Sounds: %s", mod.getBoolNotifs("dontDelaySfx") ? "ON" : "OFF")), (btn) -> {
-            btn.setMessage(Text.of(String.format("Don't Delay Sounds: %s", !mod.setBoolNotifs("dontDelaySfx", !mod.getBoolNotifs("dontDelaySfx")) ? "ON" : "OFF")));
+        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Don't Delay Sounds: %s", mod.getBoolConfig("notifs.dontDelaySfx") ? "ON" : "OFF")), (btn) -> {
+            btn.setMessage(Text.of(String.format("Don't Delay Sounds: %s", mod.toggleBoolConfig("notifs.dontDelaySfx") ? "ON" : "OFF")));
         }).dimensions(this.width/2 - 80 - 75, 75, 150, 20).build());
 
 

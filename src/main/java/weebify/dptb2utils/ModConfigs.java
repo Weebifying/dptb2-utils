@@ -2,6 +2,7 @@ package weebify.dptb2utils;
 
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
@@ -24,9 +25,45 @@ public class ModConfigs {
     public static final Map<String, JsonElement> itemCooldownDefaultMap = new LinkedHashMap<>();
     public static final Map<String, JsonElement> waypointsDefaultMap = new LinkedHashMap<>();
 
-    static <T> void createNewConfig(Map<String, JsonElement> map, Map<String, JsonElement> defaultMap, String key, String defaultValue, Class<T> clazz) {
+    public static Map<String, Class<?>> propertyTypes = new LinkedHashMap<>();
+
+    @Nullable
+    private Map<String, JsonElement>[] getMap(String prop) {
+        String category = prop.split("\\.")[0];
+        /*
+        switch (category) {
+            case "others":
+                return new Map[]{othersMap, othersDefaultMap};
+            case "notifs":
+                return new Map[]{notifsMap, notifsDefaultMap};
+            case "buttonTimer":
+                return new Map[]{buttonTimerMap, buttonTimerDefaultMap};
+            case "itemCooldown":
+                return new Map[]{itemCooldownMap, itemCooldownDefaultMap};
+            case "waypoints":
+                return new Map[]{waypointsMap, waypointsDefaultMap};
+            default:
+                return null;
+        }
+        */
+        return switch (category) {
+            case "others" -> new Map[]{othersMap, othersDefaultMap};
+            case "notifs" -> new Map[]{notifsMap, notifsDefaultMap};
+            case "buttonTimer" -> new Map[]{buttonTimerMap, buttonTimerDefaultMap};
+            case "itemCooldown" -> new Map[]{itemCooldownMap, itemCooldownDefaultMap};
+            case "waypoints" -> new Map[]{waypointsMap, waypointsDefaultMap};
+            default -> null;
+        };
+    }
+
+    private <T> void createNewConfig(String prop, String defaultValue, Class<T> clazz) {
+        String key = prop.split("\\.")[1];
+        Map<String, JsonElement>[] maps = getMap(prop);
+        Map<String, JsonElement> map = maps[0];
+        Map<String, JsonElement> defaultMap = maps[1];
         Type type = TypeToken.get(clazz).getType();
 
+        propertyTypes.put(prop, clazz);
         try {
             T TDefaultValue = DPTB2Utils.GSON.fromJson(defaultValue, type);
             map.put(key, DPTB2Utils.GSON.toJsonTree(TDefaultValue));
@@ -38,33 +75,77 @@ public class ModConfigs {
     }
 
     public ModConfigs() {
-        createNewConfig(notifsMap, notifsDefaultMap, "shopUpdate", "false", Boolean.class);
-        createNewConfig(notifsMap, notifsDefaultMap, "bootsCollected", "false", Boolean.class);
-        createNewConfig(notifsMap, notifsDefaultMap, "slimeBoots", "true", Boolean.class);
-        createNewConfig(notifsMap, notifsDefaultMap, "doorSwitch", "false", Boolean.class);
-        createNewConfig(notifsMap, notifsDefaultMap, "buttonMayhem", "false", Boolean.class);
-        createNewConfig(notifsMap, notifsDefaultMap, "buttonDisable", "false", Boolean.class);
-        createNewConfig(notifsMap, notifsDefaultMap, "buttonImmunity", "false", Boolean.class);
+        createNewConfig("notifs.shopUpdate", "false", Boolean.class);
+        createNewConfig("notifs.bootsCollected", "false", Boolean.class);
+        createNewConfig("notifs.slimeBoots", "true", Boolean.class);
+        createNewConfig("notifs.doorSwitch", "false", Boolean.class);
+        createNewConfig("notifs.buttonMayhem", "false", Boolean.class);
+        createNewConfig("notifs.buttonDisable", "false", Boolean.class);
+        createNewConfig("notifs.buttonImmunity", "false", Boolean.class);
+        createNewConfig("notifs.dontDelaySfx", "false", Boolean.class);
 
-        createNewConfig(notifsMap, notifsDefaultMap, "dontDelaySfx", "false", Boolean.class);
+        createNewConfig("others.autoCheer", "false", Boolean.class);
+        createNewConfig("others.discordRamper", "false", Boolean.class);
+        createNewConfig("others.dptbotHost", "87.106.101.66", String.class);
+        createNewConfig("others.dptbotPort", "6212", Integer.class);
+        createNewConfig("others.broadcastToast", "true", Boolean.class);
+        createNewConfig("others.broadcastChat", "true", Boolean.class);
+        createNewConfig("others.woahSecretSetting", "false", Boolean.class);
+        createNewConfig("others.indicatorPath", "textures/indicator/icon.png", String.class);
+        createNewConfig("others.incognito", "false", Boolean.class);
+        createNewConfig("others.discColor", "5555FF", String.class);
+        createNewConfig("others.wptbColor", "D2FFC8", String.class);
 
-        createNewConfig(othersMap, othersDefaultMap, "autoCheer", "false", Boolean.class);
-        createNewConfig(othersMap, othersDefaultMap, "discordRamper", "false", Boolean.class);
-        createNewConfig(othersMap, othersDefaultMap, "dptbotHost", "87.106.101.66", String.class);
-        createNewConfig(othersMap, othersDefaultMap, "dptbotPort", "6212", Integer.class);
-        createNewConfig(othersMap, othersDefaultMap, "broadcastToast", "true", Boolean.class);
-        createNewConfig(othersMap, othersDefaultMap, "broadcastChat", "true", Boolean.class);
+        createNewConfig("buttonTimer.enabled", "false", Boolean.class);
+        createNewConfig("buttonTimer.textShadow", "false", Boolean.class);
+        createNewConfig("buttonTimer.renderBackground", "true", Boolean.class);
+        createNewConfig("buttonTimer.posX", "0.5", Float.class);
+        createNewConfig("buttonTimer.posY", "0.5", Float.class);
 
-        createNewConfig(buttonTimerMap, buttonTimerDefaultMap, "enabled", "false", Boolean.class);
-        createNewConfig(buttonTimerMap, buttonTimerDefaultMap, "textShadow", "false", Boolean.class);
-        createNewConfig(buttonTimerMap, buttonTimerDefaultMap, "renderBackground", "true", Boolean.class);
-        createNewConfig(buttonTimerMap, buttonTimerDefaultMap, "posX", "0.5", Float.class);
-        createNewConfig(buttonTimerMap, buttonTimerDefaultMap, "posY", "0.5", Float.class);
+        createNewConfig("itemCooldown.enabled", "false", Boolean.class);
+        createNewConfig("itemCooldown.textShadow", "false", Boolean.class);
+        createNewConfig("itemCooldown.renderBackground", "true", Boolean.class);
+        createNewConfig("itemCooldown.textAlign", "left", String.class);
+        createNewConfig("itemCooldown.posX", "0", Float.class);
+        createNewConfig("itemCooldown.posY", "0.5", Float.class);
 
-        createNewConfig(itemCooldownMap, itemCooldownDefaultMap, "enabled", "false", Boolean.class);
-        createNewConfig(itemCooldownMap, itemCooldownDefaultMap, "posX", "0", Float.class);
-        createNewConfig(itemCooldownMap, itemCooldownDefaultMap, "posY", "0.5", Float.class);
+        createNewConfig("waypoints.enabled", "false", Boolean.class);
+    }
 
-        createNewConfig(waypointsMap, waypointsDefaultMap, "enabled", "false", Boolean.class);
+    public <T> T getConfig(String prop) {
+        Map<String, JsonElement>[] maps = getMap(prop);
+        String key = prop.split("\\.")[1];
+        if (maps == null) return null;
+        Map<String, JsonElement> map = maps[0];
+        Map<String, JsonElement> defaultMap = maps[1];
+        Class<T> clazz = (Class<T>) propertyTypes.get(prop);
+
+        if (!map.containsKey(key)) {
+            map.put(key, defaultMap.get(key));
+        }
+        return DPTB2Utils.GSON.fromJson(map.get(key), clazz);
+    }
+
+    public <T> T setConfig(String prop, T value) {
+        Map<String, JsonElement>[] maps = getMap(prop);
+        String key = prop.split("\\.")[1];
+        if (maps == null) return null;
+        Map<String, JsonElement> map = maps[0];
+        Map<String, JsonElement> defaultMap = maps[1];
+        Class<T> clazz = (Class<T>) propertyTypes.get(prop);
+
+        JsonElement jsonValue = DPTB2Utils.GSON.toJsonTree(value, clazz);
+        JsonElement oldValue = map.put(key, jsonValue);
+        return oldValue == null ? null : DPTB2Utils.GSON.fromJson(oldValue, clazz);
+    }
+
+    public <T> T getDefaultConfig(String prop) {
+        Map<String, JsonElement>[] maps = getMap(prop);
+        String key = prop.split("\\.")[1];
+        if (maps == null) return null;
+        Map<String, JsonElement> defaultMap = maps[1];
+        Class<T> clazz = (Class<T>) propertyTypes.get(prop);
+
+        return DPTB2Utils.GSON.fromJson(defaultMap.get(key), clazz);
     }
 }

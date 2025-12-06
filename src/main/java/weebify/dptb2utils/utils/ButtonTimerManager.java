@@ -1,8 +1,19 @@
 package weebify.dptb2utils.utils;
 
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Colors;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
+import weebify.dptb2utils.DPTB2Utils;
+import weebify.dptb2utils.gui.screen.ButtonTimerConfigScreen;
 
 public class ButtonTimerManager {
     public static int buttonTimer = -1;
@@ -39,5 +50,56 @@ public class ButtonTimerManager {
         else if (ticks >= 240) return timeText.formatted(Formatting.GOLD);
         else if (ticks >= 200) return timeText.formatted(Formatting.YELLOW);
         return timeText;
+    }
+
+    public static void initialize() {
+        ClientTickEvents.START_CLIENT_TICK.register((mc) -> {
+            if (DPTB2Utils.getInstance().isInDPTB2) {
+                if (ButtonTimerManager.buttonTimer >= 0) {
+                    ButtonTimerManager.buttonTimer += 1;
+                }
+            }
+        });
+
+//        HudLayerRegistrationCallback.EVENT.register((drawer) -> {
+//            drawer.attachLayerAfter(
+//                    IdentifiedLayer.HOTBAR_AND_BARS,
+//                    Identifier.of(DPTB2Utils.MOD_ID, "button_timer"),
+//                    ButtonTimerManager::renderButtonTimer
+//            );
+//        });
+        HudRenderCallback.EVENT.register(ButtonTimerManager::renderButtonTimer);
+    }
+
+    private static void renderButtonTimer(DrawContext drawContext, RenderTickCounter renderTickCounter) {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        DPTB2Utils mod = DPTB2Utils.getInstance();
+
+        if (mod.isInDPTB2 && mod.getBoolConfig("buttonTimer.enabled") && !(mc.currentScreen instanceof ButtonTimerConfigScreen)) {
+            int width = mc.getWindow().getScaledWidth();
+            int height = mc.getWindow().getScaledHeight();
+            int posX = (int)(mod.getFloatConfig("buttonTimer.posX")*width);
+            int posY = (int)(mod.getFloatConfig("buttonTimer.posY")*height);
+
+            Text text = ButtonTimerManager.tickToTime(ButtonTimerManager.buttonTimer);
+            int textWidth = mc.textRenderer.getWidth(text);
+            if (mod.getBoolConfig("buttonTimer.renderBackground")) {
+                drawContext.fill(
+                        posX,
+                        posY,
+                        posX + textWidth + 8,
+                        posY + 15,
+                        0x63000000 // ballin it, worked ig
+                );
+            }
+
+            drawContext.drawText(
+                    mc.textRenderer, text,
+                    posX + 4,
+                    posY + 4,
+                    Colors.WHITE,
+                    mod.getBoolConfig("buttonTimer.textShadow")
+            );
+        }
     }
 }
