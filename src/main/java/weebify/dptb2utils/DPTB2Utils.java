@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.renderer.GlStateManager;
@@ -24,7 +25,6 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import org.apache.logging.log4j.LogManager;
@@ -32,11 +32,9 @@ import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Unique;
 import weebify.dptb2utils.gui.screen.GuiButtonTimerConfig;
 import weebify.dptb2utils.gui.screen.GuiModMenu;
-import weebify.dptb2utils.utils.ButtonTimerManager;
-import weebify.dptb2utils.utils.DelayedTask;
-import weebify.dptb2utils.utils.DiscordWebSocketClient;
-import weebify.dptb2utils.utils.NotificationManager;
+import weebify.dptb2utils.utils.*;
 
+import javax.swing.*;
 import java.io.*;
 import java.net.URI;
 import java.net.URL;
@@ -45,7 +43,7 @@ import java.util.*;
 @Mod(modid = DPTB2Utils.MOD_ID, version = DPTB2Utils.VERSION)
 public class DPTB2Utils {
     public static final String MOD_ID = "dptb2-utils";
-    public static final String VERSION = "1.1.3";
+    public static final String VERSION = "1.2.01";
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
     public ModConfigs config;
@@ -56,6 +54,7 @@ public class DPTB2Utils {
     public boolean isRamper = false;
     public boolean tryingToConnect = false;
     public boolean checkedJoin = false;
+    public boolean isToggleBc = false;
 
     public List<DelayedTask> scheduledTasks = new ArrayList<>();
 
@@ -73,6 +72,8 @@ public class DPTB2Utils {
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
+        TinyFDLoader.initialize();
+
         instance = this;
         this.config = new ModConfigs();
         this.saveFile = new File(mc.mcDataDir + "/config", "weebify_dptb2utils.json");
@@ -91,7 +92,29 @@ public class DPTB2Utils {
         this.initializeCommands();
         MinecraftForge.EVENT_BUS.register(this);
 
+        ButtonTimerManager.initialize();
+        ItemCooldownManager.initialize();
+        ExternalIndicatorManager.initialize();
+
         this.fetchDPTBotIP();
+
+        // for external indicator file chooser
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            LOGGER.error("Failed to set Swing look and feel!", e);
+        }
+    }
+
+    public static int hexToInt(String hex) {
+        if (hex.startsWith("#")) {
+            hex = hex.substring(1);
+        }
+        try {
+            return ((int) Long.parseLong(hex, 16)) | 0xFF000000;
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     public void scheduleTask(int ticks, Runnable task) {
@@ -105,7 +128,6 @@ public class DPTB2Utils {
         ButtonTimerManager.isDisabled = false;
         ButtonTimerManager.chaosCounter = 0;
     }
-
 
     public void fetchDPTBotIP() {
         new Thread(() -> {
@@ -123,9 +145,9 @@ public class DPTB2Utils {
                 String address = sb.toString().trim();
                 String[] split = address.split(":");
                 if (split.length == 2) {
-                    this.setDPTBotHost(split[0]);
-                    this.setDPTBotPort(Integer.parseInt(split[1]));
-                    LOGGER.info("Fetched DPTBot IP: {}:{}", this.getDPTBotHost(), this.getDPTBotPort());
+                    this.setStringConfig("others.dptbotHost", split[0]);
+                    this.setIntConfig("others.dptbotPort", Integer.parseInt(split[1]));
+                    LOGGER.info("Fetched DPTBot IP: {}:{}", this.getStringConfig("others.dptbotHost"), this.getIntConfig("others.dptbotPort"));
                 } else {
                     LOGGER.error("Failed to fetch DPTBot IP! Invalid format: {}", address);
                 }
@@ -142,12 +164,6 @@ public class DPTB2Utils {
             if (this.saveFile.lastModified() > this.lastSaved) {
                 this.loadSettings();
                 this.lastSaved = this.saveFile.lastModified();
-            }
-
-            if (this.isInDPTB2) {
-                if (ButtonTimerManager.buttonTimer >= 0) {
-                    ButtonTimerManager.buttonTimer += 1;
-                }
             }
         } else if (event.phase == TickEvent.Phase.END) {
             scheduledTasks.removeIf(DelayedTask::tick);
@@ -171,7 +187,6 @@ public class DPTB2Utils {
             this.isInDPTB2 = false;
             return;
         }
-        LOGGER.info("server ip: {}", serverData.serverIP);
 
         if (!serverData.serverIP.toLowerCase().contains("hypixel.net")) {
             this.isInDPTB2 = false;
@@ -198,9 +213,7 @@ public class DPTB2Utils {
 
                 String content = s.toString().toLowerCase().replaceAll("§\\w", "").trim();
 
-                LOGGER.info("title: {}", title);
-                LOGGER.info("content: {}", content);
-                this.isInDPTB2 = title.contains("housing") && content.contains("don't press the button 2");
+                this.isInDPTB2 = content.contains("don't press the button 2") && content.contains("by cyborg023");
 
                 if (this.isInDPTB2) NotificationManager.getInstance().add("DPTB2 Utils", "You are in Don't Press The Button 2!", 0xD2FFC8, "random.levelup");
                 this.refreshRamperStatus();
@@ -216,39 +229,12 @@ public class DPTB2Utils {
        }
     }
 
-    @SubscribeEvent
-    public void onRenderOverlay(RenderGameOverlayEvent.Post event) {
-        if (event.type == RenderGameOverlayEvent.ElementType.ALL && this.isInDPTB2 && this.getButtonTimerEnabled() && !(mc.currentScreen instanceof GuiButtonTimerConfig)) {
-            ScaledResolution scaledRes = new ScaledResolution(mc);
-            int width = scaledRes.getScaledWidth();
-            int height = scaledRes.getScaledHeight();
-            String text = ButtonTimerManager.tickToTime(ButtonTimerManager.buttonTimer);
-            int textWidth = mc.fontRendererObj.getStringWidth(text);
-            if (this.getButtonTimerRenderBG()) {
-                Gui.drawRect(
-                        (int) (width*this.getButtonTimerConfigs("posX", Float.class)),
-                        (int) (height*this.getButtonTimerConfigs("posY", Float.class)),
-                        (int) (width*this.getButtonTimerConfigs("posX", Float.class)) + textWidth + 8,
-                        (int) (height*this.getButtonTimerConfigs("posY", Float.class)) + 15,
-                        0x63000000 // ballin it, worked ig
-                );
-            }
 
-            mc.fontRendererObj.drawString(
-                    text,
-                    (int) (width*this.getButtonTimerConfigs("posX", Float.class)) + 4,
-                    (int) (height*this.getButtonTimerConfigs("posY", Float.class)) + 4,
-                    0xFFFFFFFF,
-                    this.getButtonTimerTextShadow()
-            );
-
-            NotificationManager.getInstance().render(event.resolution);
-        }
-    }
 
     private void initializeCommands() {
         ClientCommandHandler.instance.registerCommand(new CommandModMenu());
         ClientCommandHandler.instance.registerCommand(new CommandBroadcast());
+        ClientCommandHandler.instance.registerCommand(new CommandTogglebc());
     }
 
     public static class CommandModMenu extends CommandBase {
@@ -262,14 +248,8 @@ public class DPTB2Utils {
         }
         @Override
         public void processCommand(ICommandSender sender, String[] args) {
-            MinecraftForge.EVENT_BUS.register(this);
-        }
-        @SubscribeEvent
-        public void onClientTick(TickEvent.ClientTickEvent event) {
-            if (event.phase == TickEvent.Phase.START) {
-                MinecraftForge.EVENT_BUS.unregister(this);
-                Minecraft.getMinecraft().displayGuiScreen(new GuiModMenu(DPTB2Utils.getInstance()));
-            }
+            DPTB2Utils mod = DPTB2Utils.getInstance();
+            mod.scheduleTask(1, () -> Minecraft.getMinecraft().displayGuiScreen(new GuiModMenu(mod)));
         }
         public int getRequiredPermissionLevel() {
             return 0;
@@ -297,22 +277,48 @@ public class DPTB2Utils {
         @Override
         public void processCommand(ICommandSender sender, String[] args) {
             DPTB2Utils mod = DPTB2Utils.getInstance();
-            if (mc.thePlayer != null) {
-                if (mod.websocketClient != null && mod.websocketClient.isOpen()) {
-                    String msg = String.join(" ", args);
-                    try {
-                        mod.websocketClient.sendModMessage("playerBroadcast", DPTB2Utils.mapOf("text", msg, "name", mc.thePlayer.getGameProfile().getName()));
-                        if (!mod.getBroadcastChat()) {
-                            mc.thePlayer.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Broadcast message: " + msg));
-                        }
-                    } catch (Exception e) {
-                        LOGGER.error("Failed to send broadcast message!", e);
-                        mc.thePlayer.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + "Failed to send broadcast message!"));
+            mod.handleBroadcast(args);
+        }
+        public int getRequiredPermissionLevel() {
+            return 0;
+        }
+        public boolean canCommandSenderUseCommand(ICommandSender sender) {
+            return true;
+        }
+    }
+
+    public void handleBroadcast(String[] args) {
+        if (mc.thePlayer != null) {
+            if (this.websocketClient != null && this.websocketClient.isOpen()) {
+                String msg = String.join(" ", args);
+                try {
+                    this.websocketClient.sendModMessage("playerBroadcast", DPTB2Utils.mapOf("text", msg, "name", mc.thePlayer.getGameProfile().getName(),"private", this.getBoolConfig("others.incognito")));
+                    if (!this.getBoolConfig("others.broadcastChat")) {
+                        mc.thePlayer.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Broadcast message: " + msg));
                     }
-                } else {
-                    mc.thePlayer.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + "Not connected to DPTBot!"));
+                } catch (Exception e) {
+                    LOGGER.error("Failed to send broadcast message!", e);
+                    mc.thePlayer.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + "Failed to send broadcast message!"));
                 }
+            } else {
+                mc.thePlayer.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + "Not connected to DPTBot!"));
             }
+        }
+    }
+
+    public static class CommandTogglebc extends CommandBase {
+        @Override
+        public String getCommandName() {
+            return "togglebc";
+        }
+        @Override
+        public String getCommandUsage(ICommandSender sender) {
+            return "/" +getCommandName();
+        }
+        @Override
+        public void processCommand(ICommandSender sender, String[] args) {
+            DPTB2Utils.getInstance().isToggleBc = !DPTB2Utils.getInstance().isToggleBc;
+            Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("Automatic chat broadcast mode is now " + (DPTB2Utils.getInstance().isToggleBc ? "§a§lenabled§r!" : "§c§ldisabled§r!")));
         }
         public int getRequiredPermissionLevel() {
             return 0;
@@ -323,9 +329,9 @@ public class DPTB2Utils {
     }
 
     public void refreshRamperStatus() {
-        String host = this.getDPTBotHost();
-        int port = this.getDPTBotPort();
-        if (this.isInDPTB2 && this.getDiscordRamper()) {
+        String host = this.getStringConfig("others.dptbotHost");
+        int port = this.getIntConfig("others.dptbotPort");
+        if (this.isInDPTB2 && this.getBoolConfig("others.discordRamper")) {
             LOGGER.info("Attempting Websocket connection to ws://{}:{}", host, port);
             websocketClient = new DiscordWebSocketClient(String.format("ws://%s:%s", host, port));
             websocketClient.connect();
@@ -358,105 +364,64 @@ public class DPTB2Utils {
         }
     }
 
-    public <T> T getConfig(Map<String, JsonElement> map, Map<String, JsonElement> defaultMap, String key, Class<T> clazz) {
-        if (!map.containsKey(key)) {
-            map.put(key, defaultMap.get(key));
+    public <T> T getConfig(String prop) {
+        return this.config.getConfig(prop);
+    }
+    public boolean getBoolConfig(String prop) {
+        if (ModConfigs.propertyTypes.get(prop) != Boolean.class) {
+            throw new IllegalArgumentException("Property " + prop + " is not of type Boolean!");
         }
-        return GSON.fromJson(map.get(key), clazz);
+        return this.getConfig(prop);
     }
-    public <T> T setConfig(Map<String, JsonElement> map, String key, T value, Class<T> clazz) {
-        JsonElement jsonValue = GSON.toJsonTree(value, clazz);
-        JsonElement oldValue = map.put(key, jsonValue);
-        return GSON.fromJson(oldValue, clazz);
+    public int getIntConfig(String prop) {
+        if (ModConfigs.propertyTypes.get(prop) != Integer.class) {
+            throw new IllegalArgumentException("Property " + prop + " is not of type Integer!");
+        }
+        return this.getConfig(prop);
     }
-
-    public <T> T getNotifs(String key, Class<T> clazz) {
-        return this.getConfig(this.config.notifsMap, ModConfigs.notifsDefaultMap, key, clazz);
+    public float getFloatConfig(String prop) {
+        if (ModConfigs.propertyTypes.get(prop) != Float.class) {
+            throw new IllegalArgumentException("Property " + prop + " is not of type Float!");
+        }
+        return this.getConfig(prop);
     }
-    public <T> T getButtonTimerConfigs(String key, Class<T> clazz) {
-        return this.getConfig(this.config.buttonTimerMap, ModConfigs.buttonTimerDefaultMap, key, clazz);
-    }
-    public <T> T getItemCooldownConfigs(String key, Class<T> clazz) {
-        return this.getConfig(this.config.itemCooldownMap, ModConfigs.itemCooldownDefaultMap, key, clazz);
-    }
-    public boolean getAutoCheer() {
-        return this.getConfig(this.config.othersMap, ModConfigs.othersDefaultMap, "autoCheer", Boolean.class);
-    }
-    public boolean getDiscordRamper() {
-        return this.getConfig(this.config.othersMap, ModConfigs.othersDefaultMap, "discordRamper", Boolean.class);
-    }
-    public String getDPTBotHost() {
-        return this.getConfig(this.config.othersMap, ModConfigs.othersDefaultMap, "dptbotHost", String.class);
-    }
-    public int getDPTBotPort() {
-        return this.getConfig(this.config.othersMap, ModConfigs.othersDefaultMap, "dptbotPort", Integer.class);
-    }
-    public boolean getBroadcastToast() {
-        return this.getConfig(this.config.othersMap, ModConfigs.othersDefaultMap, "broadcastToast", Boolean.class);
-    }
-    public boolean getBroadcastChat() {
-        return this.getConfig(this.config.othersMap, ModConfigs.othersDefaultMap, "broadcastChat", Boolean.class);
+    public String getStringConfig(String prop) {
+        if (ModConfigs.propertyTypes.get(prop) != String.class) {
+            throw new IllegalArgumentException("Property " + prop + " is not of type String!");
+        }
+        return this.getConfig(prop);
     }
 
-    public boolean getBoolNotifs(String key) {
-        return this.getNotifs(key, Boolean.class);
+    public <T> T setConfig(String prop, T value) {
+        return this.config.setConfig(prop, value);
     }
-    public boolean getButtonTimerEnabled() {
-        return this.getButtonTimerConfigs("enabled", Boolean.class);
+    public boolean setBoolConfig(String prop, boolean value) {
+        if (ModConfigs.propertyTypes.get(prop) != Boolean.class) {
+            throw new IllegalArgumentException("Property " + prop + " is not of type Boolean!");
+        }
+        return this.setConfig(prop, value);
     }
-    public boolean getButtonTimerTextShadow() {
-        return this.getButtonTimerConfigs("textShadow", Boolean.class);
+    public int setIntConfig(String prop, int value) {
+        if (ModConfigs.propertyTypes.get(prop) != Integer.class) {
+            throw new IllegalArgumentException("Property " + prop + " is not of type Integer!");
+        }
+        return this.setConfig(prop, value);
     }
-    public boolean getButtonTimerRenderBG() {
-        return this.getButtonTimerConfigs("renderBackground", Boolean.class);
+    public float setFloatConfig(String prop, float value) {
+        if (ModConfigs.propertyTypes.get(prop) != Float.class) {
+            throw new IllegalArgumentException("Property " + prop + " is not of type Float!");
+        }
+        return this.setConfig(prop, value);
     }
-
-    public boolean getItemCooldownEnabled() {
-        return this.getItemCooldownConfigs("enabled", Boolean.class);
-    }
-
-    public boolean setAutoCheer(boolean value) {
-        return this.setConfig(this.config.othersMap, "autoCheer", value, Boolean.class);
-    }
-    public boolean setDiscordRamper(boolean value) {
-        return this.setConfig(this.config.othersMap, "discordRamper", value, Boolean.class);
-    }
-    public String setDPTBotHost(String value) {
-        return this.setConfig(this.config.othersMap, "dptbotHost", value, String.class);
-    }
-    public int setDPTBotPort(int value) {
-        return this.setConfig(this.config.othersMap, "dptbotPort", value, Integer.class);
-    }
-    public boolean setBroadcastToast(boolean value) {
-        return this.setConfig(this.config.othersMap, "broadcastToast", value, Boolean.class);
-    }
-    public boolean setBroadcastChat(boolean value) {
-        return this.setConfig(this.config.othersMap, "broadcastChat", value, Boolean.class);
+    public String setStringConfig(String prop, String value) {
+        if (ModConfigs.propertyTypes.get(prop) != String.class) {
+            throw new IllegalArgumentException("Property " + prop + " is not of type String!");
+        }
+        return this.setConfig(prop, value);
     }
 
-    public <T> T setNotifs(String key, T value, Class<T> clazz) {
-        return this.setConfig(this.config.notifsMap, key, value, clazz);
-    }
-    public <T> T setButtonTimerConfigs(String key, T value, Class<T> clazz) {
-        return this.setConfig(this.config.buttonTimerMap, key, value, clazz);
-    }
-    public <T> T setItemCooldownConfigs(String key, T value, Class<T> clazz) {
-        return this.setConfig(this.config.itemCooldownMap, key, value, clazz);
-    }
-    public boolean setBoolNotifs(String key, boolean value) {
-        return this.setNotifs(key, value, Boolean.class);
-    }
-    public boolean setButtonTimerEnabled(boolean value) {
-        return this.setButtonTimerConfigs("enabled", value, Boolean.class);
-    }
-    public boolean setButtonTimerTextShadow(boolean value) {
-        return this.setButtonTimerConfigs("textShadow", value, Boolean.class);
-    }
-    public boolean setButtonTimerRenderBG(boolean value) {
-        return this.setButtonTimerConfigs("renderBackground", value, Boolean.class);
-    }
-    public boolean setItemCooldownEnabled(boolean value) {
-        return this.setItemCooldownConfigs("enabled", value, Boolean.class);
+    public boolean toggleBoolConfig(String prop) {
+        return !this.setBoolConfig(prop, !this.getBoolConfig(prop));
     }
 
     public static <K, V> Map<K, V> mapOf(K k1, V v1) {

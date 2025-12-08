@@ -5,10 +5,15 @@
   "refmap": "mixins.dptb2-utils.refmap.json",
   "compatibilityLevel": "JAVA_8",
   "injectors": {
-    "defaultRequire": 1
+    "defaultRequire": 0
   },
   "client": [
     "GuiNewChatMixin",
-    "GuiPlayerTabOverlayMixin"
+    "GuiPlayerTabOverlayMixin",
+    "FontRendererMixin",
+    "RendererLivingEntityMixin",
+    "compat.PolyPatcher_FontRendererHookMixin",
+    "EntityPlayerSPMixin",
+    "RenderMixin"
   ]
 }

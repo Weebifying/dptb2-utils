@@ -44,13 +44,13 @@ public class DiscordWebSocketClient extends WebSocketClient {
         Integer col = (Integer) data.get("color");
         Minecraft.getMinecraft().addScheduledTask(() -> {
             if (type.equalsIgnoreCase("delegate")) {
-                if (mod.getDiscordRamper() && MC.thePlayer != null) {
+                if (mod.getBoolConfig("others.discordRamper") && MC.thePlayer != null) {
                     notifManager.add("DPTBot", text, col != null ? col : 0xFFC8FFC8, "mob.bat.takeoff");
                     mod.isRamper = true;
                     this.sendModMessage("confirm", DPTB2Utils.mapOf("text", MC.thePlayer.getGameProfile().getName()));
                 }
             } else if (type.equalsIgnoreCase("revoke")) {
-                if (mod.getDiscordRamper()) {
+                if (mod.getBoolConfig("others.discordRamper")) {
                     notifManager.add("DPTBot", text, col != null ? col : 0xFFFFC8C8, "mob.bat.takeoff");
                     mod.isRamper = false;
                 }
@@ -60,9 +60,9 @@ public class DiscordWebSocketClient extends WebSocketClient {
 
                 StringBuilder sb = new StringBuilder("§8[");
                 if (source.equalsIgnoreCase("DISC")) {
-                    sb.append("§9DISC§r").append("§8]§r ").append(String.format("§9%s§r", name));
+                    sb.append("§xDISC§r").append("§8]§r ").append(String.format("§x%s§r", name));
                 } else if (source.equalsIgnoreCase("WPTB")) {
-                    sb.append("§6WPTB§r").append("§8]§r ").append(String.format("§6%s§r", name));
+                    sb.append("§yWPTB§r").append("§8]§r ").append(String.format("§y%s§r", name));
                 } else if (source.equalsIgnoreCase("CONSOLE")) {
                     sb.append("§cCONSOLE§r").append("§8]§r ").append(String.format("§c%s§r", name));
                 } else {
@@ -70,14 +70,14 @@ public class DiscordWebSocketClient extends WebSocketClient {
                 }
                 sb.append(": ").append(text);
 
-                if (mod.getBroadcastToast()) {
-                    int color = source.equalsIgnoreCase("DISC") ? 0xFF5555FF : (source.equalsIgnoreCase("WPTB") ? 0xFFFFAA00 : (source.equalsIgnoreCase("CONSOLE") ? 0xFFFF5555 : 0xFFFFFFFF));
+                if (mod.getBoolConfig("others.broadcastToast")) {
+                    int color = source.equalsIgnoreCase("DISC") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.discColor")) : (source.equalsIgnoreCase("WPTB") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.wptbColor")) : (source.equalsIgnoreCase("CONSOLE") ? 0xFFFF5555 : 0xFFFFFFFF));
                     notifManager.add(String.format("[%s] %s", source, name), text, col != null ? col : color, "note.pling");
                 }
 
-                if (MC.thePlayer != null && mod.getBroadcastChat()) {
+                if (MC.thePlayer != null && mod.getBoolConfig("others.broadcastChat")) {
                     MC.thePlayer.addChatMessage(new ChatComponentText(sb.toString()));
-                    if (!mod.getBroadcastToast()) {
+                    if (!mod.getBoolConfig("others.broadcastToast")) {
                         MC.thePlayer.playSound("note.pling", 1, 1);
                     }
                 }
@@ -126,9 +126,9 @@ public class DiscordWebSocketClient extends WebSocketClient {
     public void retryConnection() {
         mod.tryingToConnect = true;
         mod.scheduleTask( 1200, () -> {
-            if ((mod.websocketClient == null || mod.websocketClient.isClosed()) & mod.getDiscordRamper() && mod.tryingToConnect && mod.isInDPTB2) {
-                String host = mod.getDPTBotHost();
-                int port = mod.getDPTBotPort();
+            if ((mod.websocketClient == null || mod.websocketClient.isClosed()) & mod.getBoolConfig("others.discordRamper") && mod.tryingToConnect && mod.isInDPTB2) {
+                String host = mod.getStringConfig("others.dptbotHost");
+                int port = mod.getIntConfig("others.dptbotPort");
 
                 DPTB2Utils.LOGGER.info("Attempting Websocket connection to ws://{}:{}", host, port);
                 mod.websocketClient = new DiscordWebSocketClient(String.format("ws://%s:%d", host, port));

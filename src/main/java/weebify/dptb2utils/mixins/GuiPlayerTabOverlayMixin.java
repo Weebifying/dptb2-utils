@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import weebify.dptb2utils.DPTB2Utils;
+import weebify.dptb2utils.utils.ExternalIndicatorManager;
 
 import java.util.List;
 
@@ -67,8 +68,25 @@ public class GuiPlayerTabOverlayMixin {
     private void renderPlayerlistInject(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn, CallbackInfo ci) {
         if (DPTB2Utils.getInstance().websocketClient != null && DPTB2Utils.getInstance().websocketClient.clientsList.contains(currentGameProfile.getName())) {
             isClient = true;
-            Minecraft.getMinecraft().getTextureManager().bindTexture(new ResourceLocation(DPTB2Utils.MOD_ID, "icon.png"));
-            Gui.drawScaledCustomSizeModalRect(currentJ2+9, currentK2, 0, 0, 256, 256, 9, 9, 256, 256);
+            Minecraft.getMinecraft().getTextureManager().bindTexture(new ResourceLocation(DPTB2Utils.MOD_ID, DPTB2Utils.getInstance().getStringConfig("others.indicatorPath")));
+
+            if (ExternalIndicatorManager.image != null) {
+                Gui.drawScaledCustomSizeModalRect(
+                        currentJ2 + 9, currentK2,
+                        0, 0,
+                        ExternalIndicatorManager.image.getWidth(), ExternalIndicatorManager.image.getHeight(),
+                        9, 9,
+                        ExternalIndicatorManager.image.getWidth(), ExternalIndicatorManager.image.getHeight()
+                );
+            } else {
+                Gui.drawScaledCustomSizeModalRect(
+                        currentJ2 + 9, currentK2,
+                        0, 0,
+                        256, 256,
+                        9, 9,
+                        256, 256
+                );
+            }
         } else {
             isClient = false;
         }

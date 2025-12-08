@@ -18,7 +18,7 @@ public class GuiNotificationConfig extends GuiScreen {
     public void initGui() {
         this.buttonList.clear();
 
-        this.buttonList.add(new GuiButton(1, width / 2 - 80 - 75, height / 2 - 100 - 10, 150, 20, String.format("Don't Delay Sounds: %s", this.mod.getBoolNotifs("dontDelaySfx") ? "ON" : "OFF")));
+        this.buttonList.add(new GuiButton(1, width / 2 - 80 - 75, height / 2 - 100 - 10, 150, 20, String.format("Don't Delay Sounds: %s", mod.getBoolConfig("notifs.dontDelaySfx") ? "ON" : "OFF")));
         this.buttonList.add(new GuiButton(999, width / 2 - 75, height - 30 - 10, 150, 20, I18n.format("gui.done")));
     }
 
@@ -36,7 +36,7 @@ public class GuiNotificationConfig extends GuiScreen {
     protected void actionPerformed(GuiButton button) {
         switch(button.id) {
             case 1:
-                button.displayString = String.format("Don't Delay Sounds: %s", !this.mod.setBoolNotifs("dontDelaySfx", !this.mod.getBoolNotifs("dontDelaySfx")) ? "ON" : "OFF");
+                button.displayString = String.format("Don't Delay Sounds: %s", mod.toggleBoolConfig("notifs.dontDelaySfx") ? "ON" : "OFF");
                 break;
             case 999:
                 this.mc.displayGuiScreen(this.parent);

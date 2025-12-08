@@ -4,7 +4,7 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import weebify.dptb2utils.DPTB2Utils;
-import weebify.dptb2utils.gui.widget.DraggableTextWidget;
+import weebify.dptb2utils.gui.widget.DraggableButtonTimer;
 import weebify.dptb2utils.utils.ButtonTimerManager;
 
 import java.io.IOException;
@@ -13,7 +13,7 @@ import java.util.Random;
 public class GuiButtonTimerConfig extends GuiScreen {
     private final DPTB2Utils mod;
     public GuiScreen parent;
-    public DraggableTextWidget textWidget;
+    public DraggableButtonTimer textWidget;
 
     public GuiButtonTimerConfig(GuiScreen parent, DPTB2Utils mod) {
         this.parent = parent;
@@ -24,10 +24,14 @@ public class GuiButtonTimerConfig extends GuiScreen {
     public void initGui() {
         this.buttonList.clear();
 
-        this.buttonList.add(new GuiButton(1, width / 2 - 80 - 75, height / 2 - 100 - 10, 150, 20, String.format("Enabled: %s", this.mod.getButtonTimerEnabled() ? "ON" : "OFF")));
-        this.buttonList.add(new GuiButton(2, width / 2 + 80 - 75, height / 2 - 100 - 10, 150, 20, String.format("Text Shadow: %s", this.mod.getButtonTimerTextShadow() ? "ON" : "OFF")));
-        this.buttonList.add(new GuiButton(3, width / 2 - 80 - 75, height / 2 - 75 - 10, 150, 20, String.format("Render Background: %s", this.mod.getButtonTimerRenderBG() ? "ON" : "OFF")));
-        this.textWidget = new DraggableTextWidget(this.mod.getButtonTimerConfigs("posX", Float.class), this.mod.getButtonTimerConfigs("posY", Float.class), ButtonTimerManager.tickToTime(this.mod.isInDPTB2 && ButtonTimerManager.buttonTimer >= 0 ? ButtonTimerManager.buttonTimer : (new Random()).nextInt(401)));
+        this.buttonList.add(new GuiButton(1, width / 2 - 80 - 75, height / 2 - 100 - 10, 150, 20, String.format("Enabled: %s", mod.getBoolConfig("buttonTimer.enabled") ? "ON" : "OFF")));
+        this.buttonList.add(new GuiButton(2, width / 2 + 80 - 75, height / 2 - 100 - 10, 150, 20, String.format("Text Shadow: %s", mod.getBoolConfig("buttonTimer.textShadow") ? "ON" : "OFF")));
+        this.buttonList.add(new GuiButton(3, width / 2 - 80 - 75, height / 2 - 75 - 10, 150, 20, String.format("Render Background: %s", mod.getBoolConfig("buttonTimer.renderBackground") ? "ON" : "OFF")));
+        this.textWidget = new DraggableButtonTimer(
+                mod.getFloatConfig("buttonTimer.posX"),
+                mod.getFloatConfig("buttonTimer.posY"),
+                ButtonTimerManager.tickToTime(this.mod.isInDPTB2 && ButtonTimerManager.buttonTimer >= 0 ? ButtonTimerManager.buttonTimer : (new Random()).nextInt(401))
+        );
         this.textWidget.updatePosition(width, height);
         this.buttonList.add(this.textWidget);
         this.buttonList.add(new GuiButton(999, width / 2 - 75, height - 30 - 10, 150, 20, I18n.format("gui.done")));
@@ -40,26 +44,26 @@ public class GuiButtonTimerConfig extends GuiScreen {
 
     @Override
     public void onGuiClosed() {
-        this.mod.setButtonTimerConfigs("posX", this.textWidget.relX, Float.class);
-        this.mod.setButtonTimerConfigs("posY", this.textWidget.relY, Float.class);
-        this.mod.saveSettings();
+        mod.setFloatConfig("buttonTimer.posX", this.textWidget.relX);
+        mod.setFloatConfig("buttonTimer.posY", this.textWidget.relY);
+        mod.saveSettings();
     }
 
     @Override
     protected void actionPerformed(GuiButton button) {
         switch(button.id) {
             case 1:
-                button.displayString = String.format("Enabled: %s", !this.mod.setButtonTimerEnabled(!this.mod.getButtonTimerEnabled()) ? "ON" : "OFF");
+                button.displayString = String.format("Enabled: %s", mod.toggleBoolConfig("buttonTimer.enabled") ? "ON" : "OFF");
                 break;
             case 2:
-                button.displayString = String.format("Text Shadow: %s", !this.mod.setButtonTimerTextShadow(!this.mod.getButtonTimerTextShadow()) ? "ON" : "OFF");
+                button.displayString = String.format("Text Shadow: %s", mod.toggleBoolConfig("buttonTimer.textShadow") ? "ON" : "OFF");
                 break;
             case 3:
-                button.displayString = String.format("Render Background: %s", !this.mod.setButtonTimerRenderBG(!this.mod.getButtonTimerRenderBG()) ? "ON" : "OFF");
+                button.displayString = String.format("Render Background: %s", mod.toggleBoolConfig("buttonTimer.renderBackground") ? "ON" : "OFF");
                 break;
             case 999:
-                this.mod.setButtonTimerConfigs("posX", this.textWidget.relX, Float.class);
-                this.mod.setButtonTimerConfigs("posY", this.textWidget.relY, Float.class);
+                mod.setFloatConfig("buttonTimer.posX", this.textWidget.relX);
+                mod.setFloatConfig("buttonTimer.posY", this.textWidget.relY);
                 this.mc.displayGuiScreen(this.parent);
                 break;
         }
