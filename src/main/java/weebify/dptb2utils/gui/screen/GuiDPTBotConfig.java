@@ -8,12 +8,12 @@ import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.lang3.SystemUtils;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.utils.ExternalIndicatorManager;
+import weebify.dptb2utils.utils.TinyFDJNA;
 
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
 import java.io.IOException;
 
@@ -62,6 +62,17 @@ public class GuiDPTBotConfig extends GuiScreen {
 
     public void chooseFile() {
         File selected = null;
+        String path = TinyFDJNA.openFileDialog(
+                "Select Indicator Image",
+                SystemUtils.getUserHome().getAbsolutePath(),
+                new String[]{"*.png"},
+                "PNG Images (*.png)",
+                false
+        );
+        if (path != null && !path.trim().isEmpty()) {
+            selected = new File(path);
+        }
+
 //        JFileChooser fc = new JFileChooser();
 //        fc.setDialogTitle("Select Indicator Image");
 //        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -72,24 +83,24 @@ public class GuiDPTBotConfig extends GuiScreen {
 //            selected = fc.getSelectedFile();
 //        }
 
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            DPTB2Utils.LOGGER.info("past memory stack check");
-            PointerBuffer filters = stack.mallocPointer(1);
-            filters.put(stack.UTF8("*.png"));
-            filters.flip();
-
-            String path = TinyFileDialogs.tinyfd_openFileDialog(
-                    "Select Indicator Image",
-                    SystemUtils.getUserHome().getAbsolutePath(),
-                    filters,
-                    "PNG Images (*.png)",
-                    false
-            );
-
-            if (path != null && !path.trim().isEmpty()) {
-                selected = new File(path);
-            }
-        }
+//        try (MemoryStack stack = MemoryStack.stackPush()) {
+//            DPTB2Utils.LOGGER.info("past memory stack check");
+//            PointerBuffer filters = stack.mallocPointer(1);
+//            filters.put(stack.UTF8("*.png"));
+//            filters.flip();
+//
+//            String path = TinyFileDialogs.tinyfd_openFileDialog(
+//                    "Select Indicator Image",
+//                    SystemUtils.getUserHome().getAbsolutePath(),
+//                    filters,
+//                    "PNG Images (*.png)",
+//                    false
+//            );
+//
+//            if (path != null && !path.trim().isEmpty()) {
+//                selected = new File(path);
+//            }
+//        }
 
         if (selected != null && ExternalIndicatorManager.registerExternal(selected)) {
             String name = selected.getName();

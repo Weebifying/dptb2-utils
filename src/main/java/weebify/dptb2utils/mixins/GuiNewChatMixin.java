@@ -236,6 +236,7 @@ public class GuiNewChatMixin {
                 && !lower.contains("s remaining")
                 && !lower.contains("math drill completed!")
                 && !lower.contains("iq points from this drill!")
+                && !lower.startsWith("* c o m p l e t i o n  st r e a k !")
                 && !lower.startsWith("* bought intellectual boots")
                 && !lower.startsWith("* catalog!")
                 && !lower.startsWith("* coming... soon")

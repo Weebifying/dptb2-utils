@@ -59,16 +59,6 @@ dependencies {
     }
 
     shade 'org.java-websocket:Java-WebSocket:1.5.3'
-
-    shade 'org.lwjgl:lwjgl:3.1.0'
-    shade 'org.lwjgl:lwjgl-tinyfd:3.1.0'
-    shade 'org.lwjgl:lwjgl:3.1.0:natives-windows'
-    shade 'org.lwjgl:lwjgl:3.1.0:natives-linux'
-    shade 'org.lwjgl:lwjgl:3.1.0:natives-macos'
-    shade 'org.lwjgl:lwjgl-tinyfd:3.1.0:natives-windows'
-    shade 'org.lwjgl:lwjgl-tinyfd:3.1.0:natives-linux'
-    shade 'org.lwjgl:lwjgl-tinyfd:3.1.0:natives-macos'
-
     compileOnly files('libs/PolyPatcher-1.8.9-forge-1.10.3.jar')
 }
 

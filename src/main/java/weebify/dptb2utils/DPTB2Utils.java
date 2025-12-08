@@ -72,8 +72,6 @@ public class DPTB2Utils {
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
-        TinyFDLoader.initialize();
-
         instance = this;
         this.config = new ModConfigs();
         this.saveFile = new File(mc.mcDataDir + "/config", "weebify_dptb2utils.json");
