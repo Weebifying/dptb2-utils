@@ -5,6 +5,7 @@ An utility mod for the Hypixel Housing game **Don't Press The Button 2**
 - Forge 1.8.9
 - Fabric 1.21.4
 - Fabric 1.21.7
+- Fabric 1.21.10
 
 # Features
 - **AutoCheer**: Automatically cheers when a community goal is reached.
@@ -20,6 +21,7 @@ An utility mod for the Hypixel Housing game **Don't Press The Button 2**
 - **DPTBot Integration**: Integrates with the DPTBot Discord bot for the VI+ discord's Chat Ramp:
     - Enable the "DPTBot Connection" option in the mod menu to connect to the bot when you join the DPTB2 housing.
     - Use `/broadcast` (or `/bc`) command to broadcast a message to everyone connected to DPTBot.
+- **Item Cooldown HUD**: HUD display that shows the list of special items' current cooldowns.
 - More coming soon...
 
 ## Advanced DTPBot options
