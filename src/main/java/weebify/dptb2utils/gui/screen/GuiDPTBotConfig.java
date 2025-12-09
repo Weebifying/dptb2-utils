@@ -7,13 +7,10 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
-import org.apache.commons.lang3.SystemUtils;
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.utils.ExternalIndicatorManager;
-import weebify.dptb2utils.utils.TinyFDJNA;
 
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 
@@ -60,57 +57,65 @@ public class GuiDPTBotConfig extends GuiScreen {
         this.buttonList.add(new GuiButton(999, width / 2 - 75, height - 30 - 10, 150, 20, I18n.format("gui.done")));
     }
 
-    public void chooseFile() {
-        File selected = null;
-        String path = TinyFDJNA.openFileDialog(
-                "Select Indicator Image",
-                SystemUtils.getUserHome().getAbsolutePath(),
-                new String[]{"*.png"},
-                "PNG Images (*.png)",
-                false
-        );
-        if (path != null && !path.trim().isEmpty()) {
-            selected = new File(path);
-        }
-
-//        JFileChooser fc = new JFileChooser();
-//        fc.setDialogTitle("Select Indicator Image");
-//        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-//        fc.setFileFilter(new FileNameExtensionFilter(".PNG Images (*.png)", "png"));
-//        fc.setMultiSelectionEnabled(false);
-//        int result = fc.showOpenDialog(null);
-//        if (result == JFileChooser.APPROVE_OPTION) {
-//            selected = fc.getSelectedFile();
-//        }
-
-//        try (MemoryStack stack = MemoryStack.stackPush()) {
-//            DPTB2Utils.LOGGER.info("past memory stack check");
-//            PointerBuffer filters = stack.mallocPointer(1);
-//            filters.put(stack.UTF8("*.png"));
-//            filters.flip();
-//
-//            String path = TinyFileDialogs.tinyfd_openFileDialog(
-//                    "Select Indicator Image",
-//                    SystemUtils.getUserHome().getAbsolutePath(),
-//                    filters,
-//                    "PNG Images (*.png)",
-//                    false
-//            );
-//
-//            if (path != null && !path.trim().isEmpty()) {
-//                selected = new File(path);
-//            }
-//        }
-
-        if (selected != null && ExternalIndicatorManager.registerExternal(selected)) {
-            String name = selected.getName();
-            if (mod.getStringConfig("others.indicatorPath").startsWith("external/")  && !mod.getStringConfig("others.indicatorPath").equals("external/" + name)) {
-                ExternalIndicatorManager.unregisterTexture(new ResourceLocation(DPTB2Utils.MOD_ID, mod.getStringConfig("others.indicatorPath")));
+    private String showFileDialogAndReturnPath() {
+        Frame frame = new Frame();
+        try {
+            FileDialog fd = new FileDialog(frame, "Select Indicator Image", FileDialog.LOAD);
+            fd.setFile("*.png");
+            fd.setVisible(true); // blocks on EDT until user dismisses dialog
+            String dir = fd.getDirectory();
+            String file = fd.getFile();
+            if (dir != null && file != null) {
+                return new File(dir, file).getAbsolutePath();
             }
-            this.mod.setStringConfig("others.indicatorPath", "external/" + name);
-        } else {
-            this.showError = true;
+            return null;
+        } finally {
+            frame.dispose();
         }
+    }
+
+    public void chooseFile() {
+        final String[] chosenPath = new String[1];
+
+        try {
+            if (EventQueue.isDispatchThread()) {
+                chosenPath[0] = showFileDialogAndReturnPath();
+            } else {
+                EventQueue.invokeAndWait(() -> chosenPath[0] = showFileDialogAndReturnPath());
+            }
+        } catch (Exception e) {
+            DPTB2Utils.LOGGER.error("Error showing file dialog", e);
+            ExternalIndicatorManager.errorMessage = e.toString();
+            chosenPath[0] = null;
+        }
+
+        if (chosenPath[0] == null || chosenPath[0].trim().isEmpty()) {
+            Minecraft.getMinecraft().addScheduledTask(() -> {
+                this.showError = true;
+            });
+            return;
+        }
+
+        final File selected = new File(chosenPath[0]);
+
+        Minecraft.getMinecraft().addScheduledTask(() -> {
+            try {
+                if (selected != null && ExternalIndicatorManager.registerExternal(selected)) {
+                    String name = selected.getName();
+                    if (mod.getStringConfig("others.indicatorPath").startsWith("external/")  && !mod.getStringConfig("others.indicatorPath").equals("external/" + name)) {
+                        ExternalIndicatorManager.unregisterTexture(new ResourceLocation(DPTB2Utils.MOD_ID, mod.getStringConfig("others.indicatorPath")));
+                    }
+                    this.mod.setStringConfig("others.indicatorPath", "external/" + name);
+                    this.showError = false;
+                } else {
+                    this.showError = true;
+                }
+            } catch (Throwable t) {
+                DPTB2Utils.LOGGER.error("Failed to register external indicator", t);
+                ExternalIndicatorManager.errorMessage = t.toString();
+                this.showError = true;
+            }
+        });
     }
 
     @Override

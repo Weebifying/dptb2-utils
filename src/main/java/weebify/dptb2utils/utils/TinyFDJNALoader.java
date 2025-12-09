@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
 
+@Deprecated
 public class TinyFDJNALoader {
     private static boolean initialized = false;
     private static Path nativeDir;

@@ -5,21 +5,23 @@ An utility mod for the Hypixel Housing game **Don't Press The Button 2**
 - Forge 1.8.9
 - Fabric 1.21.4
 - Fabric 1.21.7
+- Fabric 1.21.10
 
 # Features
 - **AutoCheer**: Automatically cheers when a community goal is reached.
 - **Micro-event Notifications**: Notifies you when these events happen:
-    - Shop Update: Rotating Shop reset.
-    - Boots Acquisition: Someone got a rare boots with the announcement in chat.
-    - City Door Switch: When City's random door switches.
-    - Button Mayhem: No button cooldown for 10s.
-    - Button Disabled: Button is disabled for 5s.
-    - Button Immunity: Next person to press the button will not die.
+  - Shop Update: Rotating Shop reset.
+  - Boots Acquisition: Someone got a rare boots with the announcement in chat.
+  - City Door Switch: When City's random door switches.
+  - Button Mayhem: No button cooldown for 10s.
+  - Button Disabled: Button is disabled for 5s.
+  - Button Immunity: Next person to press the button will not die.
 - **Boots Tracker**: Tracks the boots players have acquired in your current session.
 - **Button Timer**: HUD timer that shows how long ago the button was last pressed.
 - **DPTBot Integration**: Integrates with the DPTBot Discord bot for the VI+ discord's Chat Ramp:
-    - Use `/broadcast` (or `/bc`) command to broadcast a message to everyone connected to DPTBot.
-    - Enable the "DPTBot Connection" option in the mod menu to connect to the bot when you join the DPTB2 housing.
+  - Enable the "DPTBot Connection" option in the mod menu to connect to the bot when you join the DPTB2 housing.
+  - Use `/broadcast` (or `/bc`) command to broadcast a message to everyone connected to DPTBot.
+- **Item Cooldown HUD**: HUD display that shows the list of special items' current cooldowns.
 - More coming soon...
 
 ## Advanced DTPBot options
