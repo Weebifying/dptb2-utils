@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
@@ -49,6 +50,7 @@ public class DPTB2Utils implements ClientModInitializer {
 	public boolean isInDPTB2 = false;
 	public boolean isRamper = false;
 	public boolean tryingToConnect = false;
+	public boolean isToggleBc = false;
 
 	public List<DelayedTask> scheduledTasks = new ArrayList<>();
 
@@ -169,6 +171,15 @@ public class DPTB2Utils implements ClientModInitializer {
 				websocketClient.close();
 			}
 		});
+
+		ClientSendMessageEvents.ALLOW_CHAT.register((message) -> {
+			if (this.isToggleBc) {
+				this.handleBroadcast(message);
+				return false;
+			}
+
+			return true;
+		});
 	}
 
 	public void dptb2Check(MinecraftClient client) {
@@ -221,6 +232,7 @@ public class DPTB2Utils implements ClientModInitializer {
 		ClientCommandRegistrationCallback.EVENT.register(this::commandModMenu);
 		ClientCommandRegistrationCallback.EVENT.register(this::commandBroadcast);
 //		ClientCommandRegistrationCallback.EVENT.register(this::commandAddWP);
+		ClientCommandRegistrationCallback.EVENT.register(this::commandToggleBc);
 	}
 
 	private void onClientTick(MinecraftClient var) {
@@ -233,6 +245,19 @@ public class DPTB2Utils implements ClientModInitializer {
 			this.displayScreen = false;
 			mc.setScreen(new ModMenuScreen(this));
 		}
+	}
+
+	private void commandToggleBc(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
+		LiteralCommandNode<FabricClientCommandSource> c = dispatcher.register(
+				ClientCommandManager.literal("togglebc")
+						.executes(context -> {
+							this.isToggleBc = !this.isToggleBc;
+							if (mc.player != null) {
+								mc.player.sendMessage(Text.of("Automatic chat broadcast is now " + (this.isToggleBc ? "§a§lenabled§r!" : "§c§ldisabled§r!")), false);
+							}
+							return 1;
+						})
+		);
 	}
 
 	private void commandModMenu(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
@@ -268,10 +293,9 @@ public class DPTB2Utils implements ClientModInitializer {
 //		);
 //	}
 
-	private void handleBroadcast(CommandContext<FabricClientCommandSource> context) {
+	private void handleBroadcast(String msg) {
 		if (mc.player != null) {
 			if (websocketClient != null && websocketClient.isOpen()) {
-				String msg = StringArgumentType.getString(context, "message");
 				try {
 					websocketClient.sendModMessage("playerBroadcast", Map.of("text", msg, "name", mc.player.getGameProfile().name(), "private", this.getBoolConfig("others.incognito")));
 					if (!this.getBoolConfig("others.broadcastChat")) {
@@ -292,7 +316,7 @@ public class DPTB2Utils implements ClientModInitializer {
 				ClientCommandManager.literal("broadcast")
 						.then(ClientCommandManager.argument("message", StringArgumentType.greedyString())
 						.executes(context -> {
-							this.handleBroadcast(context);
+							this.handleBroadcast(StringArgumentType.getString(context, "message"));
 							return 1;
 						})
 					)
@@ -301,7 +325,7 @@ public class DPTB2Utils implements ClientModInitializer {
 				ClientCommandManager.literal("bc")
 						.then(ClientCommandManager.argument("message", StringArgumentType.greedyString())
 						.executes(context -> {
-							this.handleBroadcast(context);
+							this.handleBroadcast(StringArgumentType.getString(context, "message"));
 							return 1;
 						}).redirect(c)
 					)

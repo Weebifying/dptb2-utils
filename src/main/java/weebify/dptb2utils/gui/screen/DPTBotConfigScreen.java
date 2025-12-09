@@ -30,8 +30,6 @@ public class DPTBotConfigScreen extends Screen {
     private boolean showError = false;
     private EditBoxWidget discColorInput;
     private EditBoxWidget wptbColorInput;
-    private String discColor = "";
-    private String wptbColor = "";
 
     public DPTBotConfigScreen(Screen parent, DPTB2Utils mod) {
         super(Text.literal("DPTBot Settings"));

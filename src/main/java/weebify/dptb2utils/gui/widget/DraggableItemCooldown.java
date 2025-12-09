@@ -73,13 +73,14 @@ public class DraggableItemCooldown extends ClickableWidget {
             int y = getY() + padding + i * lineHeight;
             context.drawTexture(RenderPipelines.GUI_TEXTURED, item.texture, x, y, 0, 0, 16, 16, 16, 16);
 
-            int barWidth = (int) (0.2 * ItemCooldownManager.Items.NAME_MAP.get(itemName).cooldown);
+            int barWidth = (int) (0.2 * item.cooldown);
             int barHeight = 8;
             int barX = alignLeft ? x + 20 : x - 4 - barWidth;
             int barY = y + 4;
             int total = item.cooldown;
             float progress = (float)ticksLeft / total;
             int filled = (int)(barWidth * progress);
+
             context.fill(barX, barY, barX + barWidth, barY + barHeight, 0xFF555555);
             if (alignLeft) context.fill(barX, barY, barX + filled, barY + barHeight, lerpColor(0xFF55FF55, 0xFFFF5555, progress));
             else context.fill(barX + barWidth - filled, barY, barX + barWidth, barY + barHeight, lerpColor(0xFF55FF55, 0xFFFF5555, progress));
