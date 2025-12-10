@@ -6,10 +6,11 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.random.Random;
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.gui.widget.DraggableButtonTimer;
 import weebify.dptb2utils.utils.ButtonTimerManager;
+
+import java.util.Random;
 
 
 public class ButtonTimerConfigScreen extends Screen {
@@ -40,7 +41,7 @@ public class ButtonTimerConfigScreen extends Screen {
         this.textWidget = new DraggableButtonTimer(
                 mod.getFloatConfig("buttonTimer.posX"),
                 mod.getFloatConfig("buttonTimer.posY"),
-                ButtonTimerManager.tickToTime((!mod.isInDPTB2 || ButtonTimerManager.buttonTimer < 0) ? MathHelper.nextInt(Random.create(), 0, 400) : ButtonTimerManager.buttonTimer)
+                ButtonTimerManager.tickToTime((!mod.isInDPTB2 || ButtonTimerManager.buttonTimer < 0) ? new Random().nextInt(0, 400) : ButtonTimerManager.buttonTimer)
         );
         this.textWidget.updatePosition(this.width, this.height);
         this.addDrawableChild(this.textWidget);

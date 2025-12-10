@@ -19,6 +19,7 @@ import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.gui.widget.NotificationToast;
 import weebify.dptb2utils.utils.ButtonTimerManager;
 import weebify.dptb2utils.utils.ItemCooldownManager;
+import weebify.dptb2utils.utils.MicroTimerManager;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -90,19 +91,38 @@ public class ChatHudMixin {
         if (mod.getBoolConfig("notifs.shopUpdate") && content.startsWith("* SHOP! New items available at the Rotating Shop!")) {
             triggerNotif("Shop Update!", "New items available at the Rotating Shop!", 0xFF55FF, sound);
         } else if (content.startsWith("* [!] MAYHEM! The BUTTON has no cooldown for 10s!")) {
+            MicroTimerManager.microTimer = 0;
+            MicroTimerManager.lastEvent = "§4§lMAYHEM";
+
             ButtonTimerManager.isMayhem = true;
             mod.scheduleTask(200, () -> ButtonTimerManager.isMayhem = false);
+
             if (mod.getBoolConfig("notifs.buttonMayhem")) {
                 triggerNotif("Button Mayhem!", "The BUTTON has no cooldown for 10s!", 0xFF0000, sound);
             }
         } else if (content.startsWith("* [!] The BUTTON has been disabled for 5s!")) {
+            MicroTimerManager.microTimer = 0;
+            MicroTimerManager.lastEvent = "§b§lDISABLED";
+
             ButtonTimerManager.isDisabled = true;
+
             mod.scheduleTask(100, () -> ButtonTimerManager.isDisabled = false);
             if (mod.getBoolConfig("notifs.buttonDisable")) {
                 triggerNotif("Button Disabled!", "The BUTTON has been disabled for 5s!", 0x00FF00, sound);
             }
-        } else if (mod.getBoolConfig("notifs.buttonImmunity") && content.startsWith("* [!] Whoever clicks the BUTTON next will not die!")) {
-            triggerNotif("Button Immunity!", "Whoever clicks the BUTTON next will not die!", 0x55FFFF, sound);
+        } else if (content.startsWith("* [!] Whoever clicks the BUTTON next will not die!")) {
+            MicroTimerManager.microTimer = 0;
+            MicroTimerManager.lastEvent = "§c§lIMMUNITY";
+
+            if (mod.getBoolConfig("notifs.buttonImmunity")) {
+                triggerNotif("Button Immunity!", "Whoever clicks the BUTTON next will not die!", 0x55FFFF, sound);
+            }
+        } else if (content.startsWith("* [!] Everybody received Jump Boost I for 10s!")) {
+            MicroTimerManager.microTimer = 0;
+            MicroTimerManager.lastEvent = "§a§lJUMP BOOST";
+        } else if (content.startsWith("* [!] Everybody received Speed I for 10s!")) {
+            MicroTimerManager.microTimer = 0;
+            MicroTimerManager.lastEvent = "§e§lSPEED";
         } else if (content.startsWith("* WOAH")) {
             if (mod.getBoolConfig("notifs.bootsCollected")) {
                 // placeholders in case shit goes down
@@ -289,6 +309,7 @@ public class ChatHudMixin {
             && !lower.startsWith("* [✎]")
             && !lower.startsWith("* your challenge:")
             && !lower.startsWith("* your drill:")
+            && !lower.startsWith("* slurp!")
             && !lower.startsWith("*  - ")
             && !lower.startsWith("* - ")
             && !lower.startsWith("* reopened")
