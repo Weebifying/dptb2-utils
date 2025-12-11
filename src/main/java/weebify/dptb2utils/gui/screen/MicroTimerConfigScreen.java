@@ -40,7 +40,7 @@ public class MicroTimerConfigScreen extends Screen {
         this.textWidget = new DraggableMicroTimer(
                 mod.getFloatConfig("microTimer.posX"),
                 mod.getFloatConfig("microTimer.posY"),
-                MicroTimerManager.tickToTime((!mod.isInDPTB2 || MicroTimerManager.microTimer < 0) ? new Random().nextInt(0, 8400) : MicroTimerManager.microTimer),
+                MicroTimerManager.tickToTime((!mod.isInDPTB2 || MicroTimerManager.microTimer < 0) ? new Random().nextInt(8401) : MicroTimerManager.microTimer),
                 (!mod.isInDPTB2 || MicroTimerManager.lastEvent.isBlank()) ? MicroTimerManager.eventsList[new Random().nextInt(0, MicroTimerManager.eventsList.length)] : MicroTimerManager.lastEvent
         );
         this.textWidget.updatePosition(this.width, this.height);

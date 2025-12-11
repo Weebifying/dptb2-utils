@@ -41,7 +41,7 @@ public class ButtonTimerConfigScreen extends Screen {
         this.textWidget = new DraggableButtonTimer(
                 mod.getFloatConfig("buttonTimer.posX"),
                 mod.getFloatConfig("buttonTimer.posY"),
-                ButtonTimerManager.tickToTime((!mod.isInDPTB2 || ButtonTimerManager.buttonTimer < 0) ? new Random().nextInt(0, 400) : ButtonTimerManager.buttonTimer)
+                ButtonTimerManager.tickToTime((!mod.isInDPTB2 || ButtonTimerManager.buttonTimer < 0) ? new Random().nextInt(401) : ButtonTimerManager.buttonTimer)
         );
         this.textWidget.updatePosition(this.width, this.height);
         this.addDrawableChild(this.textWidget);
