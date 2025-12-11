@@ -12,7 +12,7 @@ public class EntityPlayerSPMixin {
     @Inject(method = "sendChatMessage", at = @At("HEAD"), cancellable = true)
     private void onSendChatMessage(String message, CallbackInfo ci) {
         DPTB2Utils mod = DPTB2Utils.getInstance();
-        if (mod.isToggleBc) {
+        if (mod.isToggleBc && !message.startsWith("/")) {
             mod.handleBroadcast(new String[]{message});
             ci.cancel();
         }

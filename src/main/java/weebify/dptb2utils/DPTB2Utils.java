@@ -43,7 +43,7 @@ import java.util.*;
 @Mod(modid = DPTB2Utils.MOD_ID, version = DPTB2Utils.VERSION)
 public class DPTB2Utils {
     public static final String MOD_ID = "dptb2-utils";
-    public static final String VERSION = "1.2.01";
+    public static final String VERSION = "1.2.1";
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
     public ModConfigs config;
@@ -93,6 +93,7 @@ public class DPTB2Utils {
         ButtonTimerManager.initialize();
         ItemCooldownManager.initialize();
         ExternalIndicatorManager.initialize();
+        MicroTimerManager.initialize();
 
         this.fetchDPTBotIP();
 
@@ -162,6 +163,13 @@ public class DPTB2Utils {
             if (this.saveFile.lastModified() > this.lastSaved) {
                 this.loadSettings();
                 this.lastSaved = this.saveFile.lastModified();
+
+                if (DiscordWebSocketClient.timer > 0) {
+                    DiscordWebSocketClient.timer--;
+                }
+                if (DiscordWebSocketClient.timer == 0) {
+                    DiscordWebSocketClient.currentPitch = DiscordWebSocketClient.DEFAULT_PITCH;
+                }
             }
         } else if (event.phase == TickEvent.Phase.END) {
             scheduledTasks.removeIf(DelayedTask::tick);

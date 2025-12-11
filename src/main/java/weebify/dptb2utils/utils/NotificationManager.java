@@ -38,6 +38,18 @@ public class NotificationManager {
         }
     }
 
+    public void add(String title, String desc, int color, String soundName, float volume, float pitch) {
+        Notification n = new Notification(title, desc, color, ICON_DEFAULT, soundName, pitch, volume);
+        synchronized (visible) {
+            if (visible.size() < MAX_VISIBLE) {
+                visible.add(n);
+            } else {
+                queue.add(n);
+            }
+        }
+    }
+
+
     public void render(ScaledResolution res) {
         Minecraft mc = Minecraft.getMinecraft();
         FontRenderer fr = mc.fontRendererObj;

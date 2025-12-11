@@ -28,13 +28,21 @@ public class Notification {
     private final List<String> titleLines;
     private final List<String> descLines;
     private boolean soundPlayed = false;
+    private float pitch;
+    private float volume;
 
     public Notification(String title, String description, int color, ResourceLocation iconTexture, String soundName) {
+        this(title, description, color, iconTexture, soundName, 1.0f, 1.0f);
+    }
+
+    public Notification(String title, String description, int color, ResourceLocation iconTexture, String soundName, float pitch, float volume) {
         this.title = title;
         this.description = description;
         this.color = color;
         this.iconTexture = iconTexture;
         this.soundName = soundName;
+        this.pitch = pitch;
+        this.volume = volume;
         this.createdMs = System.currentTimeMillis();
 
         FontRenderer fr = Minecraft.getMinecraft().fontRendererObj;
@@ -60,7 +68,7 @@ public class Notification {
         soundPlayed = true;
         try {
             Minecraft.getMinecraft().getSoundHandler().playSound(
-                    PositionedSoundRecord.create(new ResourceLocation(soundName), 1.0F)
+                    PositionedSoundRecord.create(new ResourceLocation(soundName), this.pitch)
             );
         } catch (Throwable t) {
             DPTB2Utils.LOGGER.error("Failed to play sound {}: {}", this.soundName, t);

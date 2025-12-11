@@ -22,6 +22,12 @@ public class DiscordWebSocketClient extends WebSocketClient {
     private static final DPTB2Utils mod = DPTB2Utils.getInstance();
     public List<String> clientsList = new ArrayList<>();
 
+    public static final float DEFAULT_PITCH = 1.0f;
+    public static final float PITCH_STEP = 0.05f;
+    public static final int DEFAULT_TIME_THRESHOLD = 60;
+    public static float currentPitch = 1.0f;
+    public static int timer = 0;
+
     public DiscordWebSocketClient(String serverUri) {
         super(URI.create(serverUri));
     }
@@ -33,6 +39,10 @@ public class DiscordWebSocketClient extends WebSocketClient {
             this.sendModMessage("greet", DPTB2Utils.mapOf("name", MC.thePlayer.getGameProfile().getName(), "version", DPTB2Utils.VERSION, "mc", MC.getVersion()));
         }
         MC.addScheduledTask(() -> NotificationManager.getInstance().add("DPTBot", "Connected!", 0xFFFFFFFF, "mob.bat.takeoff"));
+    }
+
+    public static DiscordWebSocketClient getInstance() {
+        return mod.websocketClient;
     }
 
     @Override
@@ -70,15 +80,20 @@ public class DiscordWebSocketClient extends WebSocketClient {
                 }
                 sb.append(": ").append(text);
 
+                if (timer > 0) {
+                    currentPitch += PITCH_STEP;
+                }
+                timer = DEFAULT_TIME_THRESHOLD;
+
                 if (mod.getBoolConfig("others.broadcastToast")) {
                     int color = source.equalsIgnoreCase("DISC") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.discColor")) : (source.equalsIgnoreCase("WPTB") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.wptbColor")) : (source.equalsIgnoreCase("CONSOLE") ? 0xFFFF5555 : 0xFFFFFFFF));
-                    notifManager.add(String.format("[%s] %s", source, name), text, col != null ? col : color, "note.pling");
+                    notifManager.add(String.format("[%s] %s", source, name), text, col != null ? col : color, "note.pling", 1, currentPitch);
                 }
 
                 if (MC.thePlayer != null && mod.getBoolConfig("others.broadcastChat")) {
                     MC.thePlayer.addChatMessage(new ChatComponentText(sb.toString()));
                     if (!mod.getBoolConfig("others.broadcastToast")) {
-                        MC.thePlayer.playSound("note.pling", 1, 1);
+                        MC.thePlayer.playSound("note.pling", 1, currentPitch);
                     }
                 }
             } else if (type.equalsIgnoreCase("askTabList")) {

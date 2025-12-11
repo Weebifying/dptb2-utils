@@ -22,6 +22,7 @@ public class GuiModMenu extends GuiScreen {
         this.buttonList.add(new GuiButton(4, this.width / 2 + 80 - 75, 100, 150, 20, "Button Timer HUD"));
         this.buttonList.add(new GuiButton(5, this.width / 2 - 80 - 75, 125, 150, 20, "DPTBot Config"));
         this.buttonList.add(new GuiButton(6, this.width / 2 + 80 - 75, 125, 150, 20, "Item Cooldown HUD"));
+        this.buttonList.add(new GuiButton(7, this.width / 2 - 80 - 75, 150, 150, 20, "Micro Event Timer HUD"));
 
         this.buttonList.add(new GuiButton(999, this.width / 2 - 75, this.height - 30 - 10, 150, 20, I18n.format("gui.done")));
         this.checkBtn = new GuiButton(1000, 30, this.height - 30 - 10, 150, 20, "Rerun DPTB2 Check");
@@ -59,6 +60,9 @@ public class GuiModMenu extends GuiScreen {
                 break;
             case 6:
                 this.mc.displayGuiScreen(new GuiItemCooldownConfig(this, this.mod));
+                break;
+            case 7:
+                this.mc.displayGuiScreen(new GuiMicroTimerConfig(this, this.mod));
                 break;
             case 999:
                 this.mc.displayGuiScreen(null);
