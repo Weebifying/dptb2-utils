@@ -18,12 +18,14 @@ public class ModConfigs {
     public Map<String, JsonElement> buttonTimerMap = new LinkedHashMap<>();
     public Map<String, JsonElement> itemCooldownMap = new LinkedHashMap<>();
     public Map<String, JsonElement> waypointsMap = new LinkedHashMap<>();
+    public Map<String, JsonElement> microTimerMap = new LinkedHashMap<>();
 
     public static final Map<String, JsonElement> othersDefaultMap = new LinkedHashMap<>();
     public static final Map<String, JsonElement> notifsDefaultMap = new LinkedHashMap<>();
     public static final Map<String, JsonElement> buttonTimerDefaultMap = new LinkedHashMap<>();
     public static final Map<String, JsonElement> itemCooldownDefaultMap = new LinkedHashMap<>();
     public static final Map<String, JsonElement> waypointsDefaultMap = new LinkedHashMap<>();
+    public static final Map<String, JsonElement> microTimerDefaultMap = new LinkedHashMap<>();
 
     public static Map<String, Class<?>> propertyTypes = new LinkedHashMap<>();
 
@@ -52,6 +54,7 @@ public class ModConfigs {
             case "buttonTimer" -> new Map[]{buttonTimerMap, buttonTimerDefaultMap};
             case "itemCooldown" -> new Map[]{itemCooldownMap, itemCooldownDefaultMap};
             case "waypoints" -> new Map[]{waypointsMap, waypointsDefaultMap};
+            case "microTimer" -> new Map[]{microTimerMap, microTimerDefaultMap};
             default -> null;
         };
     }
@@ -108,6 +111,12 @@ public class ModConfigs {
         createNewConfig("itemCooldown.textAlign", "left", String.class);
         createNewConfig("itemCooldown.posX", "0", Float.class);
         createNewConfig("itemCooldown.posY", "0.5", Float.class);
+
+        createNewConfig("microTimer.enabled", "false", Boolean.class);
+        createNewConfig("microTimer.textShadow", "false", Boolean.class);
+        createNewConfig("microTimer.renderBackground", "true", Boolean.class);
+        createNewConfig("microTimer.posX", "0.25", Float.class);
+        createNewConfig("microTimer.posY", "0.5", Float.class);
 
         createNewConfig("waypoints.enabled", "false", Boolean.class);
     }

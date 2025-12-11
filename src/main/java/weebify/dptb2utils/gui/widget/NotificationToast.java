@@ -35,12 +35,20 @@ public class NotificationToast implements Toast {
     private final SoundEvent sfx;
     private boolean soundPlayed = false;
     private Toast.Visibility visibility = Toast.Visibility.HIDE;
+    private float pitch;
+    private float volume;
 
     public NotificationToast(String title, String description, int color, @Nullable SoundEvent sfx) {
+        this(title, description, color, sfx, 1.0f, 1.0f);
+    }
+
+    public NotificationToast(String title, String description, int color, @Nullable SoundEvent sfx, float volume, float pitch) {
         this.title = title;
         this.description = description;
         this.color = color;
         this.sfx = sfx;
+        this.pitch = pitch;
+        this.volume = volume;
 
         List<OrderedText> titleList = MinecraftClient.getInstance().textRenderer.wrapLines(StringVisitable.plain(this.title), 125);
         List<OrderedText> descList = MinecraftClient.getInstance().textRenderer.wrapLines(StringVisitable.plain(this.description), 125);
