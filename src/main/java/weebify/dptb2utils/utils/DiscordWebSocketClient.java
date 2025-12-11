@@ -2,14 +2,10 @@ package weebify.dptb2utils.utils;
 
 import com.google.gson.Gson;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.component.Component;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
-import net.minecraft.util.Formatting;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import weebify.dptb2utils.DPTB2Utils;
@@ -27,8 +23,18 @@ public class DiscordWebSocketClient extends WebSocketClient {
     private static final DPTB2Utils mod = DPTB2Utils.getInstance();
     public List<String> clientsList = new ArrayList<>();
 
+    public static final float DEFAULT_PITCH = 1.0f;
+    public static final float PITCH_STEP = 0.05f;
+    public static final int DEFAULT_TIME_THRESHOLD = 60;
+    public static float currentPitch = 1.0f;
+    public static int timer = 0;
+
     public DiscordWebSocketClient(String uri) {
         super(URI.create(uri));
+    }
+
+    public static DiscordWebSocketClient getInstance() {
+        return mod.websocketClient;
     }
 
     // run when the connection is established
@@ -76,15 +82,20 @@ public class DiscordWebSocketClient extends WebSocketClient {
                     }
                     sb.append(": ").append(text);
 
+                    if (timer > 0) {
+                        currentPitch += PITCH_STEP;
+                    }
+                    timer = DEFAULT_TIME_THRESHOLD;
+
                     if (mod.getBoolConfig("others.broadcastToast")) {
                         int color = source.equalsIgnoreCase("DISC") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.discColor")) : (source.equalsIgnoreCase("WPTB") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.wptbColor")) : (source.equalsIgnoreCase("CONSOLE") ? 0xFFFF5555 : 0xFFFFFFFF));
-                        MC.getToastManager().add(new NotificationToast(String.format("[%s] %s", source, name), text, col != null ? col : color, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value()));
+                        MC.getToastManager().add(new NotificationToast(String.format("[%s] %s", source, name), text, col != null ? col : color, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), currentPitch, 1));
                     }
 
                     if (MC.player != null && mod.getBoolConfig("others.broadcastChat")) {
                         MC.player.sendMessage(Text.literal(sb.toString()), false);
                         if (!mod.getBoolConfig("others.broadcastToast")) {
-                            MC.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), 1, 1));
+                            MC.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), currentPitch, 1));
                         }
                     }
                 } else if (type.equalsIgnoreCase("askTabList")) {
