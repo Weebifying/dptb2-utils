@@ -66,8 +66,6 @@ public class DraggableButtonTimer extends ClickableWidget {
 
     @Override
     public boolean mouseReleased(Click click) {
-        double mouseX = click.x();
-        double mouseY = click.y();
         int button = click.button();
         if (dragging && button == 0) {
             dragging = false;
@@ -80,8 +78,6 @@ public class DraggableButtonTimer extends ClickableWidget {
     public boolean mouseDragged(Click click, double dx, double dy) {
         double mouseX = click.x();
         double mouseY = click.y();
-        int button = click.button();
-
         if (dragging) {
             MinecraftClient client = MinecraftClient.getInstance();
             int newX = (int)(mouseX - dragOffsetX);
