@@ -224,7 +224,7 @@ public class DPTB2Utils implements ClientModInitializer {
 //				this.isInDPTB2 = title.contains("housing") && scoreboardContent.contains("don't press the button 2");
 				this.isInDPTB2 = scoreboardContent.contains("don't press the button 2") && scoreboardContent.contains("cyborg023") ;
 
-				if (this.isInDPTB2) client.getToastManager().add(new NotificationToast("DPTB2 Utils", "You are in Don't Press The Button 2!", 0xD2FFC8, SoundEvents.ENTITY_PLAYER_LEVELUP	));
+				if (this.isInDPTB2) client.getToastManager().add(new NotificationToast("DPTB2 Utils", "You are in Don't Press The Button 2!", 0xD2FFC8, SoundEvents.ENTITY_PLAYER_LEVELUP));
 				this.refreshRamperStatus();
 			}
 		});
@@ -246,6 +246,13 @@ public class DPTB2Utils implements ClientModInitializer {
 		if (this.displayScreen) {
 			this.displayScreen = false;
 			mc.setScreen(new ModMenuScreen(this));
+		}
+
+		if (DiscordWebSocketClient.timer > 0) {
+			DiscordWebSocketClient.timer--;
+		}
+		if (DiscordWebSocketClient.timer == 0) {
+			DiscordWebSocketClient.currentPitch = DiscordWebSocketClient.DEFAULT_PITCH;
 		}
 	}
 
