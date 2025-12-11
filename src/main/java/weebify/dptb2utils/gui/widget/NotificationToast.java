@@ -40,7 +40,7 @@ public class NotificationToast implements Toast {
         this(title, description, color, sfx, 1.0f, 1.0f);
     }
 
-    public NotificationToast(String title, String description, int color, @Nullable SoundEvent sfx, float volume, float pitch) {
+    public NotificationToast(String title, String description, int color, @Nullable SoundEvent sfx, float pitch, float volume) {
         this.title = title;
         this.description = description;
         this.color = color;
@@ -68,7 +68,7 @@ public class NotificationToast implements Toast {
         if (!this.soundPlayed && time > 0) {
             this.soundPlayed = true;
             if (this.sfx != null) {
-                manager.getClient().getSoundManager().play(PositionedSoundInstance.master(this.sfx, 1, 1));
+                manager.getClient().getSoundManager().play(PositionedSoundInstance.master(this.sfx, this.pitch, this.volume));
             }
         }
 
