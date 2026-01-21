@@ -21,7 +21,7 @@ public class MicroTimerManager {
             "§b§lDISABLED",
             "§c§lIMMUNITY",
             "§a§lJUMP BOOST",
-            "§e§lSPEED"
+            "§b§lSLIPPERY ICE"
     };
 
     public static Text tickToTime(int ticks) {

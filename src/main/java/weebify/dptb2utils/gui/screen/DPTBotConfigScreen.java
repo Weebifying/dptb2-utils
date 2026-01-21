@@ -38,7 +38,7 @@ public class DPTBotConfigScreen extends Screen {
     protected void init() {
         this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("DPTBot Connection: %s", mod.getBoolConfig("others.discordRamper") ? "ON" : "OFF")), (btn) -> {
             btn.setMessage(Text.of(String.format("DPTBot Connection: %s", mod.toggleBoolConfig("others.discordRamper") ? "ON" : "OFF")));
-            mod.refreshRamperStatus();
+            mod.refreshWptbStatus();
         }).dimensions(this.width/2 - 80 - 75, 75, 150, 20).build());
 
         this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Advanced Options: %s", this.showIPOptions ? "ON" : "OFF")), (btn) -> {

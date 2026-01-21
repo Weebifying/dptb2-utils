@@ -18,6 +18,7 @@ import weebify.dptb2utils.DPTB2Utils;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 public class WaypointManager {
     private static final MinecraftClient MC = MinecraftClient.getInstance();
     public static Map<String, Waypoint> waypoints = new HashMap<>();

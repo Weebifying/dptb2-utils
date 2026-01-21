@@ -3,7 +3,6 @@ package weebify.dptb2utils;
 import com.google.gson.Gson;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.api.ClientModInitializer;
 
@@ -13,19 +12,15 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.scoreboard.*;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
 import net.minecraft.util.Formatting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import weebify.dptb2utils.gui.screen.ButtonTimerConfigScreen;
 import weebify.dptb2utils.gui.widget.NotificationToast;
 import weebify.dptb2utils.gui.screen.ModMenuScreen;
 import weebify.dptb2utils.utils.*;
@@ -39,7 +34,7 @@ import java.util.List;
 
 public class DPTB2Utils implements ClientModInitializer {	
 	public static final String MOD_ID = "dptb2-utils";
-	public static final String VERSION = "1.2.1";
+	public static final String VERSION = "1.2.2";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	public ModConfigs config;
@@ -225,7 +220,10 @@ public class DPTB2Utils implements ClientModInitializer {
 				this.isInDPTB2 = scoreboardContent.contains("don't press the button 2") && scoreboardContent.contains("cyborg023") ;
 
 				if (this.isInDPTB2) client.getToastManager().add(new NotificationToast("DPTB2 Utils", "You are in Don't Press The Button 2!", 0xD2FFC8, SoundEvents.ENTITY_PLAYER_LEVELUP));
-				this.refreshRamperStatus();
+				this.refreshWptbStatus();
+				if (this.isInDPTB2) {
+					this.scheduleTask(600, () -> this.dptb2Check(client));
+				}
 			}
 		});
 	}
@@ -341,7 +339,7 @@ public class DPTB2Utils implements ClientModInitializer {
 		);
 	}
 
-	public void refreshRamperStatus() {
+	public void refreshWptbStatus() {
 		String host = this.getStringConfig("others.dptbotHost");
 		int port = this.getIntConfig("others.dptbotPort");
 		if (this.isInDPTB2 && this.getBoolConfig("others.discordRamper")) {
