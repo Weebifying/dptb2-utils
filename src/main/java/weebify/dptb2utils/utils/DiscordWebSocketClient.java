@@ -56,10 +56,14 @@ public class DiscordWebSocketClient extends WebSocketClient {
         Integer col = (Integer) data.get("color");
         MinecraftClient.getInstance().execute(() -> {
                 if (type.equalsIgnoreCase("delegate")) {
-                    if (mod.getBoolConfig("others.discordRamper") && MC.player != null) {
+                    if (mod.getBoolConfig("others.consentRamper")) {
                         MC.getToastManager().add(new NotificationToast("DPTBot", text, col != null ? col : 0xFFC8FFC8, SoundEvents.ENTITY_BAT_TAKEOFF));
                         mod.isRamper = true;
-                        this.sendModMessage("confirm", Map.of("text", MC.player.getGameProfile().getName()));
+                        this.sendModMessage("confirm", Map.of("text", MC.player != null ? MC.player.getGameProfile().getName() : "Unknown"));
+                    } else {
+                        MC.getToastManager().add(new NotificationToast("DPTBot", "Ramper request denied.", Colors.RED, SoundEvents.ENTITY_BAT_TAKEOFF));
+                        mod.isRamper = false;
+                        this.sendModMessage("deny", Map.of("text", MC.player != null ? MC.player.getGameProfile().getName() : "Unknown"));
                     }
                 } else if (type.equalsIgnoreCase("revoke")) {
                     if (mod.getBoolConfig("others.discordRamper")) {

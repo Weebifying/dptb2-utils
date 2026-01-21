@@ -355,6 +355,16 @@ public class DPTB2Utils implements ClientModInitializer {
 		}
 	}
 
+	public void reassessRamperStatus() {
+		if (this.isInDPTB2 && this.getBoolConfig("others.discordRamper")) {
+			if (websocketClient != null && websocketClient.isOpen()) {
+				websocketClient.sendModMessage("reassessConsent", Map.of("name", mc.player != null ? mc.player.getGameProfile().getName() : "Unknown", "consent", this.getBoolConfig("others.consentRamper")));
+			}
+		} else {
+			this.isRamper = false;
+		}
+	}
+
 	public void saveSettings() {
 		try (FileWriter fw = new FileWriter(this.saveFile)) {
 			GSON.toJson(this.config, fw);

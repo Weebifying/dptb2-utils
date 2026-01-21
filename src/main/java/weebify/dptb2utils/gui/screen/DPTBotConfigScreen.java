@@ -41,11 +41,9 @@ public class DPTBotConfigScreen extends Screen {
             mod.refreshWptbStatus();
         }).dimensions(this.width/2 - 80 - 75, 75, 150, 20).build());
 
-        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Advanced Options: %s", this.showIPOptions ? "ON" : "OFF")), (btn) -> {
-            this.showIPOptions = !this.showIPOptions;
-            btn.setMessage(Text.of(String.format("Advanced Options: %s", this.showIPOptions ? "ON" : "OFF")));
-            this.hostInput.visible = this.showIPOptions;
-            this.portInput.visible = this.showIPOptions;
+        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Agree to Ramp: %s", mod.getBoolConfig("others.consentRamper") ? "ON" : "OFF")), (btn) -> {
+            btn.setMessage(Text.of(String.format("Agree to Ramp: %s", mod.toggleBoolConfig("others.consentRamper") ? "ON" : "OFF")));
+            mod.reassessRamperStatus();
         }).dimensions(this.width/2 + 80 - 75, 75, 150, 20).build());
 
         this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Broadcast Notifs: %s", mod.getBoolConfig("others.broadcastToast") ? "ON" : "OFF")), (btn) -> {
@@ -89,6 +87,13 @@ public class DPTBotConfigScreen extends Screen {
         this.portInput.visible = false;
         this.addDrawableChild(this.portInput);
 
+
+        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Advanced Options: %s", this.showIPOptions ? "ON" : "OFF")), (btn) -> {
+            this.showIPOptions = !this.showIPOptions;
+            btn.setMessage(Text.of(String.format("Advanced Options: %s", this.showIPOptions ? "ON" : "OFF")));
+            this.hostInput.visible = this.showIPOptions;
+            this.portInput.visible = this.showIPOptions;
+        }).dimensions(this.width / 2 - 75, this.height - 30 - 10,150, 20).build());
 
         this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), (btn) -> {
             this.saveIPSettings();
