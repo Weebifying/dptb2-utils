@@ -93,7 +93,7 @@ public class DPTBotConfigScreen extends Screen {
             btn.setMessage(Text.of(String.format("Advanced Options: %s", this.showIPOptions ? "ON" : "OFF")));
             this.hostInput.visible = this.showIPOptions;
             this.portInput.visible = this.showIPOptions;
-        }).dimensions(this.width / 2 - 75, this.height - 30 - 10,150, 20).build());
+        }).dimensions(30, this.height - 30 - 10,150, 20).build());
 
         this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), (btn) -> {
             this.saveIPSettings();
@@ -155,6 +155,7 @@ public class DPTBotConfigScreen extends Screen {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
         context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width/2, 20, Colors.WHITE);
+        context.drawCenteredTextWithShadow(this.textRenderer, String.format("isRamper: %b", mod.isRamper), this.width/2, this.height - 45 - 10, mod.isRamper ? 0xFF55FF55 : 0xFFFF5555);
 
         context.drawTextWithShadow(this.textRenderer, Text.of("§8[§xDISC§8] §xWeebify§f: Example Discord broadcast!"), this.width/2 + 5, 154, DPTB2Utils.hexToInt(this.discColorInput.getText()));
         context.drawTextWithShadow(this.textRenderer, Text.of("§8[§yWPTB§8] §yWeebify§f: Example WPTB client broadcast!"), this.width/2 + 5, 179, DPTB2Utils.hexToInt(this.wptbColorInput.getText()));

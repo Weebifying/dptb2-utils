@@ -46,6 +46,7 @@ public class DPTB2Utils implements ClientModInitializer {
 	public boolean isRamper = false;
 	public boolean tryingToConnect = false;
 	public boolean isToggleBc = false;
+	public boolean dptb2RecheckScheduled = false;
 
 	public List<DelayedTask> scheduledTasks = new ArrayList<>();
 
@@ -155,11 +156,15 @@ public class DPTB2Utils implements ClientModInitializer {
 		ClientTickEvents.START_CLIENT_TICK.register(this::onClientTick);
 		ClientTickEvents.END_CLIENT_TICK.register((var) -> {
 			scheduledTasks.removeIf(DelayedTask::tick);
+			if (this.dptb2RecheckScheduled) {
+				this.dptb2RecheckScheduled = false;
+				this.scheduleTask(600, () -> this.dptb2Check(var));
+			}
 		});
 		// detecting whether the player is in DPTB2
 		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
 			this.buttonTimerReset();
-			this.dptb2Check(client);
+			this.scheduleTask(20, () -> this.dptb2Check(client));
 		});
 
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
@@ -190,42 +195,46 @@ public class DPTB2Utils implements ClientModInitializer {
 			return;
 		}
 
-		this.scheduleTask(20, () -> {
-			if (client.world == null) return;
+		if (client.world == null) return;
 
-			Scoreboard scoreboard = client.world.getScoreboard();
-			ScoreboardObjective objective = scoreboard.getObjectiveForSlot(ScoreboardDisplaySlot.SIDEBAR);
+		Scoreboard scoreboard = client.world.getScoreboard();
+		ScoreboardObjective objective = scoreboard.getObjectiveForSlot(ScoreboardDisplaySlot.SIDEBAR);
 
-			if (objective != null) {
-				String title = objective.getDisplayName().getString().toLowerCase();
-				Text[] sidebarEntries = scoreboard.getScoreboardEntries(objective)
-						.stream()
-						.filter(score -> !score.hidden())
-						.sorted(Comparator.comparing(ScoreboardEntry::value).reversed().thenComparing(ScoreboardEntry::owner, String.CASE_INSENSITIVE_ORDER))
-						.map(scoreboardEntry -> {
-							Team team = scoreboard.getScoreHolderTeam(scoreboardEntry.owner());
-							Text textx = scoreboardEntry.name();
-							return (Text) Team.decorateName(team, textx);
-						})
-						.toArray(Text[]::new);
+		if (objective != null) {
+			String title = objective.getDisplayName().getString().toLowerCase();
+			Text[] sidebarEntries = scoreboard.getScoreboardEntries(objective)
+					.stream()
+					.filter(score -> !score.hidden())
+					.sorted(Comparator.comparing(ScoreboardEntry::value).reversed().thenComparing(ScoreboardEntry::owner, String.CASE_INSENSITIVE_ORDER))
+					.map(scoreboardEntry -> {
+						Team team = scoreboard.getScoreHolderTeam(scoreboardEntry.owner());
+						Text textx = scoreboardEntry.name();
+						return (Text) Team.decorateName(team, textx);
+					})
+					.toArray(Text[]::new);
 
-				StringBuilder s = new StringBuilder();
-				for (Text entry : sidebarEntries) {
-					s.append(entry.getString());
-				}
-
-				String scoreboardContent = s.toString().toLowerCase().replaceAll("§\\w", "");
-
-//				this.isInDPTB2 = title.contains("housing") && scoreboardContent.contains("don't press the button 2");
-				this.isInDPTB2 = scoreboardContent.contains("don't press the button 2") && scoreboardContent.contains("cyborg023") ;
-
-				if (this.isInDPTB2) client.getToastManager().add(new NotificationToast("DPTB2 Utils", "You are in Don't Press The Button 2!", 0xD2FFC8, SoundEvents.ENTITY_PLAYER_LEVELUP));
-				this.refreshWptbStatus();
-				if (this.isInDPTB2) {
-					this.scheduleTask(600, () -> this.dptb2Check(client));
-				}
+			StringBuilder s = new StringBuilder();
+			for (Text entry : sidebarEntries) {
+				s.append(entry.getString());
 			}
-		});
+
+			String scoreboardContent = s.toString().toLowerCase().replaceAll("§\\w", "");
+
+//			this.isInDPTB2 = title.contains("housing") && scoreboardContent.contains("don't press the button 2");
+			boolean alreadyInDPTB2 = this.isInDPTB2;
+			this.isInDPTB2 = scoreboardContent.contains("don't press the button 2") && scoreboardContent.contains("cyborg023");
+
+			if (this.isInDPTB2 && !alreadyInDPTB2) {
+				client.getToastManager().add(new NotificationToast("DPTB2 Utils", "You are in Don't Press The Button 2!", 0xD2FFC8, SoundEvents.ENTITY_PLAYER_LEVELUP));
+			}
+
+			if (this.isInDPTB2 != alreadyInDPTB2) {
+				this.refreshWptbStatus();
+			}
+			if (this.isInDPTB2) {
+				this.dptb2RecheckScheduled = true;
+			}
+		}
 	}
 
 	private void initializeCommands() {
@@ -342,7 +351,7 @@ public class DPTB2Utils implements ClientModInitializer {
 	public void refreshWptbStatus() {
 		String host = this.getStringConfig("others.dptbotHost");
 		int port = this.getIntConfig("others.dptbotPort");
-		if (this.isInDPTB2 && this.getBoolConfig("others.discordRamper")) {
+		if (this.isInDPTB2 && this.getBoolConfig("others.discordRamper") && (this.websocketClient == null || this.websocketClient.isOpen())) {
 			LOGGER.info("Attempting Websocket connection to ws://{}:{}", host, port);
 			websocketClient = new DiscordWebSocketClient(String.format("ws://%s:%s", host, port));
 			websocketClient.connect();
