@@ -43,6 +43,7 @@ public class DPTBotConfigScreen extends Screen {
 
         this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Agree to Ramp: %s", mod.getBoolConfig("others.consentRamper") ? "ON" : "OFF")), (btn) -> {
             btn.setMessage(Text.of(String.format("Agree to Ramp: %s", mod.toggleBoolConfig("others.consentRamper") ? "ON" : "OFF")));
+            DPTB2Utils.LOGGER.info("consentRamper set to {}", mod.getBoolConfig("others.consentRamper"));
             mod.reassessRamperStatus();
         }).dimensions(this.width/2 + 80 - 75, 75, 150, 20).build());
 

@@ -351,7 +351,7 @@ public class DPTB2Utils implements ClientModInitializer {
 	public void refreshWptbStatus() {
 		String host = this.getStringConfig("others.dptbotHost");
 		int port = this.getIntConfig("others.dptbotPort");
-		if (this.isInDPTB2 && this.getBoolConfig("others.discordRamper") && (this.websocketClient == null || this.websocketClient.isOpen())) {
+		if (this.isInDPTB2 && this.getBoolConfig("others.discordRamper") && (this.websocketClient == null || !this.websocketClient.isOpen())) {
 			LOGGER.info("Attempting Websocket connection to ws://{}:{}", host, port);
 			websocketClient = new DiscordWebSocketClient(String.format("ws://%s:%s", host, port));
 			websocketClient.connect();
@@ -365,6 +365,7 @@ public class DPTB2Utils implements ClientModInitializer {
 	}
 
 	public void reassessRamperStatus() {
+		LOGGER.info("isInDPTB2: {}, consentRamper: {}", this.isInDPTB2, this.getBoolConfig("others.consentRamper"));
 		if (this.isInDPTB2 && this.getBoolConfig("others.discordRamper")) {
 			if (websocketClient != null && websocketClient.isOpen()) {
 				websocketClient.sendModMessage("reassessConsent", Map.of("name", mc.player != null ? mc.player.getGameProfile().getName() : "Unknown", "consent", this.getBoolConfig("others.consentRamper")));
