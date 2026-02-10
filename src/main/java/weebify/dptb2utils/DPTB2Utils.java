@@ -422,6 +422,12 @@ public class DPTB2Utils implements ClientModInitializer {
 		}
 		return this.getConfig(prop);
 	}
+	public List<String> getListConfig(String prop) {
+		if (ModConfigs.propertyTypes.get(prop) != List.class) {
+			throw new IllegalArgumentException("Property " + prop + " is not of type List!");
+		}
+		return this.getConfig(prop);
+	}
 
 	public <T> T setConfig(String prop, T value) {
 		return this.config.setConfig(prop, value);
@@ -447,6 +453,12 @@ public class DPTB2Utils implements ClientModInitializer {
 	public String setStringConfig(String prop, String value) {
 		if (ModConfigs.propertyTypes.get(prop) != String.class) {
 			throw new IllegalArgumentException("Property " + prop + " is not of type String!");
+		}
+		return this.setConfig(prop, value);
+	}
+	public List<String> setListConfig(String prop, List<String> value) {
+		if (ModConfigs.propertyTypes.get(prop) != List.class) {
+			throw new IllegalArgumentException("Property " + prop + " is not of type List!");
 		}
 		return this.setConfig(prop, value);
 	}
