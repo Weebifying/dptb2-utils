@@ -5,7 +5,9 @@ import com.google.gson.reflect.TypeToken;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ModConfigs {
@@ -101,6 +103,8 @@ public class ModConfigs {
         createNewConfig("others.incognito", "false", Boolean.class);
         createNewConfig("others.discColor", "5555FF", String.class);
         createNewConfig("others.wptbColor", "D2FFC8", String.class);
+        createNewConfig("others.discBlocks", "[]", List.class);
+        createNewConfig("others.wptbBlocks", "[]", List.class);
 
         createNewConfig("buttonTimer.enabled", "false", Boolean.class);
         createNewConfig("buttonTimer.textShadow", "false", Boolean.class);
