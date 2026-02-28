@@ -48,7 +48,7 @@ public class ChatHudMixin {
         MinecraftClient mc = MinecraftClient.getInstance();
         ToastManager toastManager = mc.getToastManager();
         if (mod.getBoolConfig("notifs.dontDelaySfx")) {
-            mc.getSoundManager().play(PositionedSoundInstance.master(sfx, 1, 1));
+            mc.getSoundManager().play(PositionedSoundInstance.ui(sfx, 1, 1));
         }
         toastManager.add(new NotificationToast(title, message, color, mod.getBoolConfig("notifs.dontDelaySfx") ? null : sfx));
     }

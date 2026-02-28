@@ -99,7 +99,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
                     if (MC.player != null && mod.getBoolConfig("others.broadcastChat")) {
                         MC.player.sendMessage(Text.literal(sb.toString()), false);
                         if (!mod.getBoolConfig("others.broadcastToast") && mod.getBoolConfig("others.broadcastSounds")) {
-                            MC.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), currentPitch, 1));
+                            MC.getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), currentPitch, 1));
                         }
                     }
                 } else if (type.equalsIgnoreCase("askTabList")) {

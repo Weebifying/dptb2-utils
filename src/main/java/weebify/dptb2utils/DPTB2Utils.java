@@ -367,7 +367,7 @@ public class DPTB2Utils implements ClientModInitializer {
 		LOGGER.info("isInDPTB2: {}, consentRamper: {}", this.isInDPTB2, this.getBoolConfig("others.consentRamper"));
 		if (this.isInDPTB2 && this.getBoolConfig("others.discordRamper")) {
 			if (websocketClient != null && websocketClient.isOpen()) {
-				websocketClient.sendModMessage("reassessConsent", Map.of("name", mc.player != null ? mc.player.getGameProfile().getName() : "Unknown", "consent", this.getBoolConfig("others.consentRamper")));
+				websocketClient.sendModMessage("reassessConsent", Map.of("name", mc.player != null ? mc.player.getGameProfile().name() : "Unknown", "consent", this.getBoolConfig("others.consentRamper")));
 			}
 		} else {
 			this.isRamper = false;

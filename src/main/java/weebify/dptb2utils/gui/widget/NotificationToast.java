@@ -70,7 +70,7 @@ public class NotificationToast implements Toast {
         if (!this.soundPlayed && time > 0) {
             this.soundPlayed = true;
             if (this.sfx != null) {
-                manager.getClient().getSoundManager().play(PositionedSoundInstance.master(this.sfx, this.pitch, this.volume));
+                manager.getClient().getSoundManager().play(PositionedSoundInstance.ui(this.sfx, this.pitch, this.volume));
             }
         }
 

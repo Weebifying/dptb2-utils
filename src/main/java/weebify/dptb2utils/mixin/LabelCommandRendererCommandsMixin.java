@@ -23,6 +23,7 @@ public class LabelCommandRendererCommandsMixin {
     @Inject(method = "add", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/MatrixStack;pop()V"))
     private void addInject(MatrixStack matrices, @Nullable Vec3d pos, int y, Text text, boolean notSneaking, int light, double squaredDistanceToCamera, CameraRenderState cameraState, CallbackInfo ci) {
         DPTB2Utils mod = DPTB2Utils.getInstance();
+        TextRenderer tr = MinecraftClient.getInstance().textRenderer;
         VertexConsumerProvider vertexConsumers = MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers();
 
         if (mod.isInDPTB2) {
@@ -32,7 +33,7 @@ public class LabelCommandRendererCommandsMixin {
                 Matrix4f matrix4f = matrices.peek().getPositionMatrix();
                 Identifier id = Identifier.of(DPTB2Utils.MOD_ID, mod.getStringConfig("others.indicatorPath"));
 
-                RenderLayer rl = notSneaking ? RenderLayer.getTextSeeThrough(id) : RenderLayer.getText(id);
+                RenderLayer rl = notSneaking ? RenderLayers.textSeeThrough(id) : RenderLayers.text(id);
                 VertexConsumer vc = vertexConsumers.getBuffer(rl);
 
                 // tl, bl, br, tr
@@ -43,7 +44,7 @@ public class LabelCommandRendererCommandsMixin {
 
                 if (notSneaking) {
                     int brightLight = LightmapTextureManager.applyEmission(light, 2);
-                    RenderLayer rl2 = RenderLayer.getText(id);
+                    RenderLayer rl2 = RenderLayers.text(id);
                     VertexConsumer vc2 = vertexConsumers.getBuffer(rl2);
 
                     vc2.vertex(matrix4f, x, yOffset, 0).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(brightLight).normal(0.f, 1.f, 0.f).color(Colors.WHITE);

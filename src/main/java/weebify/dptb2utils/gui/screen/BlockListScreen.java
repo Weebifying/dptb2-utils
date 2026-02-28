@@ -1,6 +1,7 @@
 package weebify.dptb2utils.gui.screen;
 
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
@@ -399,17 +400,20 @@ public class BlockListScreen extends Screen {
             context.enableScissor(getX(), getY(), getX() + getWidth(), getY() + getHeight());
             drawContent(context, mouseX, mouseY);
             context.disableScissor();
-            drawScrollbar(context);
+            drawScrollbar(context, mouseX, mouseY);
         }
 
         @Override
         protected void appendClickableNarrations(NarrationMessageBuilder builder) {}
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        public boolean mouseClicked(Click click, boolean doubled) {
+            double mouseX = click.x();
+            double mouseY = click.y();
+
             if (!this.isMouseOver(mouseX, mouseY)) return false;
 
-            if (checkScrollbarDragged(mouseX, mouseY, button)) {
+            if (checkScrollbarDragged(click)) {
                 return true;
             }
 
@@ -425,7 +429,7 @@ public class BlockListScreen extends Screen {
                     return true;
                 }
             }
-            return super.mouseClicked(mouseX, mouseY, button);
+            return super.mouseClicked(click, doubled);
         }
 
         @Override
