@@ -42,7 +42,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
     public void onOpen(ServerHandshake handshakedata) {
         mod.tryingToConnect = false;
         if (MC.player != null) {
-            this.sendModMessage("greet", Map.of("name", MC.player.getGameProfile().name(), "version", DPTB2Utils.VERSION, "mc", MC.getGameVersion()));
+            this.sendModMessage("greet", Map.of("name", MC.player.getGameProfile().name(), "currentName", MC.player.getDisplayName().getString(), "id", MC.player.getGameProfile().id().toString().replace("-", ""), "version", DPTB2Utils.VERSION, "mc", MC.getGameVersion()));
         }
         MC.execute(() -> MC.getToastManager().add(new NotificationToast("DPTBot", "Connected!", Colors.WHITE, SoundEvents.ENTITY_BAT_TAKEOFF)));
     }
@@ -56,10 +56,14 @@ public class DiscordWebSocketClient extends WebSocketClient {
         Integer col = (Integer) data.get("color");
         MinecraftClient.getInstance().execute(() -> {
                 if (type.equalsIgnoreCase("delegate")) {
-                    if (mod.getBoolConfig("others.discordRamper") && MC.player != null) {
+                    if (mod.getBoolConfig("others.consentRamper")) {
                         MC.getToastManager().add(new NotificationToast("DPTBot", text, col != null ? col : 0xFFC8FFC8, SoundEvents.ENTITY_BAT_TAKEOFF));
                         mod.isRamper = true;
-                        this.sendModMessage("confirm", Map.of("text", MC.player.getGameProfile().name()));
+                        this.sendModMessage("confirm", Map.of("text", MC.player != null ? MC.player.getGameProfile().name() : "Unknown"));
+                    } else {
+                        MC.getToastManager().add(new NotificationToast("DPTBot", "Ramper request denied.", Colors.RED, SoundEvents.ENTITY_BAT_TAKEOFF));
+                        mod.isRamper = false;
+                        this.sendModMessage("deny", Map.of("text", MC.player != null ? MC.player.getGameProfile().name() : "Unknown"));
                     }
                 } else if (type.equalsIgnoreCase("revoke")) {
                     if (mod.getBoolConfig("others.discordRamper")) {
@@ -89,12 +93,12 @@ public class DiscordWebSocketClient extends WebSocketClient {
 
                     if (mod.getBoolConfig("others.broadcastToast")) {
                         int color = source.equalsIgnoreCase("DISC") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.discColor")) : (source.equalsIgnoreCase("WPTB") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.wptbColor")) : (source.equalsIgnoreCase("CONSOLE") ? 0xFFFF5555 : 0xFFFFFFFF));
-                        MC.getToastManager().add(new NotificationToast(String.format("[%s] %s", source, name), text, col != null ? col : color, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), currentPitch, 1));
+                        MC.getToastManager().add(new NotificationToast(String.format("[%s] %s", source, name), text, col != null ? col : color, mod.getBoolConfig("others.broadcastSounds") ? SoundEvents.BLOCK_NOTE_BLOCK_PLING.value() : null, currentPitch, 1));
                     }
 
                     if (MC.player != null && mod.getBoolConfig("others.broadcastChat")) {
                         MC.player.sendMessage(Text.literal(sb.toString()), false);
-                        if (!mod.getBoolConfig("others.broadcastToast")) {
+                        if (!mod.getBoolConfig("others.broadcastToast") && mod.getBoolConfig("others.broadcastSounds")) {
                             MC.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), currentPitch, 1));
                         }
                     }
@@ -108,6 +112,32 @@ public class DiscordWebSocketClient extends WebSocketClient {
                     }
                 } else if (type.equalsIgnoreCase("updateClients")) {
                     this.clientsList = (List<String>) data.get("clients");
+                } else if (type.equalsIgnoreCase("queryIdResponse")) {
+                    String id = (String) data.get("id");
+                    String username = (String) data.get("username");
+                    String kind = (String) data.get("kind");
+                    if (!id.isBlank()) {
+                        if (kind.equalsIgnoreCase("DISC")) {
+                            BlockListManager.putDiscUsername(id, username);
+                        } else if (kind.equalsIgnoreCase("WPTB")) {
+                            BlockListManager.putWptbUsername(id, username);
+                        }
+                    } else {
+                        // error handling
+                    }
+                } else if (type.equalsIgnoreCase("queryNameResponse")) {
+                    String username = (String) data.get("username");
+                    String id = (String) data.get("id");
+                    String kind = (String) data.get("kind");
+                    if (!username.isBlank()) {
+                        if (kind.equalsIgnoreCase("DISC")) {
+                            BlockListManager.putDiscUsername(id, username);
+                        } else if (kind.equalsIgnoreCase("WPTB")) {
+                            BlockListManager.putWptbUsername(id, username);
+                        }
+                    } else {
+                        // error handling
+                    }
                 }
         });
     }
