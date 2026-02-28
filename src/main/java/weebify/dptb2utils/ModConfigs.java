@@ -92,7 +92,7 @@ public class ModConfigs {
         createNewConfig("others.autoCheer", "false", Boolean.class);
 
         // mistakes were made.
-        createNewConfig("others.discordRamper", "false", Boolean.class);
+        createNewConfig("others.discordRamper", "true", Boolean.class);
         createNewConfig("others.consentRamper", "true", Boolean.class);
         createNewConfig("others.dptbotHost", "87.106.105.24", String.class);
         createNewConfig("others.dptbotPort", "10092", Integer.class);

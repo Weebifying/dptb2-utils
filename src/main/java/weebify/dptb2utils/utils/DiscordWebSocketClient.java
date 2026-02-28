@@ -112,6 +112,32 @@ public class DiscordWebSocketClient extends WebSocketClient {
                     }
                 } else if (type.equalsIgnoreCase("updateClients")) {
                     this.clientsList = (List<String>) data.get("clients");
+                } else if (type.equalsIgnoreCase("queryIdResponse")) {
+                    String id = (String) data.get("id");
+                    String username = (String) data.get("username");
+                    String kind = (String) data.get("kind");
+                    if (!id.isBlank()) {
+                        if (kind.equalsIgnoreCase("DISC")) {
+                            BlockListManager.putDiscUsername(id, username);
+                        } else if (kind.equalsIgnoreCase("WPTB")) {
+                            BlockListManager.putWptbUsername(id, username);
+                        }
+                    } else {
+                        // error handling
+                    }
+                } else if (type.equalsIgnoreCase("queryNameResponse")) {
+                    String username = (String) data.get("username");
+                    String id = (String) data.get("id");
+                    String kind = (String) data.get("kind");
+                    if (!username.isBlank()) {
+                        if (kind.equalsIgnoreCase("DISC")) {
+                            BlockListManager.putDiscUsername(id, username);
+                        } else if (kind.equalsIgnoreCase("WPTB")) {
+                            BlockListManager.putWptbUsername(id, username);
+                        }
+                    } else {
+                        // error handling
+                    }
                 }
         });
     }

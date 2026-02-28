@@ -96,7 +96,13 @@ public class DPTBotConfigScreen extends Screen {
             this.portInput.visible = this.showIPOptions;
         }).dimensions(30, this.height - 30 - 10,150, 20).build());
 
+//        this.addDrawableChild(ButtonWidget.builder(Text.of("Block List"), (btn) -> {
+//            assert this.client != null;
+//            this.client.setScreen(new BlockListScreen(this, mod));
+//        }).dimensions(30, this.height - 30 - 35, 150, 20).build());
+
         this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), (btn) -> {
+            assert this.client != null;
             this.saveIPSettings();
             this.client.setScreen(parent);
         }).dimensions(this.width / 2 - 75, this.height - 30 - 10, 150, 20).build());
