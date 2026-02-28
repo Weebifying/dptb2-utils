@@ -78,12 +78,16 @@ public class DPTBotConfigScreen extends Screen {
         this.wptbColorInput.setText(mod.getStringConfig("others.wptbColor"));
         this.addDrawableChild(this.wptbColorInput);
 
-        this.hostInput = new EditBoxWidget(this.textRenderer, this.width / 2 - 80 - 75, 200,  150, 20, Text.of("Websocket Host"), Text.empty());
+        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Broadcast Sounds: %s", mod.getBoolConfig("others.broadcastSounds") ? "ON" : "OFF")), (btn) -> {
+            btn.setMessage(Text.of(String.format("Broadcast Sounds: %s", mod.toggleBoolConfig("others.broadcastSounds") ? "ON" : "OFF")));
+        }).dimensions(this.width/2 - 80 - 75, 200, 150, 20).build());
+
+        this.hostInput = new EditBoxWidget(this.textRenderer, this.width / 2 - 80 - 75, 225,  150, 20, Text.of("Websocket Host"), Text.empty());
         this.hostInput.setText(mod.getStringConfig("others.dptbotHost"));
         this.hostInput.visible = false;
         this.addDrawableChild(this.hostInput);
 
-        this.portInput = new EditBoxWidget(this.textRenderer, this.width / 2 + 80 - 75, 200, 150, 20, Text.of("Websocket Port"), Text.empty());
+        this.portInput = new EditBoxWidget(this.textRenderer, this.width / 2 + 80 - 75, 225, 150, 20, Text.of("Websocket Port"), Text.empty());
         this.portInput.setText(Integer.toString(mod.getIntConfig("others.dptbotPort")));
         this.portInput.visible = false;
         this.addDrawableChild(this.portInput);

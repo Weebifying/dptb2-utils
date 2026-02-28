@@ -96,7 +96,7 @@ public class ModConfigs {
         createNewConfig("others.consentRamper", "true", Boolean.class);
         createNewConfig("others.dptbotHost", "87.106.105.24", String.class);
         createNewConfig("others.dptbotPort", "10092", Integer.class);
-        createNewConfig("others.broadcastToast", "true", Boolean.class);
+        createNewConfig("others.broadcastToast", "false", Boolean.class);
         createNewConfig("others.broadcastChat", "true", Boolean.class);
         createNewConfig("others.woahSecretSetting", "false", Boolean.class); // lol
         createNewConfig("others.indicatorPath", "textures/indicator/icon.png", String.class);
@@ -105,6 +105,7 @@ public class ModConfigs {
         createNewConfig("others.wptbColor", "D2FFC8", String.class);
         createNewConfig("others.discBlocks", "[]", List.class);
         createNewConfig("others.wptbBlocks", "[]", List.class);
+        createNewConfig("others.broadcastSounds", "true", Boolean.class);
 
         createNewConfig("buttonTimer.enabled", "false", Boolean.class);
         createNewConfig("buttonTimer.textShadow", "false", Boolean.class);

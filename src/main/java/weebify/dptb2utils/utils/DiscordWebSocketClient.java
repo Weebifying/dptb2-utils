@@ -93,12 +93,12 @@ public class DiscordWebSocketClient extends WebSocketClient {
 
                     if (mod.getBoolConfig("others.broadcastToast")) {
                         int color = source.equalsIgnoreCase("DISC") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.discColor")) : (source.equalsIgnoreCase("WPTB") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.wptbColor")) : (source.equalsIgnoreCase("CONSOLE") ? 0xFFFF5555 : 0xFFFFFFFF));
-                        MC.getToastManager().add(new NotificationToast(String.format("[%s] %s", source, name), text, col != null ? col : color, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), currentPitch, 1));
+                        MC.getToastManager().add(new NotificationToast(String.format("[%s] %s", source, name), text, col != null ? col : color, mod.getBoolConfig("others.broadcastSounds") ? SoundEvents.BLOCK_NOTE_BLOCK_PLING.value() : null, currentPitch, 1));
                     }
 
                     if (MC.player != null && mod.getBoolConfig("others.broadcastChat")) {
                         MC.player.sendMessage(Text.literal(sb.toString()), false);
-                        if (!mod.getBoolConfig("others.broadcastToast")) {
+                        if (!mod.getBoolConfig("others.broadcastToast") && mod.getBoolConfig("others.broadcastSounds")) {
                             MC.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), currentPitch, 1));
                         }
                     }
