@@ -33,9 +33,9 @@ public class GuiDPTBotConfig extends GuiScreen {
     public void initGui() {
         this.buttonList.clear();
         this.buttonList.add(new GuiButton(1, width / 2 - 80 - 75, 75, 150, 20, String.format("DPTBot Connection: %s", mod.getBoolConfig("others.discordRamper") ? "ON" : "OFF")));
-        this.buttonList.add(new GuiButton(2, width / 2 + 80 - 75, 75, 150, 20, String.format("Advanced Options: %s", this.showIPOptions ? "ON" : "OFF")));
+        this.buttonList.add(new GuiButton(2, width / 2 + 80 - 75, 75, 150, 20, String.format("Agree to Ramp: %s", mod.getBoolConfig("others.consentRamper") ? "ON" : "OFF")));
         this.buttonList.add(new GuiButton(3, width / 2 - 80 - 75, 100, 150, 20, String.format("Broadcast Notifs: %s", mod.getBoolConfig("others.broadcastToast") ? "ON" : "OFF")));
-        this.buttonList.add(new GuiButton(4, width / 2 + 80 - 75, 100, 150, 20, String.format("Broadcast Chat: %s", mod.toggleBoolConfig("others.broadcastToast") ? "ON" : "OFF")));
+        this.buttonList.add(new GuiButton(4, width / 2 + 80 - 75, 100, 150, 20, String.format("Broadcast Chat: %s", mod.getBoolConfig("others.broadcastChat") ? "ON" : "OFF")));
 
         this.buttonList.add(new GuiButton(5, width / 2 - 80 - 75, 125, 150, 20, "Reset Indicator Image"));
         this.buttonList.add(new GuiButton(6, width / 2 + 80 - 75, 125, 150, 20, "Choose Indicator Image"));
@@ -46,13 +46,17 @@ public class GuiDPTBotConfig extends GuiScreen {
         this.wptbColorInput = new GuiTextField(-4, fontRendererObj, width / 2 - 80 - 75, 175, 150, 20);
         this.wptbColorInput.setText(mod.getStringConfig("others.wptbColor"));
 
-        this.hostInput = new GuiTextField(-1, fontRendererObj, width / 2 - 80 - 75, 200, 150, 20);
+        this.buttonList.add(new GuiButton(7, width / 2 - 80 - 75, 200, 150, 20, String.format("Broadcast Sounds: %s", mod.getBoolConfig("others.broadcastSounds") ? "ON" : "OFF")));
+
+        this.hostInput = new GuiTextField(-1, fontRendererObj, width / 2 - 80 - 75, 225, 150, 20);
         this.hostInput.setText(mod.getStringConfig("others.dptbotHost"));
         this.hostInput.setVisible(false);
 
-        this.portInput = new GuiTextField(-2, fontRendererObj, width / 2 + 80 - 75, 200, 150, 20);
+        this.portInput = new GuiTextField(-2, fontRendererObj, width / 2 + 80 - 75, 225, 150, 20);
         this.portInput.setText(Integer.toString(mod.getIntConfig("others.dptbotPort")));
         this.portInput.setVisible(false);
+
+        this.buttonList.add(new GuiButton(500, 30, this.height - 30 - 10,150, 20, String.format("Advanced Options: %s", this.showIPOptions ? "ON" : "OFF")));
         
         this.buttonList.add(new GuiButton(999, width / 2 - 75, height - 30 - 10, 150, 20, I18n.format("gui.done")));
     }
@@ -134,13 +138,11 @@ public class GuiDPTBotConfig extends GuiScreen {
         switch(button.id) {
             case 1:
                 button.displayString = String.format("DPTBot Connection: %s", mod.toggleBoolConfig("others.discordRamper") ? "ON" : "OFF");
-                this.mod.refreshRamperStatus();
+                this.mod.refreshWptbStatus();
                 break;
             case 2:
-                this.showIPOptions = !this.showIPOptions;
-                button.displayString = String.format("Advanced Options: %s", this.showIPOptions ? "ON" : "OFF");
-                this.hostInput.setVisible(this.showIPOptions);
-                this.portInput.setVisible(this.showIPOptions);
+                button.displayString = String.format("Agree to Ramp: %s", mod.toggleBoolConfig("others.consentRamper") ? "ON" : "OFF");
+                mod.reassessRamperStatus();
                 break;
             case 3:
                 button.displayString = String.format("Broadcast Notifs: %s", mod.toggleBoolConfig("others.broadcastToast") ? "ON" : "OFF");
@@ -157,6 +159,12 @@ public class GuiDPTBotConfig extends GuiScreen {
                 this.showError = false;
                 mod.scheduleTask(1, () -> new Thread(this::chooseFile).start());
                 break;
+            case 500:
+                this.showIPOptions = !this.showIPOptions;
+                button.displayString = String.format("Advanced Options: %s", this.showIPOptions ? "ON" : "OFF");
+                this.hostInput.setVisible(this.showIPOptions);
+                this.portInput.setVisible(this.showIPOptions);
+                break;
             case 999:
                 this.saveIPSettings();
                 this.mc.displayGuiScreen(this.parent);
@@ -172,6 +180,7 @@ public class GuiDPTBotConfig extends GuiScreen {
         this.discColorInput.drawTextBox();
         this.wptbColorInput.drawTextBox();
         this.drawCenteredString(fontRendererObj, "DPTBot Settings", width / 2, 20, 0xFFFFFF);
+        this.drawCenteredString(fontRendererObj, String.format("isRamper: %b", mod.isRamper), this.width/2, this.height - 45 - 10, mod.isRamper ? 0xFF55FF55 : 0xFFFF5555);
 
         this.drawString(fontRendererObj, "§8[§xDISC§8] §xWeebify§f: Example Discord broadcast!", width/2 + 5, 154, DPTB2Utils.hexToInt(this.discColorInput.getText()));
         this.drawString(fontRendererObj, "§8[§yWPTB§8] §yWeebify§f: Example WPTB client broadcast!", width/2 + 5, 179, DPTB2Utils.hexToInt(this.discColorInput.getText()));

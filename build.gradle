@@ -17,7 +17,7 @@ plugins {
 apply plugin: "net.minecraftforge.gradle.forge"
 apply plugin: 'org.spongepowered.mixin'
 
-version = "1.2.1" // The version number of your mod.
+version = "1.2.2" // The version number of your mod.
 group = "weebify.dptb2utils" // This is the group of the mod (usually domain or your name -> at.manuthebyte)
 archivesBaseName = "dptb2-utils-forge-1.8.9" // This is the name of the jar that is generated.
 
@@ -132,7 +132,7 @@ task buildAndCopyToMods(dependsOn: ['aclearLibs', 'build']) {
         copy {
             from 'build/libs'
             include '*.jar'
-            into "C:/Users/weebi/OneDrive/Desktop/random shit/MultiMC/instances/1.8.9/.minecraft/mods"
+            into "C:/Users/weebi/AppData/Roaming/PrismLauncher/instances/1.8.9/.minecraft/mods"
         }
     }
 }

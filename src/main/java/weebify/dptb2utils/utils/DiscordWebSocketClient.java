@@ -36,7 +36,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
     public void onOpen(ServerHandshake handshakedata) {
         mod.tryingToConnect = false;
         if (MC.thePlayer != null) {
-            this.sendModMessage("greet", DPTB2Utils.mapOf("name", MC.thePlayer.getGameProfile().getName(), "version", DPTB2Utils.VERSION, "mc", MC.getVersion()));
+            this.sendModMessage("greet", DPTB2Utils.mapOf("name", MC.thePlayer.getGameProfile().getName(), "currentName", MC.thePlayer.getDisplayName().getFormattedText(), "id", MC.thePlayer.getGameProfile().getId().toString(), "version", DPTB2Utils.VERSION, "mc", MC.getVersion()));
         }
         MC.addScheduledTask(() -> NotificationManager.getInstance().add("DPTBot", "Connected!", 0xFFFFFFFF, "mob.bat.takeoff"));
     }
@@ -54,13 +54,17 @@ public class DiscordWebSocketClient extends WebSocketClient {
         Integer col = (Integer) data.get("color");
         Minecraft.getMinecraft().addScheduledTask(() -> {
             if (type.equalsIgnoreCase("delegate")) {
-                if (mod.getBoolConfig("others.discordRamper") && MC.thePlayer != null) {
+                if (mod.getBoolConfig("others.consentRamper")) {
                     notifManager.add("DPTBot", text, col != null ? col : 0xFFC8FFC8, "mob.bat.takeoff");
                     mod.isRamper = true;
                     this.sendModMessage("confirm", DPTB2Utils.mapOf("text", MC.thePlayer.getGameProfile().getName()));
+                } else {
+                    notifManager.add("DPTBot", "Ramper request denied.", 0xFFFF0000, "mob.bat.takeoff");
+                    mod.isRamper = false;
+                    this.sendModMessage("deny", DPTB2Utils.mapOf("text", MC.thePlayer != null ? MC.thePlayer.getGameProfile().getName() : "Unknown"));
                 }
             } else if (type.equalsIgnoreCase("revoke")) {
-                if (mod.getBoolConfig("others.discordRamper")) {
+                if (mod.getBoolConfig("others.consentRamper")) {
                     notifManager.add("DPTBot", text, col != null ? col : 0xFFFFC8C8, "mob.bat.takeoff");
                     mod.isRamper = false;
                 }
@@ -87,12 +91,12 @@ public class DiscordWebSocketClient extends WebSocketClient {
 
                 if (mod.getBoolConfig("others.broadcastToast")) {
                     int color = source.equalsIgnoreCase("DISC") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.discColor")) : (source.equalsIgnoreCase("WPTB") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.wptbColor")) : (source.equalsIgnoreCase("CONSOLE") ? 0xFFFF5555 : 0xFFFFFFFF));
-                    notifManager.add(String.format("[%s] %s", source, name), text, col != null ? col : color, "note.pling", 1, currentPitch);
+                    notifManager.add(String.format("[%s] %s", source, name), text, col != null ? col : color, mod.getBoolConfig("others.broadcastSounds") ? "note.pling" : null, 1, currentPitch);
                 }
 
                 if (MC.thePlayer != null && mod.getBoolConfig("others.broadcastChat")) {
                     MC.thePlayer.addChatMessage(new ChatComponentText(sb.toString()));
-                    if (!mod.getBoolConfig("others.broadcastToast")) {
+                    if (!mod.getBoolConfig("others.broadcastToast") && mod.getBoolConfig("others.broadcastSounds")) {
                         MC.thePlayer.playSound("note.pling", 1, currentPitch);
                     }
                 }
@@ -106,6 +110,32 @@ public class DiscordWebSocketClient extends WebSocketClient {
                 }
             } else if (type.equalsIgnoreCase("updateClients")) {
                 this.clientsList = (List<String>) data.get("clients");
+            } else if (type.equalsIgnoreCase("queryIdResponse")) {
+                String id = (String) data.get("id");
+                String username = (String) data.get("username");
+                String kind = (String) data.get("kind");
+//                if (!id.isBlank()) {
+//                    if (kind.equalsIgnoreCase("DISC")) {
+//                        BlockListManager.putDiscUsername(id, username);
+//                    } else if (kind.equalsIgnoreCase("WPTB")) {
+//                        BlockListManager.putWptbUsername(id, username);
+//                    }
+//                } else {
+//                    // error handling
+//                }
+            } else if (type.equalsIgnoreCase("queryNameResponse")) {
+                String username = (String) data.get("username");
+                String id = (String) data.get("id");
+                String kind = (String) data.get("kind");
+//                if (!username.isBlank()) {
+//                    if (kind.equalsIgnoreCase("DISC")) {
+//                        BlockListManager.putDiscUsername(id, username);
+//                    } else if (kind.equalsIgnoreCase("WPTB")) {
+//                        BlockListManager.putWptbUsername(id, username);
+//                    }
+//                } else {
+//                    // error handling
+//                }
             }
         });
     }
@@ -141,7 +171,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
     public void retryConnection() {
         mod.tryingToConnect = true;
         mod.scheduleTask( 1200, () -> {
-            if ((mod.websocketClient == null || mod.websocketClient.isClosed()) & mod.getBoolConfig("others.discordRamper") && mod.tryingToConnect && mod.isInDPTB2) {
+            if ((mod.websocketClient == null || mod.websocketClient.isClosed()) & mod.getBoolConfig("others.consentRamper") && mod.tryingToConnect && mod.isInDPTB2) {
                 String host = mod.getStringConfig("others.dptbotHost");
                 int port = mod.getIntConfig("others.dptbotPort");
 

@@ -43,7 +43,7 @@ import java.util.*;
 @Mod(modid = DPTB2Utils.MOD_ID, version = DPTB2Utils.VERSION)
 public class DPTB2Utils {
     public static final String MOD_ID = "dptb2-utils";
-    public static final String VERSION = "1.2.1";
+    public static final String VERSION = "1.2.2";
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
     public ModConfigs config;
@@ -55,6 +55,7 @@ public class DPTB2Utils {
     public boolean tryingToConnect = false;
     public boolean checkedJoin = false;
     public boolean isToggleBc = false;
+    public boolean dptb2RecheckScheduled = false;
 
     public List<DelayedTask> scheduledTasks = new ArrayList<>();
 
@@ -173,6 +174,10 @@ public class DPTB2Utils {
             }
         } else if (event.phase == TickEvent.Phase.END) {
             scheduledTasks.removeIf(DelayedTask::tick);
+            if (this.dptb2RecheckScheduled) {
+                this.dptb2RecheckScheduled = false;
+                this.scheduleTask(600, this::dptb2Check);
+            }
         }
     }
 
@@ -183,7 +188,7 @@ public class DPTB2Utils {
             this.checkedJoin = true;
             this.scheduleTask(10, () -> this.checkedJoin = false);
 
-            this.dptb2Check();
+            this.scheduleTask(20, this::dptb2Check);
         }
     }
 
@@ -199,32 +204,35 @@ public class DPTB2Utils {
             return;
         }
 
-        this.scheduleTask(20, () -> {
-            if (mc.theWorld == null) return;
+        if (mc.theWorld == null) return;
 
-            Scoreboard scoreboard = mc.theWorld.getScoreboard();
-            ScoreObjective objective = scoreboard.getObjectiveInDisplaySlot(1);
+        Scoreboard scoreboard = mc.theWorld.getScoreboard();
+        ScoreObjective objective = scoreboard.getObjectiveInDisplaySlot(1);
 
-            if (objective != null) {
-                String title = objective.getDisplayName().toLowerCase();
-                List<Score> scores = (List<Score>) scoreboard.getSortedScores(objective);
-                Collections.reverse(scores);
+        if (objective != null) {
+            String title = objective.getDisplayName().toLowerCase();
+            List<Score> scores = (List<Score>) scoreboard.getSortedScores(objective);
+            Collections.reverse(scores);
 
-                StringBuilder s = new StringBuilder();
-                for (Score score : scores) {
-                    ScorePlayerTeam team = scoreboard.getPlayersTeam(score.getPlayerName());
-                    String line = ScorePlayerTeam.formatPlayerName(team, "");
-                    s.append(line);
-                }
-
-                String content = s.toString().toLowerCase().replaceAll("§\\w", "").trim();
-
-                this.isInDPTB2 = content.contains("don't press the button 2") && content.contains("by cyborg023");
-
-                if (this.isInDPTB2) NotificationManager.getInstance().add("DPTB2 Utils", "You are in Don't Press The Button 2!", 0xD2FFC8, "random.levelup");
-                this.refreshRamperStatus();
+            StringBuilder s = new StringBuilder();
+            for (Score score : scores) {
+                ScorePlayerTeam team = scoreboard.getPlayersTeam(score.getPlayerName());
+                String line = ScorePlayerTeam.formatPlayerName(team, "");
+                s.append(line);
             }
-        });
+
+            String content = s.toString().toLowerCase().replaceAll("§\\w", "").trim();
+
+            boolean alreadyInDPTB2 = this.isInDPTB2;
+            this.isInDPTB2 = content.contains("don't press the button 2") && content.contains("by cyborg023");
+
+            if (this.isInDPTB2 && !alreadyInDPTB2) {
+                NotificationManager.getInstance().add("DPTB2 Utils", "You are in Don't Press The Button 2!", 0xD2FFC8, "random.levelup");
+            }
+            if (this.isInDPTB2) {
+                this.dptb2RecheckScheduled = true;
+            }
+        }
     }
 
     @SubscribeEvent
@@ -334,10 +342,10 @@ public class DPTB2Utils {
         }
     }
 
-    public void refreshRamperStatus() {
+    public void refreshWptbStatus() {
         String host = this.getStringConfig("others.dptbotHost");
         int port = this.getIntConfig("others.dptbotPort");
-        if (this.isInDPTB2 && this.getBoolConfig("others.discordRamper")) {
+        if (this.isInDPTB2 && this.getBoolConfig("others.discordRamper") && (this.websocketClient == null || !this.websocketClient.isOpen())) {
             LOGGER.info("Attempting Websocket connection to ws://{}:{}", host, port);
             websocketClient = new DiscordWebSocketClient(String.format("ws://%s:%s", host, port));
             websocketClient.connect();
@@ -347,6 +355,17 @@ public class DPTB2Utils {
                 LOGGER.info("Closing Websocket connection to ws://{}:{}", host, port);
                 websocketClient.close();
             }
+        }
+    }
+
+    public void reassessRamperStatus() {
+        LOGGER.info("isInDPTB2: {}, consentRamper: {}", this.isInDPTB2, this.getBoolConfig("others.consentRamper"));
+        if (this.isInDPTB2 && this.getBoolConfig("others.discordRamper")) {
+            if (websocketClient != null && websocketClient.isOpen()) {
+                websocketClient.sendModMessage("reassessConsent", mapOf("name", mc.thePlayer != null ? mc.thePlayer.getGameProfile().getName() : "Unknown", "consent", this.getBoolConfig("others.consentRamper")));
+            }
+        } else {
+            this.isRamper = false;
         }
     }
 
@@ -397,6 +416,12 @@ public class DPTB2Utils {
         }
         return this.getConfig(prop);
     }
+    public List<String> getListConfig(String prop) {
+        if (ModConfigs.propertyTypes.get(prop) != List.class) {
+            throw new IllegalArgumentException("Property " + prop + " is not of type List!");
+        }
+        return this.getConfig(prop);
+    }
 
     public <T> T setConfig(String prop, T value) {
         return this.config.setConfig(prop, value);
@@ -425,6 +450,12 @@ public class DPTB2Utils {
         }
         return this.setConfig(prop, value);
     }
+    public List<String> setListConfig(String prop, List<String> value) {
+        if (ModConfigs.propertyTypes.get(prop) != List.class) {
+            throw new IllegalArgumentException("Property " + prop + " is not of type List!");
+        }
+        return this.setConfig(prop, value);
+    }
 
     public boolean toggleBoolConfig(String prop) {
         return !this.setBoolConfig(prop, !this.getBoolConfig(prop));
@@ -448,6 +479,25 @@ public class DPTB2Utils {
         map.put(k1, v1);
         map.put(k2, v2);
         map.put(k3, v3);
+        return Collections.unmodifiableMap(map);
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4) {
+        Map<K, V> map = new HashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        return Collections.unmodifiableMap(map);
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5) {
+        Map<K, V> map = new HashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        map.put(k5, v5);
         return Collections.unmodifiableMap(map);
     }
 }

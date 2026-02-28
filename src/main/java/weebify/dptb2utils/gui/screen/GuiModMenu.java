@@ -25,8 +25,8 @@ public class GuiModMenu extends GuiScreen {
         this.buttonList.add(new GuiButton(7, this.width / 2 - 80 - 75, 150, 150, 20, "Micro Event Timer HUD"));
 
         this.buttonList.add(new GuiButton(999, this.width / 2 - 75, this.height - 30 - 10, 150, 20, I18n.format("gui.done")));
-        this.checkBtn = new GuiButton(1000, 30, this.height - 30 - 10, 150, 20, "Rerun DPTB2 Check");
-        this.checkBtn.visible = !mod.isInDPTB2;
+        this.checkBtn = new GuiButton(1000, 30, this.height - 30 - 10, 150, 20, "Run DPTB2 Check");
+//        this.checkBtn.visible = !mod.isInDPTB2;
         this.buttonList.add(this.checkBtn);
     }
 
@@ -72,7 +72,7 @@ public class GuiModMenu extends GuiScreen {
                 this.checkBtn.enabled = false;
                 this.mod.scheduleTask(25, () -> {
                     this.checkBtn.enabled = true;
-                    this.checkBtn.visible = !mod.isInDPTB2;
+//                    this.checkBtn.visible = !mod.isInDPTB2;
                 });
                 break;
         }
