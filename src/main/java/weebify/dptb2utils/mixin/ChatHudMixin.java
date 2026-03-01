@@ -102,7 +102,7 @@ public class ChatHudMixin {
             }
         } else if (content.startsWith("* [!] The BUTTON has been disabled for 5s!")) {
             MicroTimerManager.microTimer = 0;
-            MicroTimerManager.lastEvent = "§b§lDISABLED";
+            MicroTimerManager.lastEvent = "§f§lDISABLED";
 
             ButtonTimerManager.isDisabled = true;
 
