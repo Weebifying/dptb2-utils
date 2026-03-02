@@ -81,6 +81,6 @@ publishing {
 
 task buildAndCopyToMods(type: Copy,dependsOn: 'build') {
 	from "build/libs"
-	into "C:/Users/weebi/AppData/Roaming/PrismLauncher/instances/1.21.11/.minecraft/mods"
+	into "C:/Users/weebi/AppData/Roaming/PrismLauncher/instances/1.21.11/minecraft/mods"
 	include "*.jar"
 }
