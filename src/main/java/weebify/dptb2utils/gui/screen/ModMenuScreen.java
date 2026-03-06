@@ -59,15 +59,15 @@ public class ModMenuScreen extends Screen {
         this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), (btn) -> {
             this.close();
         }).dimensions(this.width / 2 - 75, this.height - 30 - 10, 150, 20).build());
-        this.checkBtn = ButtonWidget.builder(Text.of("Rerun DPTB2 Check"), (btn) -> {
+        this.checkBtn = ButtonWidget.builder(Text.of("Run DPTB2 Check"), (btn) -> {
             this.mod.dptb2Check(mc);
             this.checkBtn.active = false;
             this.mod.scheduleTask(25, () -> {
                 this.checkBtn.active = true;
-                this.checkBtn.visible = !mod.isInDPTB2;
+//                this.checkBtn.visible = !mod.isInDPTB2;
             });
         }).dimensions(30, this.height - 30 - 10, 150, 20).build();
-        this.checkBtn.visible = !mod.isInDPTB2;
+//        this.checkBtn.visible = !mod.isInDPTB2;
         this.addDrawableChild(this.checkBtn);
     }
 

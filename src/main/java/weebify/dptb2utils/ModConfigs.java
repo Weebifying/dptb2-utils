@@ -5,7 +5,9 @@ import com.google.gson.reflect.TypeToken;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ModConfigs {
@@ -88,16 +90,22 @@ public class ModConfigs {
         createNewConfig("notifs.dontDelaySfx", "false", Boolean.class);
 
         createNewConfig("others.autoCheer", "false", Boolean.class);
-        createNewConfig("others.discordRamper", "false", Boolean.class);
-        createNewConfig("others.dptbotHost", "87.106.101.66", String.class);
-        createNewConfig("others.dptbotPort", "6212", Integer.class);
-        createNewConfig("others.broadcastToast", "true", Boolean.class);
+
+        // mistakes were made.
+        createNewConfig("others.discordRamper", "true", Boolean.class);
+        createNewConfig("others.consentRamper", "true", Boolean.class);
+        createNewConfig("others.dptbotHost", "87.106.105.24", String.class);
+        createNewConfig("others.dptbotPort", "10092", Integer.class);
+        createNewConfig("others.broadcastToast", "false", Boolean.class);
         createNewConfig("others.broadcastChat", "true", Boolean.class);
-        createNewConfig("others.woahSecretSetting", "false", Boolean.class);
+        createNewConfig("others.woahSecretSetting", "false", Boolean.class); // lol
         createNewConfig("others.indicatorPath", "textures/indicator/icon.png", String.class);
         createNewConfig("others.incognito", "false", Boolean.class);
         createNewConfig("others.discColor", "5555FF", String.class);
         createNewConfig("others.wptbColor", "D2FFC8", String.class);
+        createNewConfig("others.discBlocks", "[]", List.class);
+        createNewConfig("others.wptbBlocks", "[]", List.class);
+        createNewConfig("others.broadcastSounds", "true", Boolean.class);
 
         createNewConfig("buttonTimer.enabled", "false", Boolean.class);
         createNewConfig("buttonTimer.textShadow", "false", Boolean.class);

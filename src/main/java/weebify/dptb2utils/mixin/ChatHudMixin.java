@@ -106,7 +106,7 @@ public class ChatHudMixin {
             }
         } else if (content.startsWith("* [!] The BUTTON has been disabled for 5s!")) {
             MicroTimerManager.microTimer = 0;
-            MicroTimerManager.lastEvent = "§b§lDISABLED";
+            MicroTimerManager.lastEvent = "§f§lDISABLED";
 
             ButtonTimerManager.isDisabled = true;
 
@@ -124,9 +124,9 @@ public class ChatHudMixin {
         } else if (content.startsWith("* [!] Everybody received Jump Boost I for 10s!")) {
             MicroTimerManager.microTimer = 0;
             MicroTimerManager.lastEvent = "§a§lJUMP BOOST";
-        } else if (content.startsWith("* [!] Everybody received Speed I for 10s!")) {
+        } else if (content.startsWith("* [!] The Road is covered in SLIPPERY ICE for 10s!")) {
             MicroTimerManager.microTimer = 0;
-            MicroTimerManager.lastEvent = "§e§lSPEED";
+            MicroTimerManager.lastEvent = "§b§lSLIPPERY ICE";
         } else if (content.startsWith("* WOAH")) {
             if (mod.getBoolConfig("notifs.bootsCollected")) {
                 // placeholders in case shit goes down
@@ -207,165 +207,9 @@ public class ChatHudMixin {
                     mod.websocketClient.sendModMessage("chat", Map.of("text", msg));
                 }
             } else if (content.matches("\\* .+")) {
-                handleSystemMessage(content, msg);
+                DPTB2Utils.getInstance().websocketClient.sendModMessage("chat", Map.of("text", msg));
             }
         }
-    }
-
-    @Unique
-    private static void handleSystemMessage(String content, String message) {
-        // number of lines
-        if (content.startsWith("*   MINOR EVENT! ➜ SANDSTORM")) counter = 5;
-        else if (content.startsWith("*   The SANDSTORM has ended!")) counter = 1;
-        else if (content.startsWith("*   MINOR EVENT!  ➜ GOLD RUSH")) counter = 2;
-        else if (content.startsWith("*   MINOR EVENT! ➜ HEAT WAVE")) counter = 5;
-        else if (content.startsWith("*   MINOR EVENT! ➜ CHAOS BUTTON")) counter = 5;
-        else if (content.startsWith("*   MINOR EVENT! ➜ DON'T PRESS THE BUTTON (literally)")) counter = 6;
-        else if (content.startsWith("*   The Don't Press the Button (literally) event has ended!")) counter = 6;
-        else if (content.startsWith("*  MINOR EVENT! ➜ PRESS THE BUTTON")) counter = 3;
-        else if (content.startsWith("*  The Press the Button event has ended!")) counter = 1;
-        else if (content.startsWith("*  GG! The BUTTON was pressed by ")) counter = 2;
-        else if (content.startsWith("*   GG! The BUTTON was not pressed for ")) counter = 3;
-        else if (content.startsWith("*   MEGA EVENT! ➜ RAFFLE")) counter = 4;
-        else if (content.startsWith("*   The BANK is now off cooldown!")) counter = 1;
-        else if (content.startsWith("*   THE BANK HAS BEEN BROKEN INTO!")) counter = 2;
-        else if (content.startsWith("*   THE BANK HAS CLOSED!")) counter = 3;
-        else if (content.startsWith("*   BANK HEIST SUCCESS!")) counter = 3;
-        else if (content.startsWith("*   PARKOUR CIVILIZATION Challenge complete!")) counter = 8;
-        else if (content.startsWith("*   MEGA EVENT! ➜ DERBY")) counter = 5;
-        else if (content.startsWith("*  MEGA EVENT! ➜ DERBY")) counter = 3;
-        else if (content.startsWith("*   THE DERBY HAS ENDED!")) counter = 6;
-        else if (content.startsWith("*   MEGA EVENT! ➜ GANG WARFARE")) counter = 4;
-        else if (content.startsWith("*   The GANG WARFARE has ended!")) counter = 3;
-        else if (content.startsWith("* TOP BUTTON PRESSERS")) counter = 3;
-        else if (content.startsWith("* Map is preparing to change...")) counter = 4;
-        else if (content.startsWith("* MOST WANTED")) counter = 5;
-        else if (content.startsWith("*   REWARDS:")) counter = 4;
-        else if (content.startsWith("*   CATACLYSMIC EVENT! ➜ HIGH NOON")) counter = 5;
-        else if (content.startsWith("*   GUNS GIVEN!")) counter = 4;
-        else if (content.startsWith("*   BOUNTY INCREASE!")) counter = 2;
-        else if (content.startsWith("*   WANTED DEAD OR ALIVE!")) counter = 3;
-        else if (content.startsWith("* COOKIE GOAL REACHED!")) counter = 7;
-        else if (content.startsWith("* / / BUTTON Statistics \\ \\")) counter = 6;
-        else if (content.startsWith("* ➜ The BUTTON was just clicked by")) counter = 2;
-        else if (content.startsWith("* [!] Whoever clicks the BUTTON next will not die!")) counter = 2;
-
-        if (ButtonTimerManager.isMayhem) counter = 1;
-
-        if (counter > 0) {
-            if (filter(content)) bulks.add(message);
-            if (!ButtonTimerManager.isMayhem) {
-                if (content.matches("\\* {3}Starting in [0-9,]+s!")) {
-                    if (bulks.getFirst().contains("CATACLYSMIC EVENT")) {
-                        counter = 2;
-                    } else {
-                        counter = 0;
-                    }
-                } else if (!content.equalsIgnoreCase("* They used a Remote Activation on that press!")
-                        || !bulks.getFirst().contains("The BUTTON was just clicked")) {
-                    counter--;
-                }
-            }
-        }
-
-        if (counter == 0) {
-            if (!bulks.isEmpty()) {
-                String bulkMessage = String.join("\n", bulks);
-                String trimmedBulk = bulkMessage.replaceAll("§[0-9a-fk-or]", "").trim();
-                boolean format = !(
-                        trimmedBulk.startsWith("* ➜ The BUTTON was just clicked by")
-                     || trimmedBulk.startsWith("* [!] Whoever clicks the BUTTON next will not die"));
-                bulks.clear();
-                DPTB2Utils.getInstance().websocketClient.sendModMessage("chat", Map.of("text", format ? String.format("* \n%s\n* ", bulkMessage) : bulkMessage));
-                return;
-            }
-
-            if (content.startsWith("*   SEWER TRAVEL!") || content.startsWith("*   CANNON") || content.contains("ACHIEVEMENT UNLOCKED!")) {
-                excludeThisAndNext = true;
-                return;
-            }
-
-            if (filter(content)) {
-                if (excludeThisAndNext) excludeThisAndNext = false;
-                else {
-                    DPTB2Utils.getInstance().websocketClient.sendModMessage("chat", Map.of("text", message));
-                }
-            }
-        }
-    }
-
-    @Unique
-    private static boolean filter(String content) {
-        String lower = content.toLowerCase();
-
-        return !lower.contains("is currently on cooldown")
-            && !lower.contains("is on cooldown")
-            && !lower.contains("is currently disabled")
-            && !lower.contains(" you ")
-            && !lower.contains("your ending bounty")
-            && !lower.contains("total from bounty")
-            && !lower.contains("s remaining")
-            && !lower.contains("math drill completed!")
-            && !lower.contains("iq points from this drill!")
-            && !lower.startsWith("* bought intellectual boots")
-            && !lower.startsWith("* catalog!")
-            && !lower.startsWith("* coming... soon")
-            && !lower.startsWith("* [✎]")
-            && !lower.startsWith("* your challenge:")
-            && !lower.startsWith("* your drill:")
-            && !lower.startsWith("* slurp!")
-            && !lower.startsWith("*  - ")
-            && !lower.startsWith("* - ")
-            && !lower.startsWith("* reopened")
-            && !lower.startsWith("* [stats]")
-            && !lower.startsWith("* [debug]")
-            && !lower.startsWith("* [npc]")
-            && !lower.startsWith("* oops")
-            && !lower.startsWith("* tip")
-            && !lower.startsWith("* quest complete")
-            && !lower.startsWith("* daily quests complete")
-            && !lower.startsWith("* new quests")
-            && !lower.startsWith("* [#")
-            && !lower.startsWith("* discord")
-            && !lower.startsWith("* settings")
-            && !lower.startsWith("* lootbox")
-            && !lower.startsWith("* cha ching")
-            && !lower.startsWith("*   good job")
-            && !lower.startsWith("* wahoo")
-            && !lower.startsWith("* reward")
-            && !lower.startsWith("* error")
-            && !lower.startsWith("* hey")
-            && !lower.startsWith("* time until next daily reward:")
-            && !lower.startsWith("* yay")
-            && !lower.startsWith("* sorry")
-            && !lower.startsWith("*   afk")
-            && !lower.startsWith("* uh oh...")
-            && !lower.startsWith("* better hurry!")
-            && !lower.startsWith("* final stretch!")
-            && !lower.startsWith("* oh no!")
-            && !lower.startsWith("* run started!")
-            && !lower.startsWith("* whoah!")
-            && !lower.startsWith("* ouch!")
-            && !lower.startsWith("*  earn points")
-            && !lower.startsWith("* the top 3 get")
-            && !lower.startsWith("* welcome to 7/11!")
-            && !lower.startsWith("* -----")
-            && !lower.startsWith("*   take ")
-            && !lower.startsWith("* log back on in")
-            && !lower.startsWith("* the button is currently on cooldown")
-            && !lower.startsWith("*   with a time of")
-            && !lower.startsWith("*   joined the bank heist!")
-            && !lower.startsWith("* completion streak!")
-            && !lower.startsWith("* ➜ get another completion in the next")
-            && !lower.startsWith("* --- legendary games")
-            && !lower.startsWith("* join our discord")
-            && !lower.startsWith("* https://")
-            && !lower.startsWith("* apply for staff")
-            && !lower.startsWith("* [!] ")
-            && !lower.matches("\\* [0-9,]+⛂ gold & [0-9,]+xp from that completion streak!")
-            && !lower.matches("\\* successfully converted [0-9,]+⛂ gold into stat form!")
-            && !lower.matches("\\* total: [0-9,]+⛂ gold")
-            && !Pattern.compile("\\* \\+[0-9,]+⛂").matcher(lower).find();
     }
 }
 

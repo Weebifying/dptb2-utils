@@ -18,10 +18,10 @@ public class MicroTimerManager {
     public static final String prefix = "Last event: ";
     public static String[] eventsList = {
             "§4§lMAYHEM",
-            "§b§lDISABLED",
+            "§f§lDISABLED",
             "§c§lIMMUNITY",
             "§a§lJUMP BOOST",
-            "§e§lSPEED"
+            "§b§lSLIPPERY ICE"
     };
 
     public static Text tickToTime(int ticks) {

@@ -3,7 +3,6 @@ package weebify.dptb2utils;
 import com.google.gson.Gson;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.api.ClientModInitializer;
 
@@ -13,19 +12,15 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.scoreboard.*;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
 import net.minecraft.util.Formatting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import weebify.dptb2utils.gui.screen.ButtonTimerConfigScreen;
 import weebify.dptb2utils.gui.widget.NotificationToast;
 import weebify.dptb2utils.gui.screen.ModMenuScreen;
 import weebify.dptb2utils.utils.*;
@@ -39,7 +34,7 @@ import java.util.List;
 
 public class DPTB2Utils implements ClientModInitializer {	
 	public static final String MOD_ID = "dptb2-utils";
-	public static final String VERSION = "1.2.1";
+	public static final String VERSION = "1.2.2";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	public ModConfigs config;
@@ -51,6 +46,7 @@ public class DPTB2Utils implements ClientModInitializer {
 	public boolean isRamper = false;
 	public boolean tryingToConnect = false;
 	public boolean isToggleBc = false;
+	public boolean dptb2RecheckScheduled = false;
 
 	public List<DelayedTask> scheduledTasks = new ArrayList<>();
 
@@ -159,11 +155,15 @@ public class DPTB2Utils implements ClientModInitializer {
 		ClientTickEvents.START_CLIENT_TICK.register(this::onClientTick);
 		ClientTickEvents.END_CLIENT_TICK.register((var) -> {
 			scheduledTasks.removeIf(DelayedTask::tick);
+			if (this.dptb2RecheckScheduled) {
+				this.dptb2RecheckScheduled = false;
+				this.scheduleTask(600, () -> this.dptb2Check(var));
+			}
 		});
 		// detecting whether the player is in DPTB2
 		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
 			this.buttonTimerReset();
-			this.dptb2Check(client);
+			this.scheduleTask(20, () -> this.dptb2Check(client));
 		});
 
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
@@ -194,39 +194,46 @@ public class DPTB2Utils implements ClientModInitializer {
 			return;
 		}
 
-		this.scheduleTask(20, () -> {
-			if (client.world == null) return;
+		if (client.world == null) return;
 
-			Scoreboard scoreboard = client.world.getScoreboard();
-			ScoreboardObjective objective = scoreboard.getObjectiveForSlot(ScoreboardDisplaySlot.SIDEBAR);
+		Scoreboard scoreboard = client.world.getScoreboard();
+		ScoreboardObjective objective = scoreboard.getObjectiveForSlot(ScoreboardDisplaySlot.SIDEBAR);
 
-			if (objective != null) {
-				String title = objective.getDisplayName().getString().toLowerCase();
-				Text[] sidebarEntries = scoreboard.getScoreboardEntries(objective)
-						.stream()
-						.filter(score -> !score.hidden())
-						.sorted(Comparator.comparing(ScoreboardEntry::value).reversed().thenComparing(ScoreboardEntry::owner, String.CASE_INSENSITIVE_ORDER))
-						.map(scoreboardEntry -> {
-							Team team = scoreboard.getScoreHolderTeam(scoreboardEntry.owner());
-							Text textx = scoreboardEntry.name();
-							return (Text) Team.decorateName(team, textx);
-						})
-						.toArray(Text[]::new);
+		if (objective != null) {
+			String title = objective.getDisplayName().getString().toLowerCase();
+			Text[] sidebarEntries = scoreboard.getScoreboardEntries(objective)
+					.stream()
+					.filter(score -> !score.hidden())
+					.sorted(Comparator.comparing(ScoreboardEntry::value).reversed().thenComparing(ScoreboardEntry::owner, String.CASE_INSENSITIVE_ORDER))
+					.map(scoreboardEntry -> {
+						Team team = scoreboard.getScoreHolderTeam(scoreboardEntry.owner());
+						Text textx = scoreboardEntry.name();
+						return (Text) Team.decorateName(team, textx);
+					})
+					.toArray(Text[]::new);
 
-				StringBuilder s = new StringBuilder();
-				for (Text entry : sidebarEntries) {
-					s.append(entry.getString());
-				}
-
-				String scoreboardContent = s.toString().toLowerCase().replaceAll("§\\w", "");
-
-//				this.isInDPTB2 = title.contains("housing") && scoreboardContent.contains("don't press the button 2");
-				this.isInDPTB2 = scoreboardContent.contains("don't press the button 2") && scoreboardContent.contains("cyborg023") ;
-
-				if (this.isInDPTB2) client.getToastManager().add(new NotificationToast("DPTB2 Utils", "You are in Don't Press The Button 2!", 0xD2FFC8, SoundEvents.ENTITY_PLAYER_LEVELUP));
-				this.refreshRamperStatus();
+			StringBuilder s = new StringBuilder();
+			for (Text entry : sidebarEntries) {
+				s.append(entry.getString());
 			}
-		});
+
+			String scoreboardContent = s.toString().toLowerCase().replaceAll("§\\w", "");
+
+//			this.isInDPTB2 = title.contains("housing") && scoreboardContent.contains("don't press the button 2");
+			boolean alreadyInDPTB2 = this.isInDPTB2;
+			this.isInDPTB2 = scoreboardContent.contains("don't press the button 2") && scoreboardContent.contains("cyborg023");
+
+			if (this.isInDPTB2 && !alreadyInDPTB2) {
+				client.getToastManager().add(new NotificationToast("DPTB2 Utils", "You are in Don't Press The Button 2!", 0xD2FFC8, SoundEvents.ENTITY_PLAYER_LEVELUP));
+			}
+
+			if (this.isInDPTB2 != alreadyInDPTB2) {
+				this.refreshWptbStatus();
+			}
+			if (this.isInDPTB2) {
+				this.dptb2RecheckScheduled = true;
+			}
+		}
 	}
 
 	private void initializeCommands() {
@@ -340,10 +347,10 @@ public class DPTB2Utils implements ClientModInitializer {
 		);
 	}
 
-	public void refreshRamperStatus() {
+	public void refreshWptbStatus() {
 		String host = this.getStringConfig("others.dptbotHost");
 		int port = this.getIntConfig("others.dptbotPort");
-		if (this.isInDPTB2 && this.getBoolConfig("others.discordRamper")) {
+		if (this.isInDPTB2 && this.getBoolConfig("others.discordRamper") && (this.websocketClient == null || !this.websocketClient.isOpen())) {
 			LOGGER.info("Attempting Websocket connection to ws://{}:{}", host, port);
 			websocketClient = new DiscordWebSocketClient(String.format("ws://%s:%s", host, port));
 			websocketClient.connect();
@@ -353,6 +360,17 @@ public class DPTB2Utils implements ClientModInitializer {
 				LOGGER.info("Closing Websocket connection to ws://{}:{}", host, port);
 				websocketClient.close();
 			}
+		}
+	}
+
+	public void reassessRamperStatus() {
+		LOGGER.info("isInDPTB2: {}, consentRamper: {}", this.isInDPTB2, this.getBoolConfig("others.consentRamper"));
+		if (this.isInDPTB2 && this.getBoolConfig("others.discordRamper")) {
+			if (websocketClient != null && websocketClient.isOpen()) {
+				websocketClient.sendModMessage("reassessConsent", Map.of("name", mc.player != null ? mc.player.getGameProfile().getName() : "Unknown", "consent", this.getBoolConfig("others.consentRamper")));
+			}
+		} else {
+			this.isRamper = false;
 		}
 	}
 
@@ -403,6 +421,12 @@ public class DPTB2Utils implements ClientModInitializer {
 		}
 		return this.getConfig(prop);
 	}
+	public List<String> getListConfig(String prop) {
+		if (ModConfigs.propertyTypes.get(prop) != List.class) {
+			throw new IllegalArgumentException("Property " + prop + " is not of type List!");
+		}
+		return this.getConfig(prop);
+	}
 
 	public <T> T setConfig(String prop, T value) {
 		return this.config.setConfig(prop, value);
@@ -428,6 +452,12 @@ public class DPTB2Utils implements ClientModInitializer {
 	public String setStringConfig(String prop, String value) {
 		if (ModConfigs.propertyTypes.get(prop) != String.class) {
 			throw new IllegalArgumentException("Property " + prop + " is not of type String!");
+		}
+		return this.setConfig(prop, value);
+	}
+	public List<String> setListConfig(String prop, List<String> value) {
+		if (ModConfigs.propertyTypes.get(prop) != List.class) {
+			throw new IllegalArgumentException("Property " + prop + " is not of type List!");
 		}
 		return this.setConfig(prop, value);
 	}
