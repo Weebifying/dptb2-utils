@@ -69,6 +69,7 @@ public class DPTB2Utils implements ClientModInitializer {
 		this.config = new ModConfigs();
 		this.saveFile = new File(mc.runDirectory + "/config", "weebify_dptb2utils.json");
 		try {
+			this.saveFile.getParentFile().mkdirs();
 			if (this.saveFile.createNewFile()) {
 				try (FileWriter fw = new FileWriter(this.saveFile)) {
 					GSON.toJson(this.config, fw);
