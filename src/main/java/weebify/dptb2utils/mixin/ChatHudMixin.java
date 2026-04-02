@@ -106,7 +106,7 @@ public class ChatHudMixin {
             }
         } else if (content.startsWith("* [!] The BUTTON has been disabled for 5s!")) {
             MicroTimerManager.microTimer = 0;
-            MicroTimerManager.lastEvent = "§f§lDISABLED";
+            MicroTimerManager.lastEvent = "§7§lDISABLED";
 
             ButtonTimerManager.isDisabled = true;
 
@@ -188,7 +188,7 @@ public class ChatHudMixin {
             ButtonTimerManager.chaosCounter = 33;
         }
 
-        if (content.startsWith("* Uh oh... No target found.") && (ItemCooldownManager.lastAdded.equals("Swap Crystal") || ItemCooldownManager.lastAdded.equals("Freeze Ray") || ItemCooldownManager.lastAdded.equals("Lasso"))) {
+        if (content.startsWith("* Run started!") && (ItemCooldownManager.lastAdded.equals("Swap Crystal") || ItemCooldownManager.lastAdded.equals("Freeze Ray") || ItemCooldownManager.lastAdded.equals("Lasso"))) {
             ItemCooldownManager.currentCooldowns.remove(ItemCooldownManager.lastAdded);
             ItemCooldownManager.lastAdded = "";
         }

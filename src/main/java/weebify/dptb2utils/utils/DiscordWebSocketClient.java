@@ -42,7 +42,15 @@ public class DiscordWebSocketClient extends WebSocketClient {
     public void onOpen(ServerHandshake handshakedata) {
         mod.tryingToConnect = false;
         if (MC.player != null) {
-            this.sendModMessage("greet", Map.of("name", MC.player.getGameProfile().name(), "currentName", MC.player.getDisplayName().getString(), "id", MC.player.getGameProfile().id().toString().replace("-", ""), "version", DPTB2Utils.VERSION, "mc", MC.getGameVersion()));
+            this.sendModMessage("greet", Map.of(
+                    "name", MC.player.getGameProfile().name(),
+                    "currentName", MC.player.getDisplayName().getString(),
+                    "id", MC.player.getGameProfile().id().toString().replace("-", ""),
+                    "version", DPTB2Utils.VERSION, "mc", MC.getGameVersion(),
+                    "x", Double.toString(MC.player.getX()),
+                    "y", Double.toString(MC.player.getY()),
+                    "z", Double.toString(MC.player.getZ())
+            ));
         }
         MC.execute(() -> MC.getToastManager().add(new NotificationToast("DPTBot", "Connected!", Colors.WHITE, SoundEvents.ENTITY_BAT_TAKEOFF)));
     }

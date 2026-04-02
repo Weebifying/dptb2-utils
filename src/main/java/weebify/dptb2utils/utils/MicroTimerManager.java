@@ -17,11 +17,12 @@ public class MicroTimerManager {
     public static String lastEvent = "N/A";
     public static final String prefix = "Last event: ";
     public static String[] eventsList = {
-            "§4§lMAYHEM",
+            "§7§lMAYHEM",
             "§f§lDISABLED",
             "§c§lIMMUNITY",
             "§a§lJUMP BOOST",
-            "§b§lSLIPPERY ICE"
+            "§b§lSLIPPERY ICE",
+            "§f§lNOTHING"
     };
 
     public static Text tickToTime(int ticks) {
@@ -46,10 +47,13 @@ public class MicroTimerManager {
 
     public static void initialize() {
         ClientTickEvents.START_CLIENT_TICK.register((mc) -> {
-            if (DPTB2Utils.getInstance().isInDPTB2) {
-                if (MicroTimerManager.microTimer >= 0) {
-                    MicroTimerManager.microTimer += 1;
-                }
+            if (MicroTimerManager.microTimer >= 0) {
+                MicroTimerManager.microTimer += 1;
+            }
+
+            if (MicroTimerManager.microTimer >= 6100) {
+                MicroTimerManager.microTimer -= 6000;
+                MicroTimerManager.lastEvent = "§f§lNOTHING";
             }
         });
 

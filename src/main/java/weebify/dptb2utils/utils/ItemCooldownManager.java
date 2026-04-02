@@ -28,7 +28,8 @@ public class ItemCooldownManager {
         FREEZE_RAY("Freeze Ray", 400, Identifier.of(DPTB2Utils.MOD_ID, "textures/items/freeze.png")),
         SWAP_CRYSTAL("Swap Crystal", 600, Identifier.of(DPTB2Utils.MOD_ID, "textures/items/swap.png")),
         IMMUNE_APPLE("Immune Apple", 600, Identifier.of(DPTB2Utils.MOD_ID, "textures/items/immune.png")),
-        LASSO("Lasso", 400, Identifier.of(DPTB2Utils.MOD_ID, "textures/items/lasso.png"));
+        LASSO("Lasso", 400, Identifier.of(DPTB2Utils.MOD_ID, "textures/items/lasso.png")),
+        FIREWORK("Firework", 600, Identifier.of(DPTB2Utils.MOD_ID, "textures/items/firework.png"));
 
         public final String name;
         public final int cooldown;

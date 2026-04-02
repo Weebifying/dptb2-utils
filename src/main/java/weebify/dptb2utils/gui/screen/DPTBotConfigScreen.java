@@ -88,11 +88,13 @@ public class DPTBotConfigScreen extends Screen {
         this.hostInput = EditBoxWidget.builder().x(this.width / 2 - 80 - 75).y(200).placeholder(Text.of("Websocket Host")).build(this.textRenderer, 150, 20, Text.of(mod.getStringConfig("others.dptbotHost")));
         this.hostInput.setText(mod.getStringConfig("others.dptbotHost"));
         this.hostInput.visible = false;
+        this.hostInput.active = true;
         this.addDrawableChild(this.hostInput);
 
         this.portInput = EditBoxWidget.builder().x(this.width / 2 + 80 - 75).y(200).placeholder(Text.of("Websocket Port")).build(this.textRenderer, 150, 20, Text.of(Integer.toString(mod.getIntConfig("others.dptbotPort"))));
         this.portInput.setText(Integer.toString(mod.getIntConfig("others.dptbotPort")));
         this.portInput.visible = false;
+        this.portInput.active = true;
         this.addDrawableChild(this.portInput);
 
 
