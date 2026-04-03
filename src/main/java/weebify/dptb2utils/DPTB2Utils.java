@@ -47,6 +47,12 @@ public class DPTB2Utils implements ClientModInitializer {
 	public boolean tryingToConnect = false;
 	public boolean isToggleBc = false;
 	public boolean dptb2RecheckScheduled = false;
+	public int currentMap = 0;
+	public static String[] MAPS_LIST = {
+			"N/A",
+			"City",
+			"Wild West"
+	};
 
 	public List<DelayedTask> scheduledTasks = new ArrayList<>();
 
@@ -97,6 +103,19 @@ public class DPTB2Utils implements ClientModInitializer {
 		} catch (Exception e) {
 			LOGGER.error("Failed to set Swing look and feel!", e);
 		}
+	}
+
+	public static int checkMap(double x, double y, double z) {
+		// city: 124 7 -113 -> -1 72 140
+		if (x >= -1 && x <= 124 && y >= 7 && y <= 72 && z >= -113 && z <= 140) {
+			return 1;
+		}
+		// wild west: -18 120 -108 -> -105 195 138
+		if (x >= -105 && x <= -18 && y >= 120 && y <= 195 && z >= -108 && z <= 138) {
+			return 2;
+		}
+
+		return 0;
 	}
 
 	public static int hexToInt(String hex) {
@@ -232,6 +251,7 @@ public class DPTB2Utils implements ClientModInitializer {
 			}
 			if (this.isInDPTB2) {
 				this.dptb2RecheckScheduled = true;
+				this.currentMap = checkMap(client.player.getX(), client.player.getY(), client.player.getZ());
 			}
 		}
 	}

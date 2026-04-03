@@ -88,5 +88,6 @@ public class ModMenuScreen extends Screen {
 
         context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width/2, 20, Colors.WHITE);
         context.drawCenteredTextWithShadow(this.textRenderer, String.format("isInDPTB2: %b", mod.isInDPTB2), this.width/2, this.height - 45 - 10, mod.isInDPTB2 ? 0xFF55FF55 : 0xFFFF5555);
+        context.drawCenteredTextWithShadow(this.textRenderer, String.format("currentMap: %s", DPTB2Utils.MAPS_LIST[mod.currentMap]), this.width/2, this.height - 65 - 10, mod.currentMap == 0 ? 0xFFFF5555 : 0xFFFFFFFF);
     }
 }

@@ -14,9 +14,15 @@ import weebify.dptb2utils.gui.screen.MicroTimerConfigScreen;
 
 public class MicroTimerManager {
     public static int microTimer = -1;
+    public static int trafficTimer = -1;
+    public static int doorTimer = -1;
     public static String lastEvent = "N/A";
-    public static final String prefix = "Last event: ";
-    public static String[] eventsList = {
+    public static String currentTraffic = "N/A";
+    public static String currentDoor = "N/A";
+    public static final String eventPrefix = "Last event: ";
+    public static final String trafficPrefix = "Traffic light: ";
+    public static final String doorPrefix = "Door: ";
+    public static String[] EVENTS_LIST = {
             "§7§lMAYHEM",
             "§f§lDISABLED",
             "§c§lIMMUNITY",
@@ -24,10 +30,15 @@ public class MicroTimerManager {
             "§b§lSLIPPERY ICE",
             "§f§lNOTHING"
     };
+    public static String[] LIGHTS_LIST = {
+            "§a§lGREEN",
+            "§c§lRED"
+    };
 
-    public static Text tickToTime(int ticks) {
+
+    public static String eventTickToTime(int ticks) {
         if (ticks < 0) {
-            return Text.of("N/A");
+            return "N/A";
         }
 
         int seconds = ticks / 20;
@@ -37,12 +48,51 @@ public class MicroTimerManager {
         minutes %= 60;
 
         String timeString = hours > 0 ? String.format("%02d:%02d:%02d", hours, minutes, seconds) : String.format("%02d:%02d", minutes, seconds);
-        MutableText timeText = Text.literal(timeString);
 
-        if (ticks >= 6000) return timeText.formatted(Formatting.RED);
-        else if (ticks >= 5100) return timeText.formatted(Formatting.GOLD);
-        else if (ticks >= 4200) return timeText.formatted(Formatting.YELLOW);
-        return timeText;
+
+        if (ticks >= 6000) return "§c" + timeString;
+        else if (ticks >= 5100) return "§6" + timeString;
+        else if (ticks >= 4200) return "§e" + timeString;
+        return timeString;
+    }
+
+    public static String trafficTickToTime(int ticks, boolean isGreen) {
+        if (ticks < 0) {
+            return "N/A";
+        }
+
+        int seconds = ticks / 20;
+        int minutes = seconds / 60;
+        seconds %= 60;
+        int hours = minutes / 60;
+        minutes %= 60;
+
+        String timeString = hours > 0 ? String.format("%02d:%02d:%02d", hours, minutes, seconds) : String.format("%02d:%02d", minutes, seconds);
+
+        if (!isGreen) return "§c" + timeString;
+
+        if (ticks <= 160) return "§6" + timeString;
+        if (ticks <= 320) return "§e" + timeString;
+        return timeString;
+    }
+
+    public static String doorTickToTime(int ticks) {
+        if (ticks < 0) {
+            return "N/A";
+        }
+
+        int seconds = ticks / 20;
+        int minutes = seconds / 60;
+        seconds %= 60;
+        int hours = minutes / 60;
+        minutes %= 60;
+
+        String timeString = hours > 0 ? String.format("%02d:%02d:%02d", hours, minutes, seconds) : String.format("%02d:%02d", minutes, seconds);
+
+        if (ticks >= 12000) return "§c" + timeString;
+        else if (ticks >= 11100) return "§6" + timeString;
+        else if (ticks >= 10200) return "§e" + timeString;
+        return timeString;
     }
 
     public static void initialize() {
@@ -50,10 +100,16 @@ public class MicroTimerManager {
             if (MicroTimerManager.microTimer >= 0) {
                 MicroTimerManager.microTimer += 1;
             }
-
             if (MicroTimerManager.microTimer >= 6100) {
                 MicroTimerManager.microTimer -= 6000;
                 MicroTimerManager.lastEvent = "§f§lNOTHING";
+            }
+
+            if (MicroTimerManager.trafficTimer > 0) {
+                MicroTimerManager.trafficTimer -= 1;
+            }
+            if (MicroTimerManager.doorTimer >= 0) {
+                MicroTimerManager.doorTimer += 1;
             }
         });
 
@@ -77,8 +133,15 @@ public class MicroTimerManager {
             int posX = (int)(mod.getFloatConfig("microTimer.posX")*width);
             int posY = (int)(mod.getFloatConfig("microTimer.posY")*height);
 
-            Text text = MicroTimerManager.tickToTime(MicroTimerManager.microTimer);
-            int widgetWidth = Math.max(mc.textRenderer.getWidth(text), mc.textRenderer.getWidth(Text.of(prefix + lastEvent)));
+            String eventTime = MicroTimerManager.eventTickToTime(MicroTimerManager.microTimer);
+            String trafficTime = MicroTimerManager.trafficTickToTime(MicroTimerManager.trafficTimer, !MicroTimerManager.currentTraffic.equals("§c§lRED"));
+            String doorTime = MicroTimerManager.doorTickToTime(MicroTimerManager.doorTimer);
+            int widgetWidth = Math.max(
+                    mc.textRenderer.getWidth(String.format("%s%s§r (%s§r)", eventPrefix, lastEvent, eventTime)),
+                    Math.max(
+                        mc.textRenderer.getWidth(String.format("%s%s§r (%s§r)", trafficPrefix, currentTraffic, trafficTime)),
+                        mc.textRenderer.getWidth(String.format("%s%s§r (%s§r)", doorPrefix, currentDoor, doorTime))
+            ));
             if (mod.getBoolConfig("microTimer.renderBackground")) {
                 drawContext.fill(
                         posX,
@@ -89,20 +152,34 @@ public class MicroTimerManager {
                 );
             }
 
+            // TODO: MOVE CITY TIMERS TO ITS OWN THING
+            // fuck mineguy lol
+            int cursorY = posY + 4;
             drawContext.drawText(
-                    mc.textRenderer, text,
+                    mc.textRenderer, String.format("%s%s§r (%s§r)", eventPrefix, lastEvent, eventTime),
                     posX + 4,
-                    posY + 4,
+                    cursorY,
                     Colors.WHITE,
                     mod.getBoolConfig("microTimer.textShadow")
             );
-            drawContext.drawText(
-                    mc.textRenderer, prefix + lastEvent,
-                    posX + 4,
-                    posY + 4 + mc.textRenderer.fontHeight + 3,
-                    Colors.WHITE,
-                    mod.getBoolConfig("microTimer.textShadow")
-            );
+            if (mod.currentMap == 1) {
+                cursorY +=  mc.textRenderer.fontHeight + 3;
+                drawContext.drawText(
+                        mc.textRenderer, String.format("%s%s§r (%s§r)", trafficPrefix, currentTraffic, trafficTime),
+                        posX + 4,
+                        cursorY,
+                        Colors.WHITE,
+                        mod.getBoolConfig("microTimer.textShadow")
+                );
+                cursorY +=  mc.textRenderer.fontHeight + 3;
+                drawContext.drawText(
+                        mc.textRenderer, String.format("%s%s§r (%s§r)", doorPrefix, currentDoor, doorTime),
+                        posX + 4,
+                        cursorY,
+                        Colors.WHITE,
+                        mod.getBoolConfig("microTimer.textShadow")
+                );
+            }
         }
     }
 }

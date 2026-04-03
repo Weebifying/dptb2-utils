@@ -161,8 +161,45 @@ public class ChatHudMixin {
                     .append(Text.literal(String.format("[%s] ", timestamp)).formatted(Formatting.GRAY)
                     .append(message.content()));
             mod.bootsList.add(text);
-        } else if (mod.getBoolConfig("notifs.doorSwitch") && content.startsWith("* [!] The DOOR has cycled! Which one is it now?")) {
-            triggerNotif("Door Switch!", "The DOOR has cycled! Which one is it now?", 0xFFAA00, sound);
+        } else if (content.startsWith("* STOP! Traffic Lights are RED!")) {
+            MicroTimerManager.trafficTimer = 180;
+            MicroTimerManager.currentTraffic = "§c§lRED";
+        } else if (content.startsWith("* GO! Traffic Lights are GREEN!")) {
+            MicroTimerManager.trafficTimer = 3440;
+            MicroTimerManager.currentTraffic = "§a§lGREEN";
+        } else if (content.startsWith("* YAY! You choose the correct door!")) {
+            if (MicroTimerManager.currentDoor.equals("N/A")) {
+                double x = mc.player.getX();
+                double y = mc.player.getY();
+                double z = mc.player.getZ();
+                if (x >= 61.5 && x <= 66.5 && y >= 13 && y <= 25 && z >= 81 && z <= 86.5) {
+                    MicroTimerManager.currentDoor = "§a§lDoor 1";
+                } else if (x >= 56.5 && x <= 61.5 && y >= 13 && y <= 25 && z >= 81 && z <= 86.5) {
+                    MicroTimerManager.currentDoor = "§a§lDoor 2";
+                } else {
+                    MicroTimerManager.currentDoor = "N/A";
+                }
+            }
+        } else if (content.startsWith("* RIP! That was the wrong door!")) {
+            if (MicroTimerManager.currentDoor.equals("N/A")) {
+                double x = mc.player.getX();
+                double y = mc.player.getY();
+                double z = mc.player.getZ();
+                if (x >= 61.5 && x <= 66.5 && y >= 13 && y <= 25 && z >= 81 && z <= 86.5) {
+                    MicroTimerManager.currentDoor = "§a§lDoor 2";
+                } else if (x >= 56.5 && x <= 61.5 && y >= 13 && y <= 25 && z >= 81 && z <= 86.5) {
+                    MicroTimerManager.currentDoor = "§a§lDoor 1";
+                } else {
+                    MicroTimerManager.currentDoor = "N/A";
+                }
+            }
+        } else if  (content.startsWith("* [!] The DOOR has cycled! Which one is it now?")) {
+            MicroTimerManager.doorTimer = 0;
+            MicroTimerManager.currentDoor = "N/A";
+
+            if (mod.getBoolConfig("notifs.doorSwitch")) {
+                triggerNotif("Door Switch!", "The DOOR has cycled! Which one is it now?", 0xFFAA00, sound);
+            }
         } else if (mod.getBoolConfig("others.autoCheer") && content.startsWith("* COMMUNITY GOAL!")) {
             if (mc.getNetworkHandler() != null) {
                 mod.scheduleTask(rand.nextInt(26) + 5, () -> mc.getNetworkHandler().sendChatCommand("cheer"));

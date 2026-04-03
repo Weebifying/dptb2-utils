@@ -17,8 +17,17 @@ public class DraggableMicroTimer extends ClickableWidget {
     private int dragOffsetX, dragOffsetY;
     public float relX, relY;
 
-    public DraggableMicroTimer(float relX, float relY, Text message, String event) {
-        super(0, 0, Math.max(MinecraftClient.getInstance().textRenderer.getWidth(message), MinecraftClient.getInstance().textRenderer.getWidth(MicroTimerManager.prefix + event)) + 8, 21 + MinecraftClient.getInstance().textRenderer.fontHeight, message);
+    public DraggableMicroTimer(float relX, float relY, String eventTime, String trafficTime, String doorTime, String event) {
+        super(0, 0,
+                Math.max(
+                        MinecraftClient.getInstance().textRenderer.getWidth(String.format("%s%s§r (%s§r)", MicroTimerManager.eventPrefix, event, eventTime)),
+                        Math.max(
+                                MinecraftClient.getInstance().textRenderer.getWidth(String.format("%s%s§r (%s§r))", MicroTimerManager.trafficPrefix, MicroTimerManager.LIGHTS_LIST[1], trafficTime)),
+                                MinecraftClient.getInstance().textRenderer.getWidth(String.format("%s%s§r (%s§r)", MicroTimerManager.doorPrefix, "N/A", doorTime))
+                        )
+                ) + 8,
+                3 * MinecraftClient.getInstance().textRenderer.fontHeight + 14,
+                Text.of(eventTime));
         this.relX = relX;
         this.relY = relY;
         this.event = event;
@@ -43,17 +52,32 @@ public class DraggableMicroTimer extends ClickableWidget {
                     0x63000000
             );
         }
+
+        int cursorY = getY() + 4;
+
+        // Event Line
         context.drawText(
-                renderer, getMessage(),
+                renderer, String.format("%s00:00 (%s)", MicroTimerManager.eventPrefix, this.event),
                 getX() + 4,
-                getY() + 4,
+                cursorY,
                 Colors.WHITE,
                 mod.getBoolConfig("microTimer.textShadow")
         );
+
+        cursorY += renderer.fontHeight + 3;
         context.drawText(
-                renderer, MicroTimerManager.prefix + this.event,
+                renderer, String.format("%s00:00 (%s)", MicroTimerManager.trafficPrefix, MicroTimerManager.LIGHTS_LIST[0]),
                 getX() + 4,
-                getY() + 4 + renderer.fontHeight + 3,
+                cursorY,
+                Colors.WHITE,
+                mod.getBoolConfig("microTimer.textShadow")
+        );
+
+        cursorY += renderer.fontHeight + 3;
+        context.drawText(
+                renderer, String.format("%s00:00", MicroTimerManager.doorPrefix),
+                getX() + 4,
+                cursorY,
                 Colors.WHITE,
                 mod.getBoolConfig("microTimer.textShadow")
         );

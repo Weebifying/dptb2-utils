@@ -37,11 +37,15 @@ public class MicroTimerConfigScreen extends Screen {
             btn.setMessage(Text.of(String.format("Render Background: %s", mod.toggleBoolConfig("microTimer.renderBackground") ? "ON" : "OFF")));
         }).dimensions(this.width/2 - 80 - 75, 100, 150, 20).build());
 
+        Random r = new Random();
+
         this.textWidget = new DraggableMicroTimer(
                 mod.getFloatConfig("microTimer.posX"),
                 mod.getFloatConfig("microTimer.posY"),
-                MicroTimerManager.tickToTime((!mod.isInDPTB2 || MicroTimerManager.microTimer < 0) ? new Random().nextInt(8401) : MicroTimerManager.microTimer),
-                (!mod.isInDPTB2 || MicroTimerManager.lastEvent.isBlank()) ? MicroTimerManager.eventsList[new Random().nextInt(0, MicroTimerManager.eventsList.length)] : MicroTimerManager.lastEvent
+                MicroTimerManager.eventTickToTime((!mod.isInDPTB2 || MicroTimerManager.microTimer < 0) ? r.nextInt(7201) : MicroTimerManager.microTimer),
+                MicroTimerManager.trafficTickToTime((!mod.isInDPTB2 || MicroTimerManager.trafficTimer < 0) ? r.nextInt(13201) : MicroTimerManager.trafficTimer, true),
+                MicroTimerManager.doorTickToTime((!mod.isInDPTB2 || MicroTimerManager.doorTimer < 0) ? r.nextInt(4801) : MicroTimerManager.doorTimer),
+                (!mod.isInDPTB2 || MicroTimerManager.lastEvent.isBlank()) ? MicroTimerManager.EVENTS_LIST[new Random().nextInt(0, MicroTimerManager.EVENTS_LIST.length)] : MicroTimerManager.lastEvent
         );
         this.textWidget.updatePosition(this.width, this.height);
         this.addDrawableChild(this.textWidget);
