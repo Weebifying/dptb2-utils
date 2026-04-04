@@ -4,14 +4,13 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.gui.hud.ChatHudLine;
-import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.toast.ToastManager;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import org.jetbrains.annotations.NotNull;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,11 +22,9 @@ import weebify.dptb2utils.utils.ButtonTimerManager;
 import weebify.dptb2utils.utils.ItemCooldownManager;
 import weebify.dptb2utils.utils.MicroTimerManager;
 
-import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,12 +32,6 @@ import java.util.regex.Pattern;
 public class ChatHudMixin {
     @Unique
     private static final Random rand = new Random();
-    @Unique
-    private static boolean excludeThisAndNext = false;
-    @Unique
-    private static int counter = 0;
-    @Unique
-    private static List<String> bulks = new ArrayList<>();
 
     @Unique
     private static void triggerNotif(String title, String message, int color, SoundEvent sfx) {
@@ -95,7 +86,7 @@ public class ChatHudMixin {
         if (mod.getBoolConfig("notifs.shopUpdate") && content.startsWith("* SHOP! New items available at the Rotating Shop!")) {
             triggerNotif("Shop Update!", "New items available at the Rotating Shop!", 0xFF55FF, sound);
         } else if (content.startsWith("* [!] MAYHEM! The BUTTON has no cooldown for 10s!")) {
-            MicroTimerManager.microTimer = 0;
+            MicroTimerManager.eventTimer = 0;
             MicroTimerManager.lastEvent = "§4§lMAYHEM";
 
             ButtonTimerManager.isMayhem = true;
@@ -105,7 +96,7 @@ public class ChatHudMixin {
                 triggerNotif("Button Mayhem!", "The BUTTON has no cooldown for 10s!", 0xFF0000, sound);
             }
         } else if (content.startsWith("* [!] The BUTTON has been disabled for 5s!")) {
-            MicroTimerManager.microTimer = 0;
+            MicroTimerManager.eventTimer = 0;
             MicroTimerManager.lastEvent = "§7§lDISABLED";
 
             ButtonTimerManager.isDisabled = true;
@@ -115,17 +106,17 @@ public class ChatHudMixin {
                 triggerNotif("Button Disabled!", "The BUTTON has been disabled for 5s!", 0x00FF00, sound);
             }
         } else if (content.startsWith("* [!] Whoever clicks the BUTTON next will not die!")) {
-            MicroTimerManager.microTimer = 0;
+            MicroTimerManager.eventTimer = 0;
             MicroTimerManager.lastEvent = "§c§lIMMUNITY";
 
             if (mod.getBoolConfig("notifs.buttonImmunity")) {
                 triggerNotif("Button Immunity!", "Whoever clicks the BUTTON next will not die!", 0x55FFFF, sound);
             }
-        } else if (content.startsWith("* [!] Everybody received Jump Boost I for 10s!")) {
-            MicroTimerManager.microTimer = 0;
+            } else if (content.startsWith("* [!] Everybody received Jump Boost I for 10s!")) {
+            MicroTimerManager.eventTimer = 0;
             MicroTimerManager.lastEvent = "§a§lJUMP BOOST";
         } else if (content.startsWith("* [!] The Road is covered in SLIPPERY ICE for 10s!")) {
-            MicroTimerManager.microTimer = 0;
+            MicroTimerManager.eventTimer = 0;
             MicroTimerManager.lastEvent = "§b§lSLIPPERY ICE";
         } else if (content.startsWith("* WOAH")) {
             if (mod.getBoolConfig("notifs.bootsCollected")) {
@@ -174,8 +165,10 @@ public class ChatHudMixin {
                 double z = mc.player.getZ();
                 if (x >= 61.5 && x <= 66.5 && y >= 13 && y <= 25 && z >= 81 && z <= 86.5) {
                     MicroTimerManager.currentDoor = "§a§lDoor 1";
+                    mod.websocketClient.sendModMessage("updateDoor", Map.of("value", MicroTimerManager.currentDoor));
                 } else if (x >= 56.5 && x <= 61.5 && y >= 13 && y <= 25 && z >= 81 && z <= 86.5) {
                     MicroTimerManager.currentDoor = "§a§lDoor 2";
+                    mod.websocketClient.sendModMessage("updateDoor", Map.of("value", MicroTimerManager.currentDoor));
                 } else {
                     MicroTimerManager.currentDoor = "N/A";
                 }
@@ -187,13 +180,15 @@ public class ChatHudMixin {
                 double z = mc.player.getZ();
                 if (x >= 61.5 && x <= 66.5 && y >= 13 && y <= 25 && z >= 81 && z <= 86.5) {
                     MicroTimerManager.currentDoor = "§a§lDoor 2";
+                    mod.websocketClient.sendModMessage("updateDoor", Map.of("value", MicroTimerManager.currentDoor));
                 } else if (x >= 56.5 && x <= 61.5 && y >= 13 && y <= 25 && z >= 81 && z <= 86.5) {
                     MicroTimerManager.currentDoor = "§a§lDoor 1";
+                    mod.websocketClient.sendModMessage("updateDoor", Map.of("value", MicroTimerManager.currentDoor));
                 } else {
                     MicroTimerManager.currentDoor = "N/A";
                 }
             }
-        } else if  (content.startsWith("* [!] The DOOR has cycled! Which one is it now?")) {
+        } else if (content.startsWith("* [!] The DOOR has cycled! Which one is it now?")) {
             MicroTimerManager.doorTimer = 0;
             MicroTimerManager.currentDoor = "N/A";
 

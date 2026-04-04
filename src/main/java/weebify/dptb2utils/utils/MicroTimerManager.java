@@ -5,20 +5,19 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
-import net.minecraft.util.Formatting;
+
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.gui.screen.MicroTimerConfigScreen;
 
 public class MicroTimerManager {
-    public static int microTimer = -1;
+    public static int eventTimer = -1;
     public static int trafficTimer = -1;
     public static int doorTimer = -1;
     public static String lastEvent = "N/A";
     public static String currentTraffic = "N/A";
     public static String currentDoor = "N/A";
+
     public static final String eventPrefix = "Last event: ";
     public static final String trafficPrefix = "Traffic light: ";
     public static final String doorPrefix = "Door: ";
@@ -97,11 +96,11 @@ public class MicroTimerManager {
 
     public static void initialize() {
         ClientTickEvents.START_CLIENT_TICK.register((mc) -> {
-            if (MicroTimerManager.microTimer >= 0) {
-                MicroTimerManager.microTimer += 1;
+            if (MicroTimerManager.eventTimer >= 0) {
+                MicroTimerManager.eventTimer += 1;
             }
-            if (MicroTimerManager.microTimer >= 6100) {
-                MicroTimerManager.microTimer -= 6000;
+            if (MicroTimerManager.eventTimer >= 6100) {
+                MicroTimerManager.eventTimer -= 6000;
                 MicroTimerManager.lastEvent = "§f§lNOTHING";
             }
 
@@ -133,7 +132,7 @@ public class MicroTimerManager {
             int posX = (int)(mod.getFloatConfig("microTimer.posX")*width);
             int posY = (int)(mod.getFloatConfig("microTimer.posY")*height);
 
-            String eventTime = MicroTimerManager.eventTickToTime(MicroTimerManager.microTimer);
+            String eventTime = MicroTimerManager.eventTickToTime(MicroTimerManager.eventTimer);
             String trafficTime = MicroTimerManager.trafficTickToTime(MicroTimerManager.trafficTimer, !MicroTimerManager.currentTraffic.equals("§c§lRED"));
             String doorTime = MicroTimerManager.doorTickToTime(MicroTimerManager.doorTimer);
             int widgetWidth = Math.max(

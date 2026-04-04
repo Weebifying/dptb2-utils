@@ -146,6 +146,15 @@ public class DiscordWebSocketClient extends WebSocketClient {
                     } else {
                         // error handling
                     }
+                } else if (type.equalsIgnoreCase("microEvents")) {
+                    Map<?, ?> payload = (Map<?, ?>) data.get("data");
+
+                    if (payload.get("eventTimer") instanceof Double d) MicroTimerManager.eventTimer = d.intValue();
+                    if (payload.get("trafficTimer") instanceof Double d) MicroTimerManager.trafficTimer = d.intValue();
+                    if (payload.get("doorTimer") instanceof Double d) MicroTimerManager.doorTimer = d.intValue();
+                    if (payload.get("lastEvent") instanceof String s) MicroTimerManager.lastEvent = s;
+                    if (payload.get("currentTraffic") instanceof String s) MicroTimerManager.currentTraffic = s;
+                    if (payload.get("currentDoor") instanceof String s) MicroTimerManager.currentDoor = s;
                 }
         });
     }
