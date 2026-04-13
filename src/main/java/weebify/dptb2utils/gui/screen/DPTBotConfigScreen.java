@@ -85,18 +85,17 @@ public class DPTBotConfigScreen extends Screen {
             btn.setMessage(Text.of(String.format("Broadcast Sounds: %s", mod.toggleBoolConfig("others.broadcastSounds") ? "ON" : "OFF")));
         }).dimensions(this.width/2 - 80 - 75, 200, 150, 20).build());
 
-        this.hostInput = EditBoxWidget.builder().x(this.width / 2 - 80 - 75).y(200).placeholder(Text.of("Websocket Host")).build(this.textRenderer, 150, 20, Text.of(mod.getStringConfig("others.dptbotHost")));
+        this.hostInput = EditBoxWidget.builder().x(this.width / 2 - 80 - 75).y(225).placeholder(Text.of("Websocket Host")).build(this.textRenderer, 150, 20, Text.of(mod.getStringConfig("others.dptbotHost")));
         this.hostInput.setText(mod.getStringConfig("others.dptbotHost"));
         this.hostInput.visible = false;
         this.hostInput.active = true;
         this.addDrawableChild(this.hostInput);
 
-        this.portInput = EditBoxWidget.builder().x(this.width / 2 + 80 - 75).y(200).placeholder(Text.of("Websocket Port")).build(this.textRenderer, 150, 20, Text.of(Integer.toString(mod.getIntConfig("others.dptbotPort"))));
+        this.portInput = EditBoxWidget.builder().x(this.width / 2 + 80 - 75).y(225).placeholder(Text.of("Websocket Port")).build(this.textRenderer, 150, 20, Text.of(Integer.toString(mod.getIntConfig("others.dptbotPort"))));
         this.portInput.setText(Integer.toString(mod.getIntConfig("others.dptbotPort")));
         this.portInput.visible = false;
         this.portInput.active = true;
         this.addDrawableChild(this.portInput);
-
 
         this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Advanced Options: %s", this.showIPOptions ? "ON" : "OFF")), (btn) -> {
             this.showIPOptions = !this.showIPOptions;

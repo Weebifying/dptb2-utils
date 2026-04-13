@@ -165,10 +165,10 @@ public class ChatHudMixin {
                 double z = mc.player.getZ();
                 if (x >= 61.5 && x <= 66.5 && y >= 13 && y <= 25 && z >= 81 && z <= 86.5) {
                     MicroTimerManager.currentDoor = "§a§lDoor 1";
-                    mod.websocketClient.sendModMessage("updateDoor", Map.of("value", MicroTimerManager.currentDoor));
+                    mod.websocketClient.sendModMessage("microEvents", Map.of("currentDoor", MicroTimerManager.currentDoor));
                 } else if (x >= 56.5 && x <= 61.5 && y >= 13 && y <= 25 && z >= 81 && z <= 86.5) {
                     MicroTimerManager.currentDoor = "§a§lDoor 2";
-                    mod.websocketClient.sendModMessage("updateDoor", Map.of("value", MicroTimerManager.currentDoor));
+                    mod.websocketClient.sendModMessage("microEvents", Map.of("currentDoor", MicroTimerManager.currentDoor));
                 } else {
                     MicroTimerManager.currentDoor = "N/A";
                 }
@@ -180,10 +180,10 @@ public class ChatHudMixin {
                 double z = mc.player.getZ();
                 if (x >= 61.5 && x <= 66.5 && y >= 13 && y <= 25 && z >= 81 && z <= 86.5) {
                     MicroTimerManager.currentDoor = "§a§lDoor 2";
-                    mod.websocketClient.sendModMessage("updateDoor", Map.of("value", MicroTimerManager.currentDoor));
+                    mod.websocketClient.sendModMessage("microEvents", Map.of("currentDoor", MicroTimerManager.currentDoor));
                 } else if (x >= 56.5 && x <= 61.5 && y >= 13 && y <= 25 && z >= 81 && z <= 86.5) {
                     MicroTimerManager.currentDoor = "§a§lDoor 1";
-                    mod.websocketClient.sendModMessage("updateDoor", Map.of("value", MicroTimerManager.currentDoor));
+                    mod.websocketClient.sendModMessage("microEvents", Map.of("currentDoor", MicroTimerManager.currentDoor));
                 } else {
                     MicroTimerManager.currentDoor = "N/A";
                 }

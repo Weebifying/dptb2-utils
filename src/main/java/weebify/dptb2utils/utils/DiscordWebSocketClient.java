@@ -51,6 +51,15 @@ public class DiscordWebSocketClient extends WebSocketClient {
                     "y", Double.toString(MC.player.getY()),
                     "z", Double.toString(MC.player.getZ())
             ));
+
+            this.sendModMessage("microEvents", Map.of(
+                        "eventTimer", MicroTimerManager.eventTimer,
+                        "trafficTimer", MicroTimerManager.trafficTimer,
+                        "doorTimer", MicroTimerManager.doorTimer,
+                        "lastEvent", MicroTimerManager.lastEvent,
+                        "currentTraffic", MicroTimerManager.currentTraffic,
+                        "currentDoor", MicroTimerManager.currentDoor
+            ));
         }
         MC.execute(() -> MC.getToastManager().add(new NotificationToast("DPTBot", "Connected!", Colors.WHITE, SoundEvents.ENTITY_BAT_TAKEOFF)));
     }
@@ -147,14 +156,12 @@ public class DiscordWebSocketClient extends WebSocketClient {
                         // error handling
                     }
                 } else if (type.equalsIgnoreCase("microEvents")) {
-                    Map<?, ?> payload = (Map<?, ?>) data.get("data");
-
-                    if (payload.get("eventTimer") instanceof Double d) MicroTimerManager.eventTimer = d.intValue();
-                    if (payload.get("trafficTimer") instanceof Double d) MicroTimerManager.trafficTimer = d.intValue();
-                    if (payload.get("doorTimer") instanceof Double d) MicroTimerManager.doorTimer = d.intValue();
-                    if (payload.get("lastEvent") instanceof String s) MicroTimerManager.lastEvent = s;
-                    if (payload.get("currentTraffic") instanceof String s) MicroTimerManager.currentTraffic = s;
-                    if (payload.get("currentDoor") instanceof String s) MicroTimerManager.currentDoor = s;
+                    if (data.get("eventTimer") instanceof Double d) MicroTimerManager.eventTimer = d.intValue();
+                    if (data.get("trafficTimer") instanceof Double d) MicroTimerManager.trafficTimer = d.intValue();
+                    if (data.get("doorTimer") instanceof Double d) MicroTimerManager.doorTimer = d.intValue();
+                    if (data.get("lastEvent") instanceof String s) MicroTimerManager.lastEvent = s;
+                    if (data.get("currentTraffic") instanceof String s) MicroTimerManager.currentTraffic = s;
+                    if (data.get("currentDoor") instanceof String s) MicroTimerManager.currentDoor = s;
                 }
         });
     }
