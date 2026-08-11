@@ -2,14 +2,14 @@ package weebify.dptb2utils.utils;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.CommonColors;
+import net.minecraft.ChatFormatting;
+import net.minecraft.resources.Identifier;
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.gui.screen.ButtonTimerConfigScreen;
 
@@ -21,9 +21,9 @@ public class ButtonTimerManager {
     public static boolean isChaos;
     public static int chaosCounter = 0;
 
-    public static Text tickToTime(int ticks) {
+    public static Component tickToTime(int ticks) {
         if (ticks < 0) {
-            return Text.of("N/A");
+            return Component.nullToEmpty("N/A");
         }
 
         int seconds = ticks / 20;
@@ -33,20 +33,20 @@ public class ButtonTimerManager {
         minutes %= 60;
 
         String timeString = hours > 0 ? String.format("%02d:%02d:%02d", hours, minutes, seconds) : String.format("%02d:%02d", minutes, seconds);
-        MutableText timeText = Text.literal(timeString);
+        MutableComponent timeText = Component.literal(timeString);
         if (ticks >= 230) isChaos = false;
 
-        if (isMayhem) return timeText.formatted(Formatting.RED);
+        if (isMayhem) return timeText.withStyle(ChatFormatting.RED);
         if (isChaos) {
-            if (ticks >= 140) return timeText.formatted(Formatting.DARK_PURPLE);
-            if (ticks >= 120) return timeText.formatted(Formatting.LIGHT_PURPLE);
-            if (ticks >= 100) return timeText.formatted(Formatting.DARK_AQUA);
+            if (ticks >= 140) return timeText.withStyle(ChatFormatting.DARK_PURPLE);
+            if (ticks >= 120) return timeText.withStyle(ChatFormatting.LIGHT_PURPLE);
+            if (ticks >= 100) return timeText.withStyle(ChatFormatting.DARK_AQUA);
         }
         if (isDisabled) return timeText;
 
-        if (ticks >= 300) return timeText.formatted(Formatting.RED);
-        else if (ticks >= 240) return timeText.formatted(Formatting.GOLD);
-        else if (ticks >= 200) return timeText.formatted(Formatting.YELLOW);
+        if (ticks >= 300) return timeText.withStyle(ChatFormatting.RED);
+        else if (ticks >= 240) return timeText.withStyle(ChatFormatting.GOLD);
+        else if (ticks >= 200) return timeText.withStyle(ChatFormatting.YELLOW);
         return timeText;
     }
 
@@ -69,18 +69,18 @@ public class ButtonTimerManager {
         HudRenderCallback.EVENT.register(ButtonTimerManager::renderButtonTimer);
     }
 
-    private static void renderButtonTimer(DrawContext drawContext, RenderTickCounter renderTickCounter) {
-        MinecraftClient mc = MinecraftClient.getInstance();
+    private static void renderButtonTimer(GuiGraphics drawContext, DeltaTracker renderTickCounter) {
+        Minecraft mc = Minecraft.getInstance();
         DPTB2Utils mod = DPTB2Utils.getInstance();
 
-        if (mod.isInDPTB2 && mod.getBoolConfig("buttonTimer.enabled") && !(mc.currentScreen instanceof ButtonTimerConfigScreen)) {
-            int width = mc.getWindow().getScaledWidth();
-            int height = mc.getWindow().getScaledHeight();
+        if (mod.isInDPTB2 && mod.getBoolConfig("buttonTimer.enabled") && !(mc.screen instanceof ButtonTimerConfigScreen)) {
+            int width = mc.getWindow().getGuiScaledWidth();
+            int height = mc.getWindow().getGuiScaledHeight();
             int posX = (int)(mod.getFloatConfig("buttonTimer.posX")*width);
             int posY = (int)(mod.getFloatConfig("buttonTimer.posY")*height);
 
-            Text text = ButtonTimerManager.tickToTime(ButtonTimerManager.buttonTimer);
-            int textWidth = mc.textRenderer.getWidth(text);
+            Component text = ButtonTimerManager.tickToTime(ButtonTimerManager.buttonTimer);
+            int textWidth = mc.font.width(text);
             if (mod.getBoolConfig("buttonTimer.renderBackground")) {
                 drawContext.fill(
                         posX,
@@ -91,11 +91,11 @@ public class ButtonTimerManager {
                 );
             }
 
-            drawContext.drawText(
-                    mc.textRenderer, text,
+            drawContext.drawString(
+                    mc.font, text,
                     posX + 4,
                     posY + 4,
-                    Colors.WHITE,
+                    CommonColors.WHITE,
                     mod.getBoolConfig("buttonTimer.textShadow")
             );
         }

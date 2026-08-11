@@ -2,16 +2,15 @@ package weebify.dptb2utils.utils;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 //import net.minecraft.client.gl.ShaderProgramKeys;
-import net.minecraft.client.render.*;
-import net.minecraft.client.render.entity.PlayerEntityRenderer;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Colors;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RotationAxis;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.util.CommonColors;
+import net.minecraft.core.BlockPos;
+import com.mojang.math.Axis;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import weebify.dptb2utils.DPTB2Utils;
 
@@ -20,7 +19,7 @@ import java.util.Map;
 
 @Deprecated
 public class WaypointManager {
-    private static final MinecraftClient MC = MinecraftClient.getInstance();
+    private static final Minecraft MC = Minecraft.getInstance();
     public static Map<String, Waypoint> waypoints = new HashMap<>();
     public static boolean renderThroughWalls = true;
 

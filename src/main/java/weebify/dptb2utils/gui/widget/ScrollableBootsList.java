@@ -1,66 +1,66 @@
 package weebify.dptb2utils.gui.widget;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ScrollableWidget;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.components.AbstractScrollArea;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.CommonColors;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ScrollableBootsList extends ScrollableWidget {
-    private final List<OrderedText> lines;
-    private final TextRenderer textRenderer;
+public class ScrollableBootsList extends AbstractScrollArea {
+    private final List<FormattedCharSequence> lines;
+    private final Font textRenderer;
     private final int lineSpacing;
     private final int padding;
 
-    public ScrollableBootsList(int x, int y, int width, int height, int lineHeight, int padding, List<Text> lines, TextRenderer textRenderer) {
-        super(x, y, width, height, Text.empty());
+    public ScrollableBootsList(int x, int y, int width, int height, int lineHeight, int padding, List<Component> lines, Font textRenderer) {
+        super(x, y, width, height, Component.empty());
         this.textRenderer = textRenderer;
         this.lineSpacing = lineHeight;
         this.padding = padding;
         this.lines = lines.stream()
-                .flatMap(t -> MinecraftClient.getInstance().textRenderer.wrapLines(t, width - SCROLLBAR_WIDTH - 4).stream())
+                .flatMap(t -> Minecraft.getInstance().font.split(t, width - SCROLLBAR_WIDTH - 4).stream())
                 .collect(Collectors.toList());
     }
 
     @Override
-    protected int getContentsHeightWithPadding() {
+    protected int contentHeight() {
         return padding * 2
-                + lines.size() * (textRenderer.fontHeight + this.lineSpacing);
+                + lines.size() * (textRenderer.lineHeight + this.lineSpacing);
     }
 
     @Override
-    protected double getDeltaYPerScroll() {
-        return textRenderer.fontHeight + lineSpacing;
+    protected double scrollRate() {
+        return textRenderer.lineHeight + lineSpacing;
     }
 
     @Override
-    protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
         drawContent(context);
-        drawScrollbar(context, mouseX, mouseY);
+        renderScrollbar(context, mouseX, mouseY);
     }
 
     @Override
-    protected void appendClickableNarrations(NarrationMessageBuilder builder) {
+    protected void updateWidgetNarration(NarrationElementOutput builder) {
 
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
-        if (checkScrollbarDragged(click)) {
+    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
+        if (updateScrolling(click)) {
             return true;
         }
         return super.mouseClicked(click, doubled);
     }
 
     @Override
-    public void onRelease(Click click) {
+    public void onRelease(MouseButtonEvent click) {
         super.onRelease(click);
     }
 
@@ -70,21 +70,21 @@ public class ScrollableBootsList extends ScrollableWidget {
         return super.mouseScrolled(mx, my, 0, dy);
     }
 
-    private void drawContent(DrawContext context) {
+    private void drawContent(GuiGraphics context) {
         int startY = getY() + padding;
-        int yOffset = startY - (int) getScrollY();
+        int yOffset = startY - (int) scrollAmount();
 
         for (int i = 0; i < lines.size(); i++) {
-            int drawY = yOffset + i * (textRenderer.fontHeight + lineSpacing);
+            int drawY = yOffset + i * (textRenderer.lineHeight + lineSpacing);
             // only draw visible lines
-            if (drawY + textRenderer.fontHeight >= getY()
+            if (drawY + textRenderer.lineHeight >= getY()
                     && drawY <= getY() + height) {
-                context.drawTextWithShadow(
+                context.drawString(
                         textRenderer,
                         lines.get(i),
                         getX() + 2,
                         drawY,
-                        Colors.WHITE
+                        CommonColors.WHITE
                 );
             }
         }

@@ -2,10 +2,10 @@ package weebify.dptb2utils.utils;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.util.Colors;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.util.CommonColors;
 
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.gui.screen.MicroTimerConfigScreen;
@@ -122,13 +122,13 @@ public class MicroTimerManager {
         HudRenderCallback.EVENT.register(MicroTimerManager::renderMicroTimer);
     }
 
-    private static void renderMicroTimer(DrawContext drawContext, RenderTickCounter renderTickCounter) {
-        MinecraftClient mc = MinecraftClient.getInstance();
+    private static void renderMicroTimer(GuiGraphics drawContext, DeltaTracker renderTickCounter) {
+        Minecraft mc = Minecraft.getInstance();
         DPTB2Utils mod = DPTB2Utils.getInstance();
 
-        if (mod.isInDPTB2 && mod.getBoolConfig("microTimer.enabled") && !(mc.currentScreen instanceof MicroTimerConfigScreen)) {
-            int width = mc.getWindow().getScaledWidth();
-            int height = mc.getWindow().getScaledHeight();
+        if (mod.isInDPTB2 && mod.getBoolConfig("microTimer.enabled") && !(mc.screen instanceof MicroTimerConfigScreen)) {
+            int width = mc.getWindow().getGuiScaledWidth();
+            int height = mc.getWindow().getGuiScaledHeight();
             int posX = (int)(mod.getFloatConfig("microTimer.posX")*width);
             int posY = (int)(mod.getFloatConfig("microTimer.posY")*height);
 
@@ -136,17 +136,17 @@ public class MicroTimerManager {
             String trafficTime = MicroTimerManager.trafficTickToTime(MicroTimerManager.trafficTimer, !MicroTimerManager.currentTraffic.equals("§c§lRED"));
             String doorTime = MicroTimerManager.doorTickToTime(MicroTimerManager.doorTimer);
             int widgetWidth = Math.max(
-                    mc.textRenderer.getWidth(String.format("%s%s§r (%s§r)", eventPrefix, lastEvent, eventTime)),
+                    mc.font.width(String.format("%s%s§r (%s§r)", eventPrefix, lastEvent, eventTime)),
                     Math.max(
-                        mc.textRenderer.getWidth(String.format("%s%s§r (%s§r)", trafficPrefix, currentTraffic, trafficTime)),
-                        mc.textRenderer.getWidth(String.format("%s%s§r (%s§r)", doorPrefix, currentDoor, doorTime))
+                        mc.font.width(String.format("%s%s§r (%s§r)", trafficPrefix, currentTraffic, trafficTime)),
+                        mc.font.width(String.format("%s%s§r (%s§r)", doorPrefix, currentDoor, doorTime))
             ));
             if (mod.getBoolConfig("microTimer.renderBackground")) {
                 drawContext.fill(
                         posX,
                         posY,
                         posX + widgetWidth + 8,
-                        posY + 21 + mc.textRenderer.fontHeight,
+                        posY + 21 + mc.font.lineHeight,
                         0x63000000 // ballin it, worked ig
                 );
             }
@@ -154,28 +154,28 @@ public class MicroTimerManager {
             // TODO: MOVE CITY TIMERS TO ITS OWN THING
             // fuck mineguy lol
             int cursorY = posY + 4;
-            drawContext.drawText(
-                    mc.textRenderer, String.format("%s%s§r (%s§r)", eventPrefix, lastEvent, eventTime),
+            drawContext.drawString(
+                    mc.font, String.format("%s%s§r (%s§r)", eventPrefix, lastEvent, eventTime),
                     posX + 4,
                     cursorY,
-                    Colors.WHITE,
+                    CommonColors.WHITE,
                     mod.getBoolConfig("microTimer.textShadow")
             );
             if (mod.currentMap == 1) {
-                cursorY +=  mc.textRenderer.fontHeight + 3;
-                drawContext.drawText(
-                        mc.textRenderer, String.format("%s%s§r (%s§r)", trafficPrefix, currentTraffic, trafficTime),
+                cursorY +=  mc.font.lineHeight + 3;
+                drawContext.drawString(
+                        mc.font, String.format("%s%s§r (%s§r)", trafficPrefix, currentTraffic, trafficTime),
                         posX + 4,
                         cursorY,
-                        Colors.WHITE,
+                        CommonColors.WHITE,
                         mod.getBoolConfig("microTimer.textShadow")
                 );
-                cursorY +=  mc.textRenderer.fontHeight + 3;
-                drawContext.drawText(
-                        mc.textRenderer, String.format("%s%s§r (%s§r)", doorPrefix, currentDoor, doorTime),
+                cursorY +=  mc.font.lineHeight + 3;
+                drawContext.drawString(
+                        mc.font, String.format("%s%s§r (%s§r)", doorPrefix, currentDoor, doorTime),
                         posX + 4,
                         cursorY,
-                        Colors.WHITE,
+                        CommonColors.WHITE,
                         mod.getBoolConfig("microTimer.textShadow")
                 );
             }

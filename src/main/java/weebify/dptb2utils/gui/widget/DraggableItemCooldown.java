@@ -1,19 +1,19 @@
 package weebify.dptb2utils.gui.widget;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.network.chat.Component;
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.utils.ItemCooldownManager;
 
 import java.util.Map;
 
-public class DraggableItemCooldown extends ClickableWidget {
+public class DraggableItemCooldown extends AbstractWidget {
     private boolean dragging = false;
     private int dragOffsetX, dragOffsetY;
     private final Map<String, Integer> itemCooldowns;
@@ -23,13 +23,13 @@ public class DraggableItemCooldown extends ClickableWidget {
     private static final int lineHeight = 20;
 
     public DraggableItemCooldown(float relX, float relY, Map<String, Integer> itemCooldowns) {
-        super(0, 0, 0, 0, Text.of(""));
+        super(0, 0, 0, 0, Component.nullToEmpty(""));
         int maxWidth = 0;
         for (String itemName : itemCooldowns.keySet()) {
             int ticksLeft = itemCooldowns.get(itemName);
             ItemCooldownManager.Items item = ItemCooldownManager.Items.NAME_MAP.get(itemName);
             int barWidth = (int) (0.2 * item.cooldown);
-            int textWidth = MinecraftClient.getInstance().textRenderer.getWidth((ticksLeft / 20) + "s");
+            int textWidth = Minecraft.getInstance().font.width((ticksLeft / 20) + "s");
             maxWidth = Math.max(maxWidth, padding + 20 + barWidth + 6 + textWidth + padding);
         }
         int totalHeight = itemCooldowns.size() * lineHeight + padding;
@@ -47,8 +47,8 @@ public class DraggableItemCooldown extends ClickableWidget {
     }
 
     @Override
-    protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-        MinecraftClient mc = MinecraftClient.getInstance();
+    protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+        Minecraft mc = Minecraft.getInstance();
         DPTB2Utils mod = DPTB2Utils.getInstance();
 
         boolean alignLeft = mod.getStringConfig("itemCooldown.textAlign").equals("left");
@@ -71,7 +71,7 @@ public class DraggableItemCooldown extends ClickableWidget {
 
             int x = alignLeft ? getX() + padding : getX() - padding - 16;
             int y = getY() + padding + i * lineHeight;
-            context.drawTexture(RenderPipelines.GUI_TEXTURED, item.texture, x, y, 0, 0, 16, 16, 16, 16);
+            context.blit(RenderPipelines.GUI_TEXTURED, item.texture, x, y, 0, 0, 16, 16, 16, 16);
 
             int barWidth = (int) (0.2 * item.cooldown);
             int barHeight = 8;
@@ -87,8 +87,8 @@ public class DraggableItemCooldown extends ClickableWidget {
 
             int seconds = ticksLeft / 20;
             String text = seconds + "s";
-            int textX = alignLeft ? barX + barWidth + 6 : barX - 6 - mc.textRenderer.getWidth(text);
-            context.drawText(mc.textRenderer, text, textX, barY, 0xFFFFFFFF, mod.getBoolConfig("itemCooldown.textShadow"));
+            int textX = alignLeft ? barX + barWidth + 6 : barX - 6 - mc.font.width(text);
+            context.drawString(mc.font, text, textX, barY, 0xFFFFFFFF, mod.getBoolConfig("itemCooldown.textShadow"));
 
             i++;
         }
@@ -130,7 +130,7 @@ public class DraggableItemCooldown extends ClickableWidget {
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
+    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
         double mouseX = click.x();
         double mouseY = click.y();
         int button = click.button();
@@ -145,7 +145,7 @@ public class DraggableItemCooldown extends ClickableWidget {
     }
     
     @Override
-    public boolean mouseReleased(Click click) {
+    public boolean mouseReleased(MouseButtonEvent click) {
         int button = click.button();
 
         if (dragging && button == 0) {
@@ -156,16 +156,16 @@ public class DraggableItemCooldown extends ClickableWidget {
     }
     
     @Override
-    public boolean mouseDragged(Click click, double dx, double dy) {
+    public boolean mouseDragged(MouseButtonEvent click, double dx, double dy) {
         double mouseX = click.x();
         double mouseY = click.y();
 
         if (dragging) {
-            MinecraftClient client = MinecraftClient.getInstance();
+            Minecraft client = Minecraft.getInstance();
             int newX = (int)(mouseX - dragOffsetX);
             int newY = (int)(mouseY - dragOffsetY);
-            int screenWidth = client.getWindow().getScaledWidth();
-            int screenHeight = client.getWindow().getScaledHeight();
+            int screenWidth = client.getWindow().getGuiScaledWidth();
+            int screenHeight = client.getWindow().getGuiScaledHeight();
 
             // Clamp to screen and update
             this.setX(newX);
@@ -178,5 +178,5 @@ public class DraggableItemCooldown extends ClickableWidget {
     }
 
     @Override
-    protected void appendClickableNarrations(NarrationMessageBuilder builder) {}
+    protected void updateWidgetNarration(NarrationElementOutput builder) {}
 }

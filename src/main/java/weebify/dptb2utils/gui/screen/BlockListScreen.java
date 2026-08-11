@@ -1,15 +1,15 @@
 package weebify.dptb2utils.gui.screen;
 
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.ScrollableWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.AbstractScrollArea;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.CommonColors;
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.utils.BlockListManager;
 
@@ -35,20 +35,20 @@ public class BlockListScreen extends Screen {
     private boolean wptbInputIsId = true;
 
     // ── bottom popup widgets ──
-    private ButtonWidget discBlockUserBtn;
-    private ButtonWidget discEnterIdBtn;
-    private ButtonWidget discEnterUsernameBtn;
-    private TextFieldWidget discTextInput;
-    private ButtonWidget discConfirmBtn;
+    private Button discBlockUserBtn;
+    private Button discEnterIdBtn;
+    private Button discEnterUsernameBtn;
+    private EditBox discTextInput;
+    private Button discConfirmBtn;
 
-    private ButtonWidget wptbBlockUserBtn;
-    private ButtonWidget wptbEnterIdBtn;
-    private ButtonWidget wptbEnterUsernameBtn;
-    private TextFieldWidget wptbTextInput;
-    private ButtonWidget wptbConfirmBtn;
+    private Button wptbBlockUserBtn;
+    private Button wptbEnterIdBtn;
+    private Button wptbEnterUsernameBtn;
+    private EditBox wptbTextInput;
+    private Button wptbConfirmBtn;
 
     public BlockListScreen(Screen parent, DPTB2Utils mod) {
-        super(Text.literal("Block List"));
+        super(Component.literal("Block List"));
         this.parent = parent;
         this.mod = mod;
     }
@@ -79,20 +79,20 @@ public class BlockListScreen extends Screen {
                 halfWidth - padding * 2, listHeight,
                 mod.getListConfig("others.discBlocks"),
                 BlockListManager.getDiscUsername(),
-                this.textRenderer,
+                this.font,
                 this::removeDiscBlock
         );
-        this.addDrawableChild(discList);
+        this.addRenderableWidget(discList);
 
         wptbList = new BlockEntryList(
                 halfWidth + padding, listTop,
                 halfWidth - padding * 2, listHeight,
                 mod.getListConfig("others.wptbBlocks"),
                 BlockListManager.getWptbUsername(),
-                this.textRenderer,
+                this.font,
                 this::removeWptbBlock
         );
-        this.addDrawableChild(wptbList);
+        this.addRenderableWidget(wptbList);
 
         int popupY = listBottom + 4;
         int btnW = 100;
@@ -101,85 +101,85 @@ public class BlockListScreen extends Screen {
         // --- Discord side ---
         int discCenterX = halfWidth / 2;
 
-        discBlockUserBtn = ButtonWidget.builder(Text.of("Block User"), (btn) -> {
+        discBlockUserBtn = Button.builder(Component.nullToEmpty("Block User"), (btn) -> {
             setDiscPopupState(PopupState.CHOOSE);
-        }).dimensions(discCenterX - btnW / 2, popupY, btnW, btnH).build();
+        }).bounds(discCenterX - btnW / 2, popupY, btnW, btnH).build();
 
-        discEnterIdBtn = ButtonWidget.builder(Text.of("Enter ID"), (btn) -> {
+        discEnterIdBtn = Button.builder(Component.nullToEmpty("Enter ID"), (btn) -> {
             discInputIsId = true;
             setDiscPopupState(PopupState.INPUT);
-        }).dimensions(discCenterX - btnW - 2, popupY, btnW, btnH).build();
+        }).bounds(discCenterX - btnW - 2, popupY, btnW, btnH).build();
 
-        discEnterUsernameBtn = ButtonWidget.builder(Text.of("Enter Username"), (btn) -> {
+        discEnterUsernameBtn = Button.builder(Component.nullToEmpty("Enter Username"), (btn) -> {
             discInputIsId = false;
             setDiscPopupState(PopupState.INPUT);
-        }).dimensions(discCenterX + 2, popupY, btnW, btnH).build();
+        }).bounds(discCenterX + 2, popupY, btnW, btnH).build();
 
-        discTextInput = new TextFieldWidget(this.textRenderer, discCenterX - btnW / 2, popupY, btnW, btnH, Text.empty());
+        discTextInput = new EditBox(this.font, discCenterX - btnW / 2, popupY, btnW, btnH, Component.empty());
         discTextInput.setMaxLength(64);
 
-        discConfirmBtn = ButtonWidget.builder(Text.of("Confirm"), (btn) -> {
-            String value = discTextInput.getText().trim();
+        discConfirmBtn = Button.builder(Component.nullToEmpty("Confirm"), (btn) -> {
+            String value = discTextInput.getValue().trim();
             if (!value.isEmpty()) {
                 addDiscBlock(value);
             }
 
             resetDiscPopup();
-        }).dimensions(discCenterX + btnW / 2 + 4, popupY, 60, btnH).build();
+        }).bounds(discCenterX + btnW / 2 + 4, popupY, 60, btnH).build();
 
         // wptb side
         int wptbCenterX = halfWidth + halfWidth / 2;
 
-        wptbBlockUserBtn = ButtonWidget.builder(Text.of("Block User"), (btn) -> {
+        wptbBlockUserBtn = Button.builder(Component.nullToEmpty("Block User"), (btn) -> {
             setWptbPopupState(PopupState.CHOOSE);
-        }).dimensions(wptbCenterX - btnW / 2, popupY, btnW, btnH).build();
+        }).bounds(wptbCenterX - btnW / 2, popupY, btnW, btnH).build();
 
-        wptbEnterIdBtn = ButtonWidget.builder(Text.of("Enter ID"), (btn) -> {
+        wptbEnterIdBtn = Button.builder(Component.nullToEmpty("Enter ID"), (btn) -> {
             wptbInputIsId = true;
             setWptbPopupState(PopupState.INPUT);
-        }).dimensions(wptbCenterX - btnW - 2, popupY, btnW, btnH).build();
+        }).bounds(wptbCenterX - btnW - 2, popupY, btnW, btnH).build();
 
-        wptbEnterUsernameBtn = ButtonWidget.builder(Text.of("Enter Username"), (btn) -> {
+        wptbEnterUsernameBtn = Button.builder(Component.nullToEmpty("Enter Username"), (btn) -> {
             wptbInputIsId = false;
             setWptbPopupState(PopupState.INPUT);
-        }).dimensions(wptbCenterX + 2, popupY, btnW, btnH).build();
+        }).bounds(wptbCenterX + 2, popupY, btnW, btnH).build();
 
-        wptbTextInput = new TextFieldWidget(this.textRenderer, wptbCenterX - btnW / 2, popupY, btnW, btnH, Text.empty());
+        wptbTextInput = new EditBox(this.font, wptbCenterX - btnW / 2, popupY, btnW, btnH, Component.empty());
         wptbTextInput.setMaxLength(64);
 
-        wptbConfirmBtn = ButtonWidget.builder(Text.of("Confirm"), (btn) -> {
-            String value = wptbTextInput.getText().trim();
+        wptbConfirmBtn = Button.builder(Component.nullToEmpty("Confirm"), (btn) -> {
+            String value = wptbTextInput.getValue().trim();
             if (!value.isEmpty()) {
                 addWptbBlock(value.replace("-", ""));
             }
             resetWptbPopup();
-        }).dimensions(wptbCenterX + btnW / 2 + 4, popupY, 60, btnH).build();
+        }).bounds(wptbCenterX + btnW / 2 + 4, popupY, 60, btnH).build();
 
         // start both sides in INITIAL state
         setDiscPopupState(PopupState.INITIAL);
         setWptbPopupState(PopupState.INITIAL);
 
         // ── Done button ──
-        this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), (btn) -> {
-            assert this.client != null;
-            this.client.setScreen(parent);
-        }).dimensions(this.width / 2 - 75, this.height - 30 - 10, 150, 20).build());
+        this.addRenderableWidget(Button.builder(Component.translatable("gui.done"), (btn) -> {
+            assert this.minecraft != null;
+            this.minecraft.setScreen(parent);
+        }).bounds(this.width / 2 - 75, this.height - 30 - 10, 150, 20).build());
     }
 
     private void clearDiscPopupWidgets() {
-        this.remove(discBlockUserBtn);
-        this.remove(discEnterIdBtn);
-        this.remove(discEnterUsernameBtn);
-        this.remove(discTextInput);
-        this.remove(discConfirmBtn);
+        this.removeWidget(discBlockUserBtn);
+        this.removeWidget(discEnterIdBtn);
+        this.removeWidget(discEnterUsernameBtn);
+        this.removeWidget(discTextInput);
+        this.removeWidget(discConfirmBtn);
     }
 
     private void clearWptbPopupWidgets() {
-        this.remove(wptbBlockUserBtn);
-        this.remove(wptbEnterIdBtn);
-        this.remove(wptbEnterUsernameBtn);
-        this.remove(wptbTextInput);
-        this.remove(wptbConfirmBtn);
+        this.removeWidget(wptbBlockUserBtn);
+        this.removeWidget(wptbEnterIdBtn);
+        this.removeWidget(wptbEnterUsernameBtn);
+        this.removeWidget(wptbTextInput);
+        this.removeWidget(wptbConfirmBtn);
     }
 
     private void setDiscPopupState(PopupState state) {
@@ -187,16 +187,16 @@ public class BlockListScreen extends Screen {
         discPopupState = state;
         switch (state) {
             case INITIAL -> {
-                this.addDrawableChild(discBlockUserBtn);
+                this.addRenderableWidget(discBlockUserBtn);
             }
             case CHOOSE -> {
-                this.addDrawableChild(discEnterIdBtn);
-                this.addDrawableChild(discEnterUsernameBtn);
+                this.addRenderableWidget(discEnterIdBtn);
+                this.addRenderableWidget(discEnterUsernameBtn);
             }
             case INPUT -> {
-                discTextInput.setText("");
-                this.addDrawableChild(discTextInput);
-                this.addDrawableChild(discConfirmBtn);
+                discTextInput.setValue("");
+                this.addRenderableWidget(discTextInput);
+                this.addRenderableWidget(discConfirmBtn);
             }
         }
     }
@@ -206,16 +206,16 @@ public class BlockListScreen extends Screen {
         wptbPopupState = state;
         switch (state) {
             case INITIAL -> {
-                this.addDrawableChild(wptbBlockUserBtn);
+                this.addRenderableWidget(wptbBlockUserBtn);
             }
             case CHOOSE -> {
-                this.addDrawableChild(wptbEnterIdBtn);
-                this.addDrawableChild(wptbEnterUsernameBtn);
+                this.addRenderableWidget(wptbEnterIdBtn);
+                this.addRenderableWidget(wptbEnterUsernameBtn);
             }
             case INPUT -> {
-                wptbTextInput.setText("");
-                this.addDrawableChild(wptbTextInput);
-                this.addDrawableChild(wptbConfirmBtn);
+                wptbTextInput.setValue("");
+                this.addRenderableWidget(wptbTextInput);
+                this.addRenderableWidget(wptbConfirmBtn);
             }
         }
     }
@@ -264,7 +264,7 @@ public class BlockListScreen extends Screen {
 
     private void rebuildDiscList() {
         if (discList != null) {
-            this.remove(discList);
+            this.removeWidget(discList);
         }
         int halfWidth = this.width / 2;
         int padding = 5;
@@ -275,15 +275,15 @@ public class BlockListScreen extends Screen {
                 halfWidth - padding * 2, listHeight,
                 mod.getListConfig("others.discBlocks"),
                 BlockListManager.getDiscUsername(),
-                this.textRenderer,
+                this.font,
                 this::removeDiscBlock
         );
-        this.addDrawableChild(discList);
+        this.addRenderableWidget(discList);
     }
 
     private void rebuildWptbList() {
         if (wptbList != null) {
-            this.remove(wptbList);
+            this.removeWidget(wptbList);
         }
         int halfWidth = this.width / 2;
         int padding = 5;
@@ -294,21 +294,21 @@ public class BlockListScreen extends Screen {
                 halfWidth - padding * 2, listHeight,
                 mod.getListConfig("others.wptbBlocks"),
                 BlockListManager.getWptbUsername(),
-                this.textRenderer,
+                this.font,
                 this::removeWptbBlock
         );
-        this.addDrawableChild(wptbList);
+        this.addRenderableWidget(wptbList);
     }
 
     @Override
-    public boolean shouldPause() {
+    public boolean isPauseScreen() {
         return false;
     }
 
     @Override
-    public void close() {
+    public void onClose() {
         this.mod.saveSettings();
-        super.close();
+        super.onClose();
     }
 
     @Override
@@ -324,7 +324,7 @@ public class BlockListScreen extends Screen {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         int halfWidth = this.width / 2;
 
         // ── list background fills ──
@@ -341,16 +341,16 @@ public class BlockListScreen extends Screen {
 
         super.render(context, mouseX, mouseY, delta);
 
-        context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 8, Colors.WHITE);
+        context.drawCenteredString(this.font, this.title, this.width / 2, 8, CommonColors.WHITE);
 
-        context.drawCenteredTextWithShadow(this.textRenderer, "Discord Blocks", halfWidth / 2, 28, DPTB2Utils.hexToInt(mod.getStringConfig("others.discColor")));
-        context.drawCenteredTextWithShadow(this.textRenderer, "WPTB Client Blocks", halfWidth + halfWidth / 2, 28, DPTB2Utils.hexToInt(mod.getStringConfig("others.wptbColor")));
+        context.drawCenteredString(this.font, "Discord Blocks", halfWidth / 2, 28, DPTB2Utils.hexToInt(mod.getStringConfig("others.discColor")));
+        context.drawCenteredString(this.font, "WPTB Client Blocks", halfWidth + halfWidth / 2, 28, DPTB2Utils.hexToInt(mod.getStringConfig("others.wptbColor")));
 
         if (!discErrorMessage.isEmpty()) {
-            context.drawCenteredTextWithShadow(this.textRenderer, discErrorMessage, halfWidth / 2, 18, Colors.RED);
+            context.drawCenteredString(this.font, discErrorMessage, halfWidth / 2, 18, CommonColors.RED);
         }
         if (!wptbErrorMessage.isEmpty()) {
-            context.drawCenteredTextWithShadow(this.textRenderer, wptbErrorMessage, halfWidth + halfWidth / 2, 18, Colors.RED);
+            context.drawCenteredString(this.font, wptbErrorMessage, halfWidth + halfWidth / 2, 18, CommonColors.RED);
         }
 
         // ── divider line down the centre ──
@@ -362,10 +362,10 @@ public class BlockListScreen extends Screen {
         void remove(String userId);
     }
 
-    public static class BlockEntryList extends ScrollableWidget {
+    public static class BlockEntryList extends AbstractScrollArea {
         private final List<String> blockIds;
         private final Map<String, String> usernameCache;
-        private final TextRenderer textRenderer;
+        private final Font textRenderer;
         private final RemoveAction removeAction;
 
         private static final int LINE_HEIGHT = 14;
@@ -375,9 +375,9 @@ public class BlockListScreen extends Screen {
         public BlockEntryList(int x, int y, int width, int height,
                               List<String> blockIds,
                               Map<String, String> usernameCache,
-                              TextRenderer textRenderer,
+                              Font textRenderer,
                               RemoveAction removeAction) {
-            super(x, y, width, height, Text.empty());
+            super(x, y, width, height, Component.empty());
             this.blockIds = blockIds;
             this.usernameCache = usernameCache;
             this.textRenderer = textRenderer;
@@ -385,46 +385,46 @@ public class BlockListScreen extends Screen {
         }
 
         @Override
-        protected int getContentsHeightWithPadding() {
+        protected int contentHeight() {
             return PADDING * 2 + blockIds.size() * LINE_HEIGHT;
         }
 
         @Override
-        protected double getDeltaYPerScroll() {
+        protected double scrollRate() {
             return LINE_HEIGHT;
         }
 
         @Override
-        protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+        protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
             // enable scissor so content is clipped to the widget bounds
             context.enableScissor(getX(), getY(), getX() + getWidth(), getY() + getHeight());
             drawContent(context, mouseX, mouseY);
             context.disableScissor();
-            drawScrollbar(context, mouseX, mouseY);
+            renderScrollbar(context, mouseX, mouseY);
         }
 
         @Override
-        protected void appendClickableNarrations(NarrationMessageBuilder builder) {}
+        protected void updateWidgetNarration(NarrationElementOutput builder) {}
 
         @Override
-        public boolean mouseClicked(Click click, boolean doubled) {
+        public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
             double mouseX = click.x();
             double mouseY = click.y();
 
             if (!this.isMouseOver(mouseX, mouseY)) return false;
 
-            if (checkScrollbarDragged(click)) {
+            if (updateScrolling(click)) {
                 return true;
             }
 
             // check if the click hit a remove button
-            int startY = getY() + PADDING - (int) getScrollY();
+            int startY = getY() + PADDING - (int) scrollAmount();
             for (int i = 0; i < blockIds.size(); i++) {
                 int drawY = startY + i * LINE_HEIGHT;
                 int btnX = getX() + PADDING;
                 int btnY = drawY;
                 if (mouseX >= btnX && mouseX <= btnX + REMOVE_BTN_WIDTH
-                        && mouseY >= btnY && mouseY <= btnY + textRenderer.fontHeight) {
+                        && mouseY >= btnY && mouseY <= btnY + textRenderer.lineHeight) {
                     removeAction.remove(blockIds.get(i));
                     return true;
                 }
@@ -437,14 +437,14 @@ public class BlockListScreen extends Screen {
             return super.mouseScrolled(mx, my, 0, dy);
         }
 
-        private void drawContent(DrawContext context, int mouseX, int mouseY) {
-            int startY = getY() + PADDING - (int) getScrollY();
+        private void drawContent(GuiGraphics context, int mouseX, int mouseY) {
+            int startY = getY() + PADDING - (int) scrollAmount();
 
             for (int i = 0; i < blockIds.size(); i++) {
                 int drawY = startY + i * LINE_HEIGHT;
 
                 // only draw if visible
-                if (drawY + textRenderer.fontHeight < getY() || drawY > getY() + getHeight()) {
+                if (drawY + textRenderer.lineHeight < getY() || drawY > getY() + getHeight()) {
                     continue;
                 }
 
@@ -454,20 +454,20 @@ public class BlockListScreen extends Screen {
                 // ── red X button ──
                 int btnX = getX() + PADDING;
                 boolean hoveringX = mouseX >= btnX && mouseX <= btnX + REMOVE_BTN_WIDTH
-                        && mouseY >= drawY && mouseY <= drawY + textRenderer.fontHeight;
+                        && mouseY >= drawY && mouseY <= drawY + textRenderer.lineHeight;
                 int xColor = hoveringX ? 0xFFFF0000 : 0xFFFF5555;
-                context.drawTextWithShadow(textRenderer, Text.literal("✕"), btnX, drawY, xColor);
+                context.drawString(textRenderer, Component.literal("✕"), btnX, drawY, xColor);
 
                 // ── user id (+ cached username) ──
                 String displayText = cachedName != null
                         ? userId + " (" + cachedName + ")"
                         : userId;
-                context.drawTextWithShadow(
+                context.drawString(
                         textRenderer,
-                        Text.literal(displayText),
+                        Component.literal(displayText),
                         btnX + REMOVE_BTN_WIDTH + 4,
                         drawY,
-                        Colors.WHITE
+                        CommonColors.WHITE
                 );
             }
         }

@@ -1,10 +1,10 @@
 package weebify.dptb2utils.gui.screen;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.CommonColors;
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.gui.widget.ScrollableBootsList;
 
@@ -14,40 +14,40 @@ public class BootsListScreen extends Screen {
     public ScrollableBootsList listWidget;
 
     public BootsListScreen(Screen parent, DPTB2Utils mod) {
-        super(Text.of("Boots List"));
+        super(Component.nullToEmpty("Boots List"));
         this.parent = parent;
         this.mod = mod;
     }
 
     @Override
     protected void init() {
-        listWidget = new ScrollableBootsList(40, 40, this.width-80, this.height-80-30, 3, 5, this.mod.bootsList, this.textRenderer);
-        this.addDrawableChild(listWidget);
+        listWidget = new ScrollableBootsList(40, 40, this.width-80, this.height-80-30, 3, 5, this.mod.bootsList, this.font);
+        this.addRenderableWidget(listWidget);
 
-        this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), (btn) -> {
-            assert this.client != null;
-            this.client.setScreen(parent);
-        }).dimensions(this.width / 2 - 75, this.height - 30 - 10, 150, 20).build());
+        this.addRenderableWidget(Button.builder(Component.translatable("gui.done"), (btn) -> {
+            assert this.minecraft != null;
+            this.minecraft.setScreen(parent);
+        }).bounds(this.width / 2 - 75, this.height - 30 - 10, 150, 20).build());
     }
 
     @Override
-    public boolean shouldPause() {
+    public boolean isPauseScreen() {
         return false;
     }
 
     @Override
-    public void close() {
+    public void onClose() {
         this.mod.saveSettings();
-        super.close();
+        super.onClose();
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         context.fill(this.listWidget.getX(), this.listWidget.getY(),
                      this.listWidget.getX() + this.listWidget.getWidth(),
                      this.listWidget.getY() + this.listWidget.getHeight(), 0x33000000);
         super.render(context, mouseX, mouseY, delta);
-        context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width/2, 20, Colors.WHITE);
+        context.drawCenteredString(this.font, this.title, this.width/2, 20, CommonColors.WHITE);
     }
 
     @Override

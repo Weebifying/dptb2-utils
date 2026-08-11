@@ -1,22 +1,22 @@
 package weebify.dptb2utils.gui.widget;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.CommonColors;
 import weebify.dptb2utils.DPTB2Utils;
 
-public class DraggableButtonTimer extends ClickableWidget {
+public class DraggableButtonTimer extends AbstractWidget {
     private boolean dragging = false;
     private int dragOffsetX, dragOffsetY;
     public float relX, relY;
 
-    public DraggableButtonTimer(float relX, float relY, Text message) {
-        super(0, 0, MinecraftClient.getInstance().textRenderer.getWidth(message) + 8, 15, message);
+    public DraggableButtonTimer(float relX, float relY, Component message) {
+        super(0, 0, Minecraft.getInstance().font.width(message) + 8, 15, message);
         this.relX = relX;
         this.relY = relY;
     }
@@ -27,9 +27,9 @@ public class DraggableButtonTimer extends ClickableWidget {
     }
 
     @Override
-    protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
         // Draw centered text manually
-        TextRenderer renderer = MinecraftClient.getInstance().textRenderer;
+        Font renderer = Minecraft.getInstance().font;
         DPTB2Utils mod = DPTB2Utils.getInstance();
         if (mod.getBoolConfig("buttonTimer.renderBackground")) {
             context.fill(
@@ -40,17 +40,17 @@ public class DraggableButtonTimer extends ClickableWidget {
                     0x63000000
             );
         }
-        context.drawText(
+        context.drawString(
                 renderer, getMessage(),
                 getX() + 4,
                 getY() + 4,
-                Colors.WHITE,
+                CommonColors.WHITE,
                 mod.getBoolConfig("buttonTimer.textShadow")
         );
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
+    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
         double mouseX = click.x();
         double mouseY = click.y();
         int button = click.button();
@@ -65,7 +65,7 @@ public class DraggableButtonTimer extends ClickableWidget {
     }
 
     @Override
-    public boolean mouseReleased(Click click) {
+    public boolean mouseReleased(MouseButtonEvent click) {
         int button = click.button();
         if (dragging && button == 0) {
             dragging = false;
@@ -75,15 +75,15 @@ public class DraggableButtonTimer extends ClickableWidget {
     }
 
     @Override
-    public boolean mouseDragged(Click click, double dx, double dy) {
+    public boolean mouseDragged(MouseButtonEvent click, double dx, double dy) {
         double mouseX = click.x();
         double mouseY = click.y();
         if (dragging) {
-            MinecraftClient client = MinecraftClient.getInstance();
+            Minecraft client = Minecraft.getInstance();
             int newX = (int)(mouseX - dragOffsetX);
             int newY = (int)(mouseY - dragOffsetY);
-            int screenWidth = client.getWindow().getScaledWidth();
-            int screenHeight = client.getWindow().getScaledHeight();
+            int screenWidth = client.getWindow().getGuiScaledWidth();
+            int screenHeight = client.getWindow().getGuiScaledHeight();
 
             // Clamp to screen and update
             this.setX(newX);
@@ -96,5 +96,5 @@ public class DraggableButtonTimer extends ClickableWidget {
     }
 
     @Override
-    protected void appendClickableNarrations(NarrationMessageBuilder builder) {}
+    protected void updateWidgetNarration(NarrationElementOutput builder) {}
 }

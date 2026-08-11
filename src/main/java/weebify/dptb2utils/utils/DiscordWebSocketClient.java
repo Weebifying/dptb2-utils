@@ -1,11 +1,11 @@
 package weebify.dptb2utils.utils;
 
 import com.google.gson.Gson;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.CommonColors;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import weebify.dptb2utils.DPTB2Utils;
@@ -19,7 +19,7 @@ import java.net.URI;
 
 public class DiscordWebSocketClient extends WebSocketClient {
     private static final Gson GSON = new Gson();
-    private static final MinecraftClient MC = MinecraftClient.getInstance();
+    private static final Minecraft MC = Minecraft.getInstance();
     private static final DPTB2Utils mod = DPTB2Utils.getInstance();
     public List<String> clientsList = new ArrayList<>();
 
@@ -46,7 +46,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
                     "name", MC.player.getGameProfile().name(),
                     "currentName", MC.player.getDisplayName().getString(),
                     "id", MC.player.getGameProfile().id().toString().replace("-", ""),
-                    "version", DPTB2Utils.VERSION, "mc", MC.getGameVersion(),
+                    "version", DPTB2Utils.VERSION, "mc", MC.getLaunchedVersion(),
                     "x", Double.toString(MC.player.getX()),
                     "y", Double.toString(MC.player.getY()),
                     "z", Double.toString(MC.player.getZ())
@@ -61,7 +61,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
                         "currentDoor", MicroTimerManager.currentDoor
             ));
         }
-        MC.execute(() -> MC.getToastManager().add(new NotificationToast("DPTBot", "Connected!", Colors.WHITE, SoundEvents.ENTITY_BAT_TAKEOFF)));
+        MC.execute(() -> MC.getToastManager().addToast(new NotificationToast("DPTBot", "Connected!", CommonColors.WHITE, SoundEvents.BAT_TAKEOFF)));
     }
 
     // run when a message is received from the server
@@ -71,20 +71,20 @@ public class DiscordWebSocketClient extends WebSocketClient {
         String type = (String) data.get("type");
         String text = (String) data.get("text");
         Integer col = (Integer) data.get("color");
-        MinecraftClient.getInstance().execute(() -> {
+        Minecraft.getInstance().execute(() -> {
                 if (type.equalsIgnoreCase("delegate")) {
                     if (mod.getBoolConfig("others.consentRamper")) {
-                        MC.getToastManager().add(new NotificationToast("DPTBot", text, col != null ? col : 0xFFC8FFC8, SoundEvents.ENTITY_BAT_TAKEOFF));
+                        MC.getToastManager().addToast(new NotificationToast("DPTBot", text, col != null ? col : 0xFFC8FFC8, SoundEvents.BAT_TAKEOFF));
                         mod.isRamper = true;
                         this.sendModMessage("confirm", Map.of("text", MC.player != null ? MC.player.getGameProfile().name() : "Unknown"));
                     } else {
-                        MC.getToastManager().add(new NotificationToast("DPTBot", "Ramper request denied.", Colors.RED, SoundEvents.ENTITY_BAT_TAKEOFF));
+                        MC.getToastManager().addToast(new NotificationToast("DPTBot", "Ramper request denied.", CommonColors.RED, SoundEvents.BAT_TAKEOFF));
                         mod.isRamper = false;
                         this.sendModMessage("deny", Map.of("text", MC.player != null ? MC.player.getGameProfile().name() : "Unknown"));
                     }
                 } else if (type.equalsIgnoreCase("revoke")) {
                     if (mod.getBoolConfig("others.discordRamper")) {
-                        MC.getToastManager().add(new NotificationToast("DPTBot", text, col != null ? col : 0xFFFFC8C8, SoundEvents.ENTITY_BAT_TAKEOFF));
+                        MC.getToastManager().addToast(new NotificationToast("DPTBot", text, col != null ? col : 0xFFFFC8C8, SoundEvents.BAT_TAKEOFF));
                         mod.isRamper = false;
                     }
                 } else if (type.equalsIgnoreCase("broadcast")) {
@@ -110,19 +110,19 @@ public class DiscordWebSocketClient extends WebSocketClient {
 
                     if (mod.getBoolConfig("others.broadcastToast")) {
                         int color = source.equalsIgnoreCase("DISC") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.discColor")) : (source.equalsIgnoreCase("WPTB") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.wptbColor")) : (source.equalsIgnoreCase("CONSOLE") ? 0xFFFF5555 : 0xFFFFFFFF));
-                        MC.getToastManager().add(new NotificationToast(String.format("[%s] %s", source, name), text, col != null ? col : color, mod.getBoolConfig("others.broadcastSounds") ? SoundEvents.BLOCK_NOTE_BLOCK_PLING.value() : null, currentPitch, 1));
+                        MC.getToastManager().addToast(new NotificationToast(String.format("[%s] %s", source, name), text, col != null ? col : color, mod.getBoolConfig("others.broadcastSounds") ? SoundEvents.NOTE_BLOCK_PLING.value() : null, currentPitch, 1));
                     }
 
                     if (MC.player != null && mod.getBoolConfig("others.broadcastChat")) {
-                        MC.player.sendMessage(Text.literal(sb.toString()), false);
+                        MC.player.displayClientMessage(Component.literal(sb.toString()), false);
                         if (!mod.getBoolConfig("others.broadcastToast") && mod.getBoolConfig("others.broadcastSounds")) {
-                            MC.getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), currentPitch, 1));
+                            MC.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_PLING.value(), currentPitch, 1));
                         }
                     }
                 } else if (type.equalsIgnoreCase("askTabList")) {
                     String id = (String) data.get("id");
-                    if (MC.getNetworkHandler() != null) {
-                        List<String> players = MC.getNetworkHandler().getPlayerList().stream()
+                    if (MC.getConnection() != null) {
+                        List<String> players = MC.getConnection().getOnlinePlayers().stream()
                                 .map(player -> player.getProfile().name())
                                 .toList();
                         this.sendModMessage("tabList", Map.of("id", id, "players", players));
@@ -169,7 +169,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
     @Override
     public void onClose(int code, String reason, boolean remote) {
         if (!mod.tryingToConnect) {
-            MC.getToastManager().add(new NotificationToast("DPTBot", String.format("Disconnected: %s (code:%s)", reason, code), Colors.ALTERNATE_WHITE, SoundEvents.ENTITY_BAT_TAKEOFF));
+            MC.getToastManager().addToast(new NotificationToast("DPTBot", String.format("Disconnected: %s (code:%s)", reason, code), CommonColors.LIGHTER_GRAY, SoundEvents.BAT_TAKEOFF));
         }
         DPTB2Utils.LOGGER.error("WebSocket connection closed: {} (code:{}, remote:{})", reason, code, remote);
         this.clientsList = new ArrayList<>();
@@ -179,7 +179,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
     @Override
     public void onError(Exception ex) {
         if (!mod.tryingToConnect) {
-            MC.execute(() -> MC.getToastManager().add(new NotificationToast("DPTBot", "Connecting to DPTBot failed!", Colors.RED, SoundEvents.ENTITY_BAT_TAKEOFF)));
+            MC.execute(() -> MC.getToastManager().addToast(new NotificationToast("DPTBot", "Connecting to DPTBot failed!", CommonColors.RED, SoundEvents.BAT_TAKEOFF)));
         }
         ex.printStackTrace();
         this.retryConnection();

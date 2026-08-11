@@ -3,13 +3,13 @@ package weebify.dptb2utils.utils;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.resources.Identifier;
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.gui.screen.ItemCooldownConfigScreen;
 
@@ -18,18 +18,18 @@ import java.util.Map;
 
 public class ItemCooldownManager {
     public enum Items {
-        BEAR_TRAP("Bear Trap", 600, Identifier.of(DPTB2Utils.MOD_ID, "textures/items/trap.png")),
-        LANDMINE("Landmine", 600, Identifier.of(DPTB2Utils.MOD_ID, "textures/items/landmine.png")),
-        BIRD("Bird", 400, Identifier.of(DPTB2Utils.MOD_ID, "textures/items/bird.png")),
-        GROUND_POUND("Ground Pound", 600, Identifier.of(DPTB2Utils.MOD_ID, "textures/items/pound.png")),
-        EXPLOSIVE_CAKE("Explosive Cake", 600, Identifier.of(DPTB2Utils.MOD_ID, "textures/items/cake.png")),
-        REMOTE_ACTIVATION("Remote Activation", 400, Identifier.of(DPTB2Utils.MOD_ID, "textures/items/remote.png")),
-        SMOKE_BOMB("Smoke Bomb", 400, Identifier.of(DPTB2Utils.MOD_ID, "textures/items/smoke.png")),
-        FREEZE_RAY("Freeze Ray", 400, Identifier.of(DPTB2Utils.MOD_ID, "textures/items/freeze.png")),
-        SWAP_CRYSTAL("Swap Crystal", 600, Identifier.of(DPTB2Utils.MOD_ID, "textures/items/swap.png")),
-        IMMUNE_APPLE("Immune Apple", 600, Identifier.of(DPTB2Utils.MOD_ID, "textures/items/immune.png")),
-        LASSO("Lasso", 400, Identifier.of(DPTB2Utils.MOD_ID, "textures/items/lasso.png")),
-        FIREWORK("Firework", 600, Identifier.of(DPTB2Utils.MOD_ID, "textures/items/firework.png"));
+        BEAR_TRAP("Bear Trap", 600, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/trap.png")),
+        LANDMINE("Landmine", 600, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/landmine.png")),
+        BIRD("Bird", 400, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/bird.png")),
+        GROUND_POUND("Ground Pound", 600, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/pound.png")),
+        EXPLOSIVE_CAKE("Explosive Cake", 600, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/cake.png")),
+        REMOTE_ACTIVATION("Remote Activation", 400, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/remote.png")),
+        SMOKE_BOMB("Smoke Bomb", 400, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/smoke.png")),
+        FREEZE_RAY("Freeze Ray", 400, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/freeze.png")),
+        SWAP_CRYSTAL("Swap Crystal", 600, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/swap.png")),
+        IMMUNE_APPLE("Immune Apple", 600, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/immune.png")),
+        LASSO("Lasso", 400, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/lasso.png")),
+        FIREWORK("Firework", 600, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/firework.png"));
 
         public final String name;
         public final int cooldown;
@@ -121,9 +121,9 @@ public class ItemCooldownManager {
 
     public static void initialize() {
         UseItemCallback.EVENT.register((player, world, hand) -> {
-            if (!player.getStackInHand(hand).isEmpty() && DPTB2Utils.getInstance().isInDPTB2) {
-                ItemStack stack = player.getStackInHand(hand);
-                String itemName = stack.getName().getString();
+            if (!player.getItemInHand(hand).isEmpty() && DPTB2Utils.getInstance().isInDPTB2) {
+                ItemStack stack = player.getItemInHand(hand);
+                String itemName = stack.getHoverName().getString();
                 if (Items.NAME_MAP.containsKey(itemName)) {
                     double x = player.getX();
                     double y = player.getY();
@@ -136,7 +136,7 @@ public class ItemCooldownManager {
                 }
             }
 
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         });
         ClientTickEvents.START_CLIENT_TICK.register((mc) -> {
             for (String itemName : currentCooldowns.keySet().toArray(new String[0])) {
@@ -158,13 +158,13 @@ public class ItemCooldownManager {
         HudRenderCallback.EVENT.register(ItemCooldownManager::renderItemCooldowns);
     }
 
-    private static void renderItemCooldowns(DrawContext drawContext, RenderTickCounter renderTickCounter) {
-        MinecraftClient mc = MinecraftClient.getInstance();
+    private static void renderItemCooldowns(GuiGraphics drawContext, DeltaTracker renderTickCounter) {
+        Minecraft mc = Minecraft.getInstance();
         DPTB2Utils mod = DPTB2Utils.getInstance();
 
-        if (mod.isInDPTB2 && mod.getBoolConfig("itemCooldown.enabled") && !currentCooldowns.isEmpty() && !(mc.currentScreen instanceof ItemCooldownConfigScreen)) {
-            int width = mc.getWindow().getScaledWidth();
-            int height = mc.getWindow().getScaledHeight();
+        if (mod.isInDPTB2 && mod.getBoolConfig("itemCooldown.enabled") && !currentCooldowns.isEmpty() && !(mc.screen instanceof ItemCooldownConfigScreen)) {
+            int width = mc.getWindow().getGuiScaledWidth();
+            int height = mc.getWindow().getGuiScaledHeight();
             int posX = (int)(mod.getFloatConfig("itemCooldown.posX")*width);
             int posY = (int)(mod.getFloatConfig("itemCooldown.posY")*height);
             int padding = 5;
@@ -179,7 +179,7 @@ public class ItemCooldownManager {
                 int ticksLeft = entry.getValue();
                 Items item = Items.NAME_MAP.get(itemName);
                 int barWidth = (int) (0.2 * item.cooldown);
-                int textWidth = mc.textRenderer.getWidth((ticksLeft / 20) + "s");
+                int textWidth = mc.font.width((ticksLeft / 20) + "s");
                 maxWidth = Math.max(maxWidth, padding + 20 + barWidth + 6 + textWidth + padding);
             }
 
@@ -201,7 +201,7 @@ public class ItemCooldownManager {
 
                 int x = alignLeft ? posX + padding : posX - padding - 16;
                 int y = posY + padding + i * lineHeight;
-                drawContext.drawTexture(RenderPipelines.GUI_TEXTURED, item.texture, x, y, 0, 0, 16, 16, 16, 16);
+                drawContext.blit(RenderPipelines.GUI_TEXTURED, item.texture, x, y, 0, 0, 16, 16, 16, 16);
 
                 int barWidth = (int) (0.2 * Items.NAME_MAP.get(itemName).cooldown);
                 int barHeight = 8;
@@ -216,8 +216,8 @@ public class ItemCooldownManager {
 
                 int seconds = ticksLeft / 20;
                 String text = seconds + "s";
-                int textX = alignLeft ? barX + barWidth + 6 : barX - 6 - mc.textRenderer.getWidth(text);
-                drawContext.drawText(mc.textRenderer, text, textX, barY, 0xFFFFFFFF, mod.getBoolConfig("itemCooldown.textShadow"));
+                int textX = alignLeft ? barX + barWidth + 6 : barX - 6 - mc.font.width(text);
+                drawContext.drawString(mc.font, text, textX, barY, 0xFFFFFFFF, mod.getBoolConfig("itemCooldown.textShadow"));
 
                 i++;
             }

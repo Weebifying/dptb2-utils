@@ -9,12 +9,12 @@
     "requireAnnotations": true
   },
   "client": [
-    "ChatHudMixin",
-    "DrawContextInvoker",
+    "ChatComponentMixin",
+    "GuiGraphicsInvoker",
     "LabelCommandRendererCommandsMixin",
-    "PlayerListHudMixin"
+    "PlayerTabOverlayMixin"
   ],
   "mixins": [
-    "TextVisitFactoryMixin"
+    "StringDecomposerMixin"
   ]
 }

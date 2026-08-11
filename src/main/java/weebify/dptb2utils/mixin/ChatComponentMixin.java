@@ -1,15 +1,15 @@
 package weebify.dptb2utils.mixin;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.hud.ChatHud;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.gui.hud.ChatHudLine;
-import net.minecraft.client.toast.ToastManager;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.ChatComponent;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.GuiMessage;
+import net.minecraft.client.gui.components.toasts.ToastManager;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -28,24 +28,24 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Mixin(ChatHud.class)
-public class ChatHudMixin {
+@Mixin(ChatComponent.class)
+public class ChatComponentMixin {
     @Unique
     private static final Random rand = new Random();
 
     @Unique
     private static void triggerNotif(String title, String message, int color, SoundEvent sfx) {
         DPTB2Utils mod = DPTB2Utils.getInstance();
-        MinecraftClient mc = MinecraftClient.getInstance();
+        Minecraft mc = Minecraft.getInstance();
         ToastManager toastManager = mc.getToastManager();
         if (mod.getBoolConfig("notifs.dontDelaySfx")) {
-            mc.getSoundManager().play(PositionedSoundInstance.ui(sfx, 1, 1));
+            mc.getSoundManager().play(SimpleSoundInstance.forUI(sfx, 1, 1));
         }
-        toastManager.add(new NotificationToast(title, message, color, mod.getBoolConfig("notifs.dontDelaySfx") ? null : sfx));
+        toastManager.addToast(new NotificationToast(title, message, color, mod.getBoolConfig("notifs.dontDelaySfx") ? null : sfx));
     }
 
     @Unique
-    private static String toLegacyText(Text text) {
+    private static String toLegacyText(Component text) {
         StringBuilder sb = new StringBuilder();
 
         text.visit((style, str) -> {
@@ -61,27 +61,27 @@ public class ChatHudMixin {
         StringBuilder codes = new StringBuilder();
 
         if (style.getColor() != null) {
-            Formatting color = Formatting.byName(style.getColor().getName());
+            ChatFormatting color = ChatFormatting.getByName(style.getColor().serialize());
             if (color != null) codes.append(color);
         }
 
-        if (style.isBold()) codes.append(Formatting.BOLD);
-        if (style.isItalic()) codes.append(Formatting.ITALIC);
-        if (style.isUnderlined()) codes.append(Formatting.UNDERLINE);
-        if (style.isStrikethrough()) codes.append(Formatting.STRIKETHROUGH);
-        if (style.isObfuscated()) codes.append(Formatting.OBFUSCATED);
+        if (style.isBold()) codes.append(ChatFormatting.BOLD);
+        if (style.isItalic()) codes.append(ChatFormatting.ITALIC);
+        if (style.isUnderlined()) codes.append(ChatFormatting.UNDERLINE);
+        if (style.isStrikethrough()) codes.append(ChatFormatting.STRIKETHROUGH);
+        if (style.isObfuscated()) codes.append(ChatFormatting.OBFUSCATED);
 
         return codes.toString();
     }
 
-    @Inject(method = "addVisibleMessage(Lnet/minecraft/client/gui/hud/ChatHudLine;)V", at = @At("HEAD"))
-    private void addVisibleMessageInject(ChatHudLine message, CallbackInfo ci) {
+    @Inject(method = "addMessageToDisplayQueue(Lnet/minecraft/client/GuiMessage;)V", at = @At("HEAD"))
+    private void addVisibleMessageInject(GuiMessage message, CallbackInfo ci) {
         DPTB2Utils mod = DPTB2Utils.getInstance();
-        MinecraftClient mc = MinecraftClient.getInstance();
+        Minecraft mc = Minecraft.getInstance();
 
         String msg = toLegacyText(message.content());
         String content = msg.replaceAll("§[0-9a-fk-or]", "").trim();
-        SoundEvent sound = SoundEvents.ENTITY_PLAYER_LEVELUP;
+        SoundEvent sound = SoundEvents.PLAYER_LEVELUP;
 
         if (mod.getBoolConfig("notifs.shopUpdate") && content.startsWith("* SHOP! New items available at the Rotating Shop!")) {
             triggerNotif("Shop Update!", "New items available at the Rotating Shop!", 0xFF55FF, sound);
@@ -148,8 +148,8 @@ public class ChatHudMixin {
             }
 
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            Text text = Text.empty()
-                    .append(Text.literal(String.format("[%s] ", timestamp)).formatted(Formatting.GRAY)
+            Component text = Component.empty()
+                    .append(Component.literal(String.format("[%s] ", timestamp)).withStyle(ChatFormatting.GRAY)
                     .append(message.content()));
             mod.bootsList.add(text);
         } else if (content.startsWith("* STOP! Traffic Lights are RED!")) {
@@ -206,8 +206,8 @@ public class ChatHudMixin {
                 triggerNotif("Door Switch!", "The DOOR has cycled! Which one is it now?", 0xFFAA00, sound);
             }
         } else if (mod.getBoolConfig("others.autoCheer") && content.startsWith("* COMMUNITY GOAL!")) {
-            if (mc.getNetworkHandler() != null) {
-                mod.scheduleTask(rand.nextInt(26) + 5, () -> mc.getNetworkHandler().sendChatCommand("cheer"));
+            if (mc.getConnection() != null) {
+                mod.scheduleTask(rand.nextInt(26) + 5, () -> mc.getConnection().sendCommand("cheer"));
             }
         } else if (content.startsWith("* ➜ The BUTTON was pressed")) {
             ButtonTimerManager.buttonTimer = 0; // reset the button timer

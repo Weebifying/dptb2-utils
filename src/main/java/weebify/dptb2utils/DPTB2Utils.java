@@ -13,14 +13,14 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ServerInfo;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.CommandSource;
-import net.minecraft.scoreboard.*;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.scores.*;
 
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -60,14 +60,14 @@ public class DPTB2Utils implements ClientModInitializer {
 
 	public List<DelayedTask> scheduledTasks = new ArrayList<>();
 
-	private static final MinecraftClient mc = MinecraftClient.getInstance();
+	private static final Minecraft mc = Minecraft.getInstance();
 	private static DPTB2Utils instance;
 	public static final Gson GSON = new Gson();
 
 	@Nullable
 	public DiscordWebSocketClient websocketClient;
 
-	public List<Text> bootsList = new ArrayList<>();
+	public List<Component> bootsList = new ArrayList<>();
 
 	public static DPTB2Utils getInstance() {
 		return instance;
@@ -77,7 +77,7 @@ public class DPTB2Utils implements ClientModInitializer {
 	public void onInitializeClient() {
 		instance = this;
 		this.config = new ModConfigs();
-		this.saveFile = new File(mc.runDirectory + "/config", "weebify_dptb2utils.json");
+		this.saveFile = new File(mc.gameDirectory + "/config", "weebify_dptb2utils.json");
         try {
             if (this.saveFile.createNewFile()) {
                 try (FileWriter fw = new FileWriter(this.saveFile)) {
@@ -207,37 +207,37 @@ public class DPTB2Utils implements ClientModInitializer {
 		});
 	}
 
-	public void dptb2Check(MinecraftClient client) {
-		ServerInfo serverEntry = client.getCurrentServerEntry();
+	public void dptb2Check(Minecraft client) {
+		ServerData serverEntry = client.getCurrentServer();
 		if (serverEntry == null) {
 			this.isInDPTB2 = false;
 			return;
 		}
-		if (!serverEntry.address.toLowerCase().contains("hypixel.net")) {
+		if (!serverEntry.ip.toLowerCase().contains("hypixel.net")) {
 			this.isInDPTB2 = false;
 			return;
 		}
 
-		if (client.world == null) return;
+		if (client.level == null) return;
 
-		Scoreboard scoreboard = client.world.getScoreboard();
-		ScoreboardObjective objective = scoreboard.getObjectiveForSlot(ScoreboardDisplaySlot.SIDEBAR);
+		Scoreboard scoreboard = client.level.getScoreboard();
+		Objective objective = scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR);
 
 		if (objective != null) {
 			String title = objective.getDisplayName().getString().toLowerCase();
-			Text[] sidebarEntries = scoreboard.getScoreboardEntries(objective)
+			Component[] sidebarEntries = scoreboard.listPlayerScores(objective)
 					.stream()
-					.filter(score -> !score.hidden())
-					.sorted(Comparator.comparing(ScoreboardEntry::value).reversed().thenComparing(ScoreboardEntry::owner, String.CASE_INSENSITIVE_ORDER))
+					.filter(score -> !score.isHidden())
+					.sorted(Comparator.comparing(PlayerScoreEntry::value).reversed().thenComparing(PlayerScoreEntry::owner, String.CASE_INSENSITIVE_ORDER))
 					.map(scoreboardEntry -> {
-						Team team = scoreboard.getScoreHolderTeam(scoreboardEntry.owner());
-						Text textx = scoreboardEntry.name();
-						return (Text) Team.decorateName(team, textx);
+						PlayerTeam team = scoreboard.getPlayersTeam(scoreboardEntry.owner());
+						Component textx = scoreboardEntry.ownerName();
+						return (Component) PlayerTeam.formatNameForTeam(team, textx);
 					})
-					.toArray(Text[]::new);
+					.toArray(Component[]::new);
 
 			StringBuilder s = new StringBuilder();
-			for (Text entry : sidebarEntries) {
+			for (Component entry : sidebarEntries) {
 				s.append(entry.getString());
 			}
 
@@ -248,7 +248,7 @@ public class DPTB2Utils implements ClientModInitializer {
 			this.isInDPTB2 = scoreboardContent.contains("don't press the button 2") && scoreboardContent.contains("cyborg023");
 
 			if (this.isInDPTB2 && !alreadyInDPTB2) {
-				client.getToastManager().add(new NotificationToast("DPTB2 Utils", "You are in Don't Press The Button 2!", 0xD2FFC8, SoundEvents.ENTITY_PLAYER_LEVELUP));
+				client.getToastManager().addToast(new NotificationToast("DPTB2 Utils", "You are in Don't Press The Button 2!", 0xD2FFC8, SoundEvents.PLAYER_LEVELUP));
 			}
 
 			if (this.isInDPTB2 != alreadyInDPTB2) {
@@ -268,7 +268,7 @@ public class DPTB2Utils implements ClientModInitializer {
 		ClientCommandRegistrationCallback.EVENT.register(this::commandToggleBc);
 	}
 
-	private void onClientTick(MinecraftClient var) {
+	private void onClientTick(Minecraft var) {
 		if (this.saveFile.lastModified() > this.lastSaved) {
 			this.loadSettings();
 			this.lastSaved = this.saveFile.lastModified();
@@ -287,20 +287,20 @@ public class DPTB2Utils implements ClientModInitializer {
 		}
 	}
 
-	private void commandToggleBc(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
+	private void commandToggleBc(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> c = dispatcher.register(
 				ClientCommandManager.literal("togglebc")
 						.executes(context -> {
 							this.isToggleBc = !this.isToggleBc;
 							if (mc.player != null) {
-								mc.player.sendMessage(Text.of("Automatic chat broadcast is now " + (this.isToggleBc ? "§a§lenabled§r!" : "§c§ldisabled§r!")), false);
+								mc.player.displayClientMessage(Component.nullToEmpty("Automatic chat broadcast is now " + (this.isToggleBc ? "§a§lenabled§r!" : "§c§ldisabled§r!")), false);
 							}
 							return 1;
 						})
 		);
 	}
 
-	private void commandModMenu(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
+	private void commandModMenu(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> c = dispatcher.register(
 				ClientCommandManager.literal("dptb2")
 						.executes(context -> {
@@ -339,19 +339,19 @@ public class DPTB2Utils implements ClientModInitializer {
 				try {
 					websocketClient.sendModMessage("playerBroadcast", Map.of("text", msg, "name", mc.player.getGameProfile().name(), "private", this.getBoolConfig("others.incognito")));
 					if (!this.getBoolConfig("others.broadcastChat")) {
-						mc.player.sendMessage(Text.literal("Broadcast message: " + msg).formatted(Formatting.GREEN), false);
+						mc.player.displayClientMessage(Component.literal("Broadcast message: " + msg).withStyle(ChatFormatting.GREEN), false);
 					}
 				} catch (Exception e) {
 					LOGGER.error("Failed to send broadcast message!", e);
-					mc.player.sendMessage(Text.literal("Failed to send broadcast message!").formatted(Formatting.RED), false);
+					mc.player.displayClientMessage(Component.literal("Failed to send broadcast message!").withStyle(ChatFormatting.RED), false);
 				}
 			} else {
-				mc.player.sendMessage(Text.literal("Not connected to DPTBot!").formatted(Formatting.RED), false);
+				mc.player.displayClientMessage(Component.literal("Not connected to DPTBot!").withStyle(ChatFormatting.RED), false);
 			}
 		}
 	}
 
-	private void commandBroadcast(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
+	private void commandBroadcast(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> c = dispatcher.register(
 				ClientCommandManager.literal("broadcast")
 						.then(ClientCommandManager.argument("message", StringArgumentType.greedyString())
@@ -359,7 +359,7 @@ public class DPTB2Utils implements ClientModInitializer {
 								.suggests((ctx, builder) -> {
 									int lastSpace = builder.getRemaining().lastIndexOf(' ');
 									SuggestionsBuilder sb = builder.createOffset(builder.getStart() + lastSpace + 1);
-									return CommandSource.suggestMatching(ctx.getSource().getPlayerNames(), sb);
+									return SharedSuggestionProvider.suggest(ctx.getSource().getOnlinePlayerNames(), sb);
 								})
 						.executes(context -> {
 							this.handleBroadcast(StringArgumentType.getString(context, "message"));
@@ -373,7 +373,7 @@ public class DPTB2Utils implements ClientModInitializer {
 								.suggests((ctx, builder) -> {
 									int lastSpace = builder.getRemaining().lastIndexOf(' ');
 									SuggestionsBuilder sb = builder.createOffset(builder.getStart() + lastSpace + 1);
-									return CommandSource.suggestMatching(ctx.getSource().getPlayerNames(), sb);
+									return SharedSuggestionProvider.suggest(ctx.getSource().getOnlinePlayerNames(), sb);
 								})
 						.executes(context -> {
 							this.handleBroadcast(StringArgumentType.getString(context, "message"));

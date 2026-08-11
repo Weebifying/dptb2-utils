@@ -1,17 +1,17 @@
 package weebify.dptb2utils.gui.widget;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.CommonColors;
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.utils.MicroTimerManager;
 
-public class DraggableMicroTimer extends ClickableWidget {
+public class DraggableMicroTimer extends AbstractWidget {
     private boolean dragging = false;
     private String event;
     private int dragOffsetX, dragOffsetY;
@@ -20,14 +20,14 @@ public class DraggableMicroTimer extends ClickableWidget {
     public DraggableMicroTimer(float relX, float relY, String eventTime, String trafficTime, String doorTime, String event) {
         super(0, 0,
                 Math.max(
-                        MinecraftClient.getInstance().textRenderer.getWidth(String.format("%s%s§r (%s§r)", MicroTimerManager.eventPrefix, event, eventTime)),
+                        Minecraft.getInstance().font.width(String.format("%s%s§r (%s§r)", MicroTimerManager.eventPrefix, event, eventTime)),
                         Math.max(
-                                MinecraftClient.getInstance().textRenderer.getWidth(String.format("%s%s§r (%s§r))", MicroTimerManager.trafficPrefix, MicroTimerManager.LIGHTS_LIST[1], trafficTime)),
-                                MinecraftClient.getInstance().textRenderer.getWidth(String.format("%s%s§r (%s§r)", MicroTimerManager.doorPrefix, "N/A", doorTime))
+                                Minecraft.getInstance().font.width(String.format("%s%s§r (%s§r))", MicroTimerManager.trafficPrefix, MicroTimerManager.LIGHTS_LIST[1], trafficTime)),
+                                Minecraft.getInstance().font.width(String.format("%s%s§r (%s§r)", MicroTimerManager.doorPrefix, "N/A", doorTime))
                         )
                 ) + 8,
-                3 * MinecraftClient.getInstance().textRenderer.fontHeight + 14,
-                Text.of(eventTime));
+                3 * Minecraft.getInstance().font.lineHeight + 14,
+                Component.nullToEmpty(eventTime));
         this.relX = relX;
         this.relY = relY;
         this.event = event;
@@ -39,9 +39,9 @@ public class DraggableMicroTimer extends ClickableWidget {
     }
 
     @Override
-    protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
         // Draw centered text manually
-        TextRenderer renderer = MinecraftClient.getInstance().textRenderer;
+        Font renderer = Minecraft.getInstance().font;
         DPTB2Utils mod = DPTB2Utils.getInstance();
         if (mod.getBoolConfig("microTimer.renderBackground")) {
             context.fill(
@@ -56,35 +56,35 @@ public class DraggableMicroTimer extends ClickableWidget {
         int cursorY = getY() + 4;
 
         // Event Line
-        context.drawText(
+        context.drawString(
                 renderer, String.format("%s00:00 (%s)", MicroTimerManager.eventPrefix, this.event),
                 getX() + 4,
                 cursorY,
-                Colors.WHITE,
+                CommonColors.WHITE,
                 mod.getBoolConfig("microTimer.textShadow")
         );
 
-        cursorY += renderer.fontHeight + 3;
-        context.drawText(
+        cursorY += renderer.lineHeight + 3;
+        context.drawString(
                 renderer, String.format("%s00:00 (%s)", MicroTimerManager.trafficPrefix, MicroTimerManager.LIGHTS_LIST[0]),
                 getX() + 4,
                 cursorY,
-                Colors.WHITE,
+                CommonColors.WHITE,
                 mod.getBoolConfig("microTimer.textShadow")
         );
 
-        cursorY += renderer.fontHeight + 3;
-        context.drawText(
+        cursorY += renderer.lineHeight + 3;
+        context.drawString(
                 renderer, String.format("%s00:00", MicroTimerManager.doorPrefix),
                 getX() + 4,
                 cursorY,
-                Colors.WHITE,
+                CommonColors.WHITE,
                 mod.getBoolConfig("microTimer.textShadow")
         );
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
+    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
         double mouseX = click.x();
         double mouseY = click.y();
         int button = click.button();
@@ -99,7 +99,7 @@ public class DraggableMicroTimer extends ClickableWidget {
     }
 
     @Override
-    public boolean mouseReleased(Click click) {
+    public boolean mouseReleased(MouseButtonEvent click) {
         int button = click.button();
         if (dragging && button == 0) {
             dragging = false;
@@ -109,15 +109,15 @@ public class DraggableMicroTimer extends ClickableWidget {
     }
 
     @Override
-    public boolean mouseDragged(Click click, double dx, double dy) {
+    public boolean mouseDragged(MouseButtonEvent click, double dx, double dy) {
         double mouseX = click.x();
         double mouseY = click.y();
         if (dragging) {
-            MinecraftClient client = MinecraftClient.getInstance();
+            Minecraft client = Minecraft.getInstance();
             int newX = (int)(mouseX - dragOffsetX);
             int newY = (int)(mouseY - dragOffsetY);
-            int screenWidth = client.getWindow().getScaledWidth();
-            int screenHeight = client.getWindow().getScaledHeight();
+            int screenWidth = client.getWindow().getGuiScaledWidth();
+            int screenHeight = client.getWindow().getGuiScaledHeight();
 
             // Clamp to screen and update
             this.setX(newX);
@@ -130,5 +130,5 @@ public class DraggableMicroTimer extends ClickableWidget {
     }
 
     @Override
-    protected void appendClickableNarrations(NarrationMessageBuilder builder) {}
+    protected void updateWidgetNarration(NarrationElementOutput builder) {}
 }
