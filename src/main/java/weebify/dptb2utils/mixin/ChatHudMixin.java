@@ -165,13 +165,18 @@ public class ChatHudMixin {
                 double z = mc.player.getZ();
                 if (x >= 61.5 && x <= 66.5 && y >= 13 && y <= 25 && z >= 81 && z <= 86.5) {
                     MicroTimerManager.currentDoor = "§a§lDoor 1";
-                    mod.websocketClient.sendModMessage("microEvents", Map.of("currentDoor", MicroTimerManager.currentDoor));
+                    if (mod.websocketClient != null) {
+                        mod.websocketClient.sendModMessage("microEvents", Map.of("currentDoor", MicroTimerManager.currentDoor));
+                    }
                 } else if (x >= 56.5 && x <= 61.5 && y >= 13 && y <= 25 && z >= 81 && z <= 86.5) {
                     MicroTimerManager.currentDoor = "§a§lDoor 2";
-                    mod.websocketClient.sendModMessage("microEvents", Map.of("currentDoor", MicroTimerManager.currentDoor));
+                    if (mod.websocketClient != null) {
+                        mod.websocketClient.sendModMessage("microEvents", Map.of("currentDoor", MicroTimerManager.currentDoor));
+                    }
                 } else {
                     MicroTimerManager.currentDoor = "N/A";
                 }
+
             }
         } else if (content.startsWith("* RIP! That was the wrong door!")) {
             if (MicroTimerManager.currentDoor.equals("N/A")) {
@@ -180,13 +185,18 @@ public class ChatHudMixin {
                 double z = mc.player.getZ();
                 if (x >= 61.5 && x <= 66.5 && y >= 13 && y <= 25 && z >= 81 && z <= 86.5) {
                     MicroTimerManager.currentDoor = "§a§lDoor 2";
-                    mod.websocketClient.sendModMessage("microEvents", Map.of("currentDoor", MicroTimerManager.currentDoor));
+                    if (mod.websocketClient != null) {
+                        mod.websocketClient.sendModMessage("microEvents", Map.of("currentDoor", MicroTimerManager.currentDoor));
+                    }
                 } else if (x >= 56.5 && x <= 61.5 && y >= 13 && y <= 25 && z >= 81 && z <= 86.5) {
                     MicroTimerManager.currentDoor = "§a§lDoor 1";
-                    mod.websocketClient.sendModMessage("microEvents", Map.of("currentDoor", MicroTimerManager.currentDoor));
+                    if (mod.websocketClient != null) {
+                        mod.websocketClient.sendModMessage("microEvents", Map.of("currentDoor", MicroTimerManager.currentDoor));
+                    }
                 } else {
                     MicroTimerManager.currentDoor = "N/A";
                 }
+
             }
         } else if (content.startsWith("* [!] The DOOR has cycled! Which one is it now?")) {
             MicroTimerManager.doorTimer = 0;
@@ -199,7 +209,7 @@ public class ChatHudMixin {
             if (mc.getNetworkHandler() != null) {
                 mod.scheduleTask(rand.nextInt(26) + 5, () -> mc.getNetworkHandler().sendChatCommand("cheer"));
             }
-        } else if (content.startsWith("* ➜ The BUTTON was just clicked")) {
+        } else if (content.startsWith("* ➜ The BUTTON was pressed")) {
             ButtonTimerManager.buttonTimer = 0; // reset the button timer
 
             // chaos button handling
@@ -225,7 +235,7 @@ public class ChatHudMixin {
             ItemCooldownManager.lastAdded = "";
         }
 
-        if (mod.isRamper && !content.isBlank()) {
+        if (mod.websocketClient != null && mod.isRamper && !content.isBlank()) {
             // inclusion
             if (content.matches("[^:]+:.+") && !content.startsWith("* ")) {
                 if (
@@ -239,7 +249,7 @@ public class ChatHudMixin {
                     mod.websocketClient.sendModMessage("chat", Map.of("text", msg));
                 }
             } else if (content.matches("\\* .+")) {
-                DPTB2Utils.getInstance().websocketClient.sendModMessage("chat", Map.of("text", msg));
+                mod.websocketClient.sendModMessage("chat", Map.of("text", msg));
             }
         }
     }

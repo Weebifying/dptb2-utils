@@ -3,6 +3,7 @@ package weebify.dptb2utils;
 import com.google.gson.Gson;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.api.ClientModInitializer;
 
@@ -15,10 +16,13 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.CommandSource;
 import net.minecraft.scoreboard.*;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import weebify.dptb2utils.gui.widget.NotificationToast;
@@ -60,6 +64,7 @@ public class DPTB2Utils implements ClientModInitializer {
 	private static DPTB2Utils instance;
 	public static final Gson GSON = new Gson();
 
+	@Nullable
 	public DiscordWebSocketClient websocketClient;
 
 	public List<Text> bootsList = new ArrayList<>();
@@ -350,6 +355,12 @@ public class DPTB2Utils implements ClientModInitializer {
 		LiteralCommandNode<FabricClientCommandSource> c = dispatcher.register(
 				ClientCommandManager.literal("broadcast")
 						.then(ClientCommandManager.argument("message", StringArgumentType.greedyString())
+								// could be faulty, need urgent testing
+								.suggests((ctx, builder) -> {
+									int lastSpace = builder.getRemaining().lastIndexOf(' ');
+									SuggestionsBuilder sb = builder.createOffset(builder.getStart() + lastSpace + 1);
+									return CommandSource.suggestMatching(ctx.getSource().getPlayerNames(), sb);
+								})
 						.executes(context -> {
 							this.handleBroadcast(StringArgumentType.getString(context, "message"));
 							return 1;
@@ -359,6 +370,11 @@ public class DPTB2Utils implements ClientModInitializer {
 		dispatcher.register(
 				ClientCommandManager.literal("bc")
 						.then(ClientCommandManager.argument("message", StringArgumentType.greedyString())
+								.suggests((ctx, builder) -> {
+									int lastSpace = builder.getRemaining().lastIndexOf(' ');
+									SuggestionsBuilder sb = builder.createOffset(builder.getStart() + lastSpace + 1);
+									return CommandSource.suggestMatching(ctx.getSource().getPlayerNames(), sb);
+								})
 						.executes(context -> {
 							this.handleBroadcast(StringArgumentType.getString(context, "message"));
 							return 1;
