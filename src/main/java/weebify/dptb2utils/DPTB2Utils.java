@@ -7,8 +7,8 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.api.ClientModInitializer;
 
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
@@ -181,13 +181,25 @@ public class DPTB2Utils implements ClientModInitializer {
 			scheduledTasks.removeIf(DelayedTask::tick);
 			if (this.dptb2RecheckScheduled) {
 				this.dptb2RecheckScheduled = false;
-				this.scheduleTask(600, () -> this.dptb2Check(var));
+				this.scheduleTask(600, () -> {
+                    try {
+                        this.dptb2Check(var);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
 			}
 		});
 		// detecting whether the player is in DPTB2
 		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
 			this.buttonTimerReset();
-			this.scheduleTask(20, () -> this.dptb2Check(client));
+			this.scheduleTask(20, () -> {
+                try {
+                    this.dptb2Check(client);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            });
 		});
 
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
@@ -207,7 +219,7 @@ public class DPTB2Utils implements ClientModInitializer {
 		});
 	}
 
-	public void dptb2Check(Minecraft client) {
+	public void dptb2Check(Minecraft client) throws InterruptedException {
 		ServerData serverEntry = client.getCurrentServer();
 		if (serverEntry == null) {
 			this.isInDPTB2 = false;
@@ -289,11 +301,11 @@ public class DPTB2Utils implements ClientModInitializer {
 
 	private void commandToggleBc(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> c = dispatcher.register(
-				ClientCommandManager.literal("togglebc")
-						.executes(context -> {
+				ClientCommands.literal("togglebc")
+						.executes(graphics -> {
 							this.isToggleBc = !this.isToggleBc;
 							if (mc.player != null) {
-								mc.player.displayClientMessage(Component.nullToEmpty("Automatic chat broadcast is now " + (this.isToggleBc ? "§a§lenabled§r!" : "§c§ldisabled§r!")), false);
+								mc.player.sendSystemMessage(Component.nullToEmpty("Automatic chat broadcast is now " + (this.isToggleBc ? "§a§lenabled§r!" : "§c§ldisabled§r!")));
 							}
 							return 1;
 						})
@@ -302,8 +314,8 @@ public class DPTB2Utils implements ClientModInitializer {
 
 	private void commandModMenu(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> c = dispatcher.register(
-				ClientCommandManager.literal("dptb2")
-						.executes(context -> {
+				ClientCommands.literal("dptb2")
+						.executes(graphics -> {
 							this.displayScreen = true; // necessary to open the config screen 1 tick late, stupid shit idk why
 							return 1;
 						})
@@ -318,12 +330,12 @@ public class DPTB2Utils implements ClientModInitializer {
 //						.then(ClientCommandManager.argument("coordY", FloatArgumentType.floatArg())
 //						.then(ClientCommandManager.argument("coordZ", FloatArgumentType.floatArg())
 //						.then(ClientCommandManager.argument("label", StringArgumentType.greedyString())
-//						.executes(context -> {
-//							String id = StringArgumentType.getString(context, "id");
-//							float coordX = FloatArgumentType.getFloat(context, "coordX");
-//							float coordY = FloatArgumentType.getFloat(context, "coordY");
-//							float coordZ = FloatArgumentType.getFloat(context, "coordZ");
-//							String label = StringArgumentType.getString(context, "label");
+//						.executes(graphics -> {
+//							String id = StringArgumentType.getString(graphics, "id");
+//							float coordX = FloatArgumentType.getFloat(graphics, "coordX");
+//							float coordY = FloatArgumentType.getFloat(graphics, "coordY");
+//							float coordZ = FloatArgumentType.getFloat(graphics, "coordZ");
+//							String label = StringArgumentType.getString(graphics, "label");
 //
 //							mc.player.sendMessage(Text.literal(String.format("Added waypoint %s at (%f, %f, %f) with label '%s'", id, coordX, coordY, coordZ, label)).formatted(Formatting.GREEN), false);
 //							WaypointManager.addWaypoint(id, coordX, coordY, coordZ, label, 0xD2FFC8);
@@ -339,62 +351,63 @@ public class DPTB2Utils implements ClientModInitializer {
 				try {
 					websocketClient.sendModMessage("playerBroadcast", Map.of("text", msg, "name", mc.player.getGameProfile().name(), "private", this.getBoolConfig("others.incognito")));
 					if (!this.getBoolConfig("others.broadcastChat")) {
-						mc.player.displayClientMessage(Component.literal("Broadcast message: " + msg).withStyle(ChatFormatting.GREEN), false);
+						mc.player.sendSystemMessage(Component.literal("Broadcast message: " + msg).withStyle(ChatFormatting.GREEN));
 					}
 				} catch (Exception e) {
 					LOGGER.error("Failed to send broadcast message!", e);
-					mc.player.displayClientMessage(Component.literal("Failed to send broadcast message!").withStyle(ChatFormatting.RED), false);
+					mc.player.sendSystemMessage(Component.literal("Failed to send broadcast message!").withStyle(ChatFormatting.RED));
 				}
 			} else {
-				mc.player.displayClientMessage(Component.literal("Not connected to DPTBot!").withStyle(ChatFormatting.RED), false);
+				mc.player.sendSystemMessage(Component.literal("Not connected to DPTBot!").withStyle(ChatFormatting.RED));
 			}
 		}
 	}
 
 	private void commandBroadcast(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
 		LiteralCommandNode<FabricClientCommandSource> c = dispatcher.register(
-				ClientCommandManager.literal("broadcast")
-						.then(ClientCommandManager.argument("message", StringArgumentType.greedyString())
+				ClientCommands.literal("broadcast")
+						.then(ClientCommands.argument("message", StringArgumentType.greedyString())
 								// could be faulty, need urgent testing
 								.suggests((ctx, builder) -> {
 									int lastSpace = builder.getRemaining().lastIndexOf(' ');
 									SuggestionsBuilder sb = builder.createOffset(builder.getStart() + lastSpace + 1);
 									return SharedSuggestionProvider.suggest(ctx.getSource().getOnlinePlayerNames(), sb);
 								})
-						.executes(context -> {
-							this.handleBroadcast(StringArgumentType.getString(context, "message"));
+						.executes(graphics -> {
+							this.handleBroadcast(StringArgumentType.getString(graphics, "message"));
 							return 1;
 						})
 					)
 		);
 		dispatcher.register(
-				ClientCommandManager.literal("bc")
-						.then(ClientCommandManager.argument("message", StringArgumentType.greedyString())
+				ClientCommands.literal("bc")
+						.then(ClientCommands.argument("message", StringArgumentType.greedyString())
 								.suggests((ctx, builder) -> {
 									int lastSpace = builder.getRemaining().lastIndexOf(' ');
 									SuggestionsBuilder sb = builder.createOffset(builder.getStart() + lastSpace + 1);
 									return SharedSuggestionProvider.suggest(ctx.getSource().getOnlinePlayerNames(), sb);
 								})
-						.executes(context -> {
-							this.handleBroadcast(StringArgumentType.getString(context, "message"));
+						.executes(graphics -> {
+							this.handleBroadcast(StringArgumentType.getString(graphics, "message"));
 							return 1;
 						}).redirect(c)
 					)
 		);
 	}
 
-	public void refreshWptbStatus() {
+	public void refreshWptbStatus() throws InterruptedException {
 		String host = this.getStringConfig("others.dptbotHost");
 		int port = this.getIntConfig("others.dptbotPort");
 		if (this.isInDPTB2 && this.getBoolConfig("others.discordRamper") && (this.websocketClient == null || !this.websocketClient.isOpen())) {
-			LOGGER.info("Attempting Websocket connection to ws://{}:{}", host, port);
-			websocketClient = new DiscordWebSocketClient(String.format("ws://%s:%s", host, port));
-			websocketClient.connect();
+			LOGGER.info("Attempting Websocket connection to wss://{}:{}", host, port);
+			this.websocketClient = new DiscordWebSocketClient(String.format("wss://%s:%s", host, port));
+			this.websocketClient.setSocketFactory(DiscordWebSocketClient.TRUSTED_CONTEXT.getSocketFactory());
+			this.websocketClient.connect();
 		} else {
 			this.isRamper = false;
-			if (websocketClient != null && websocketClient.isOpen()) {
-				LOGGER.info("Closing Websocket connection to ws://{}:{}", host, port);
-				websocketClient.close();
+			if (this.websocketClient != null && this.websocketClient.isOpen()) {
+				LOGGER.info("Closing Websocket connection to wss://{}:{}", host, port);
+				this.websocketClient.closeBlocking();
 			}
 		}
 	}

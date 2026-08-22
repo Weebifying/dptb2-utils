@@ -1,10 +1,12 @@
 package weebify.dptb2utils.utils;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.DeltaTracker;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonColors;
 
 import weebify.dptb2utils.DPTB2Utils;
@@ -112,17 +114,14 @@ public class MicroTimerManager {
             }
         });
 
-//        HudLayerRegistrationCallback.EVENT.register((drawer) -> {
-//            drawer.attachLayerAfter(
-//                    IdentifiedLayer.HOTBAR_AND_BARS,
-//                    Identifier.of(DPTB2Utils.MOD_ID, "manager/micro_timer"),
-//                    MicroTimerManager::renderMicroTimer
-//            );
-//        });
-        HudRenderCallback.EVENT.register(MicroTimerManager::renderMicroTimer);
+        HudElementRegistry.attachElementAfter(
+                VanillaHudElements.HOTBAR,
+                Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "microTimer"),
+                MicroTimerManager::renderMicroTimer
+        );
     }
 
-    private static void renderMicroTimer(GuiGraphics drawContext, DeltaTracker renderTickCounter) {
+    private static void renderMicroTimer(GuiGraphicsExtractor drawContext, DeltaTracker renderTickCounter) {
         Minecraft mc = Minecraft.getInstance();
         DPTB2Utils mod = DPTB2Utils.getInstance();
 
@@ -154,7 +153,7 @@ public class MicroTimerManager {
             // TODO: MOVE CITY TIMERS TO ITS OWN THING
             // fuck mineguy lol
             int cursorY = posY + 4;
-            drawContext.drawString(
+            drawContext.text(
                     mc.font, String.format("%s%s§r (%s§r)", eventPrefix, lastEvent, eventTime),
                     posX + 4,
                     cursorY,
@@ -163,7 +162,7 @@ public class MicroTimerManager {
             );
             if (mod.currentMap == 1) {
                 cursorY +=  mc.font.lineHeight + 3;
-                drawContext.drawString(
+                drawContext.text(
                         mc.font, String.format("%s%s§r (%s§r)", trafficPrefix, currentTraffic, trafficTime),
                         posX + 4,
                         cursorY,
@@ -171,7 +170,7 @@ public class MicroTimerManager {
                         mod.getBoolConfig("microTimer.textShadow")
                 );
                 cursorY +=  mc.font.lineHeight + 3;
-                drawContext.drawString(
+                drawContext.text(
                         mc.font, String.format("%s%s§r (%s§r)", doorPrefix, currentDoor, doorTime),
                         posX + 4,
                         cursorY,

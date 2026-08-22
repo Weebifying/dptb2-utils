@@ -3,7 +3,7 @@ package weebify.dptb2utils.gui.widget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.network.chat.Component;
@@ -39,12 +39,12 @@ public class DraggableMicroTimer extends AbstractWidget {
     }
 
     @Override
-    protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         // Draw centered text manually
         Font renderer = Minecraft.getInstance().font;
         DPTB2Utils mod = DPTB2Utils.getInstance();
         if (mod.getBoolConfig("microTimer.renderBackground")) {
-            context.fill(
+            graphics.fill(
                     getX(),
                     getY(),
                     getX() + getWidth(),
@@ -56,7 +56,7 @@ public class DraggableMicroTimer extends AbstractWidget {
         int cursorY = getY() + 4;
 
         // Event Line
-        context.drawString(
+        graphics.text(
                 renderer, String.format("%s00:00 (%s)", MicroTimerManager.eventPrefix, this.event),
                 getX() + 4,
                 cursorY,
@@ -65,7 +65,7 @@ public class DraggableMicroTimer extends AbstractWidget {
         );
 
         cursorY += renderer.lineHeight + 3;
-        context.drawString(
+        graphics.text(
                 renderer, String.format("%s00:00 (%s)", MicroTimerManager.trafficPrefix, MicroTimerManager.LIGHTS_LIST[0]),
                 getX() + 4,
                 cursorY,
@@ -74,7 +74,7 @@ public class DraggableMicroTimer extends AbstractWidget {
         );
 
         cursorY += renderer.lineHeight + 3;
-        context.drawString(
+        graphics.text(
                 renderer, String.format("%s00:00", MicroTimerManager.doorPrefix),
                 getX() + 4,
                 cursorY,

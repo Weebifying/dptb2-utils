@@ -3,11 +3,14 @@ package weebify.dptb2utils.gui.widget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonColors;
+
+import org.jspecify.annotations.NonNull;
+
 import weebify.dptb2utils.DPTB2Utils;
 
 public class DraggableButtonTimer extends AbstractWidget {
@@ -27,12 +30,12 @@ public class DraggableButtonTimer extends AbstractWidget {
     }
 
     @Override
-    protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    protected void extractWidgetRenderState(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         // Draw centered text manually
         Font renderer = Minecraft.getInstance().font;
         DPTB2Utils mod = DPTB2Utils.getInstance();
         if (mod.getBoolConfig("buttonTimer.renderBackground")) {
-            context.fill(
+            graphics.fill(
                     getX(),
                     getY(),
                     getX() + getWidth(),
@@ -40,7 +43,7 @@ public class DraggableButtonTimer extends AbstractWidget {
                     0x63000000
             );
         }
-        context.drawString(
+        graphics.text(
                 renderer, getMessage(),
                 getX() + 4,
                 getY() + 4,

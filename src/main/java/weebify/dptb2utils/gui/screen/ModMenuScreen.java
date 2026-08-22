@@ -1,7 +1,7 @@
 package weebify.dptb2utils.gui.screen;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.MultilineTextField;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.gui.screens.Screen;
@@ -60,7 +60,11 @@ public class ModMenuScreen extends Screen {
             this.onClose();
         }).bounds(this.width / 2 - 75, this.height - 30 - 10, 150, 20).build());
         this.checkBtn = Button.builder(Component.nullToEmpty("Run DPTB2 Check"), (btn) -> {
-            this.mod.dptb2Check(mc);
+            try {
+                this.mod.dptb2Check(mc);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             this.checkBtn.active = false;
             this.mod.scheduleTask(25, () -> {
                 this.checkBtn.active = true;
@@ -83,11 +87,11 @@ public class ModMenuScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
 
-        context.drawCenteredString(this.font, this.title, this.width/2, 20, CommonColors.WHITE);
-        context.drawCenteredString(this.font, String.format("isInDPTB2: %b", mod.isInDPTB2), this.width/2, this.height - 45 - 10, mod.isInDPTB2 ? 0xFF55FF55 : 0xFFFF5555);
-        context.drawCenteredString(this.font, String.format("currentMap: %s", DPTB2Utils.MAPS_LIST[mod.currentMap]), this.width/2, this.height - 65 - 10, mod.currentMap == 0 ? 0xFFFF5555 : 0xFFFFFFFF);
+        graphics.centeredText(this.font, this.title, this.width/2, 20, CommonColors.WHITE);
+        graphics.centeredText(this.font, String.format("isInDPTB2: %b", mod.isInDPTB2), this.width/2, this.height - 45 - 10, mod.isInDPTB2 ? 0xFF55FF55 : 0xFFFF5555);
+        graphics.centeredText(this.font, String.format("currentMap: %s", DPTB2Utils.MAPS_LIST[mod.currentMap]), this.width/2, this.height - 65 - 10, mod.currentMap == 0 ? 0xFFFF5555 : 0xFFFFFFFF);
     }
 }

@@ -1,7 +1,7 @@
 {
   "required": true,
   "package": "weebify.dptb2utils.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "injectors": {
     "defaultRequire": 1
   },
@@ -10,7 +10,7 @@
   },
   "client": [
     "ChatComponentMixin",
-    "GuiGraphicsInvoker",
+    "GuiGraphicsExtractorInvoker",
     "LabelCommandRendererCommandsMixin",
     "PlayerTabOverlayMixin"
   ],

@@ -3,7 +3,7 @@ package weebify.dptb2utils.mixin;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.client.GuiMessage;
+import net.minecraft.client.multiplayer.chat.GuiMessage;
 import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -74,7 +74,7 @@ public class ChatComponentMixin {
         return codes.toString();
     }
 
-    @Inject(method = "addMessageToDisplayQueue(Lnet/minecraft/client/GuiMessage;)V", at = @At("HEAD"))
+    @Inject(method = "addMessageToDisplayQueue(Lnet/minecraft/client/multiplayer/chat/GuiMessage;)V", at = @At("HEAD"))
     private void addVisibleMessageInject(GuiMessage message, CallbackInfo ci) {
         DPTB2Utils mod = DPTB2Utils.getInstance();
         Minecraft mc = Minecraft.getInstance();
@@ -112,7 +112,7 @@ public class ChatComponentMixin {
             if (mod.getBoolConfig("notifs.buttonImmunity")) {
                 triggerNotif("Button Immunity!", "Whoever clicks the BUTTON next will not die!", 0x55FFFF, sound);
             }
-            } else if (content.startsWith("* [!] Everybody received Jump Boost I for 10s!")) {
+            } else if (content.startsWith("* [!] Everybody received Jump Boost V for 10s!")) {
             MicroTimerManager.eventTimer = 0;
             MicroTimerManager.lastEvent = "§a§lJUMP BOOST";
         } else if (content.startsWith("* [!] The Road is covered in SLIPPERY ICE for 10s!")) {

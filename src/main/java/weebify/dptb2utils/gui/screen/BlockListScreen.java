@@ -2,7 +2,7 @@ package weebify.dptb2utils.gui.screen;
 
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.components.Button;
@@ -10,6 +10,9 @@ import net.minecraft.client.gui.components.AbstractScrollArea;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonColors;
+
+import org.jspecify.annotations.NonNull;
+
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.utils.BlockListManager;
 
@@ -324,37 +327,37 @@ public class BlockListScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         int halfWidth = this.width / 2;
 
         // ── list background fills ──
         if (discList != null) {
-            context.fill(discList.getX(), discList.getY(),
+            graphics.fill(discList.getX(), discList.getY(),
                     discList.getX() + discList.getWidth(),
                     discList.getY() + discList.getHeight(), 0x33000000);
         }
         if (wptbList != null) {
-            context.fill(wptbList.getX(), wptbList.getY(),
+            graphics.fill(wptbList.getX(), wptbList.getY(),
                     wptbList.getX() + wptbList.getWidth(),
                     wptbList.getY() + wptbList.getHeight(), 0x33000000);
         }
 
-        super.render(context, mouseX, mouseY, delta);
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
 
-        context.drawCenteredString(this.font, this.title, this.width / 2, 8, CommonColors.WHITE);
+        graphics.centeredText(this.font, this.title, this.width / 2, 8, CommonColors.WHITE);
 
-        context.drawCenteredString(this.font, "Discord Blocks", halfWidth / 2, 28, DPTB2Utils.hexToInt(mod.getStringConfig("others.discColor")));
-        context.drawCenteredString(this.font, "WPTB Client Blocks", halfWidth + halfWidth / 2, 28, DPTB2Utils.hexToInt(mod.getStringConfig("others.wptbColor")));
+        graphics.centeredText(this.font, "Discord Blocks", halfWidth / 2, 28, DPTB2Utils.hexToInt(mod.getStringConfig("others.discColor")));
+        graphics.centeredText(this.font, "WPTB Client Blocks", halfWidth + halfWidth / 2, 28, DPTB2Utils.hexToInt(mod.getStringConfig("others.wptbColor")));
 
         if (!discErrorMessage.isEmpty()) {
-            context.drawCenteredString(this.font, discErrorMessage, halfWidth / 2, 18, CommonColors.RED);
+            graphics.centeredText(this.font, discErrorMessage, halfWidth / 2, 18, CommonColors.RED);
         }
         if (!wptbErrorMessage.isEmpty()) {
-            context.drawCenteredString(this.font, wptbErrorMessage, halfWidth + halfWidth / 2, 18, CommonColors.RED);
+            graphics.centeredText(this.font, wptbErrorMessage, halfWidth + halfWidth / 2, 18, CommonColors.RED);
         }
 
         // ── divider line down the centre ──
-        context.fill(halfWidth - 1, 28, halfWidth, this.height - 50, 0x55FFFFFF);
+        graphics.fill(halfWidth - 1, 28, halfWidth, this.height - 50, 0x55FFFFFF);
     }
 
     @FunctionalInterface
@@ -377,7 +380,7 @@ public class BlockListScreen extends Screen {
                               Map<String, String> usernameCache,
                               Font textRenderer,
                               RemoveAction removeAction) {
-            super(x, y, width, height, Component.empty());
+            super(x, y, width, height, Component.empty(), AbstractScrollArea.defaultSettings(10));
             this.blockIds = blockIds;
             this.usernameCache = usernameCache;
             this.textRenderer = textRenderer;
@@ -395,12 +398,12 @@ public class BlockListScreen extends Screen {
         }
 
         @Override
-        protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+        protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
             // enable scissor so content is clipped to the widget bounds
-            context.enableScissor(getX(), getY(), getX() + getWidth(), getY() + getHeight());
-            drawContent(context, mouseX, mouseY);
-            context.disableScissor();
-            renderScrollbar(context, mouseX, mouseY);
+            graphics.enableScissor(getX(), getY(), getX() + getWidth(), getY() + getHeight());
+            this.drawContent(graphics, mouseX, mouseY);
+            graphics.disableScissor();
+            this.extractScrollbar(graphics, mouseX, mouseY);
         }
 
         @Override
@@ -437,7 +440,7 @@ public class BlockListScreen extends Screen {
             return super.mouseScrolled(mx, my, 0, dy);
         }
 
-        private void drawContent(GuiGraphics context, int mouseX, int mouseY) {
+        private void drawContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
             int startY = getY() + PADDING - (int) scrollAmount();
 
             for (int i = 0; i < blockIds.size(); i++) {
@@ -456,13 +459,13 @@ public class BlockListScreen extends Screen {
                 boolean hoveringX = mouseX >= btnX && mouseX <= btnX + REMOVE_BTN_WIDTH
                         && mouseY >= drawY && mouseY <= drawY + textRenderer.lineHeight;
                 int xColor = hoveringX ? 0xFFFF0000 : 0xFFFF5555;
-                context.drawString(textRenderer, Component.literal("✕"), btnX, drawY, xColor);
+                graphics.text(textRenderer, Component.literal("✕"), btnX, drawY, xColor);
 
                 // ── user id (+ cached username) ──
                 String displayText = cachedName != null
                         ? userId + " (" + cachedName + ")"
                         : userId;
-                context.drawString(
+                graphics.text(
                         textRenderer,
                         Component.literal(displayText),
                         btnX + REMOVE_BTN_WIDTH + 4,

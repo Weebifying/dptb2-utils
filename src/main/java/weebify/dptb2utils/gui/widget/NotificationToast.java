@@ -6,7 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.toasts.Toast.Visibility;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
@@ -79,20 +79,20 @@ public class NotificationToast implements Toast {
     }
 
     @Override
-    public void render(GuiGraphics context, Font textRenderer, long startTime) {
-        context.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE, 0, 0, this.width(), this.height());
+    public void extractRenderState(GuiGraphicsExtractor graphics, Font textRenderer, long startTime) {
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE, 0, 0, this.width(), this.height());
 
         List<FormattedCharSequence> titleList = textRenderer.split(FormattedText.of(this.title), 125);
         List<FormattedCharSequence> descList = textRenderer.split(FormattedText.of(this.description), 125);
         if (titleList.size() + descList.size() == 2) {
-            context.drawString(textRenderer, this.title, 30, 7, this.color, false);
-            context.drawString(textRenderer, descList.get(0), 30, 18, this.color, false);
+            graphics.text(textRenderer, this.title, 30, 7, this.color, false);
+            graphics.text(textRenderer, descList.get(0), 30, 18, this.color, false);
         } else {
             if (startTime < TITLE_PHASE_MS) {
                 int k = Mth.floor(Mth.clamp((TITLE_PHASE_MS - startTime) / FADE_DURATION, 0.f, 1.f) * 255.f) << 24 | 0x04000000;
                 int l = this.height() / 2 - titleList.size() * 9 / 2;
                 for (FormattedCharSequence orderedText : titleList) {
-                    context.drawString(textRenderer, orderedText, 30, l, this.color & 0x00FFFFFF | k, false);
+                    graphics.text(textRenderer, orderedText, 30, l, this.color & 0x00FFFFFF | k, false);
                     l += 9;
                 }
             } else {
@@ -109,13 +109,13 @@ public class NotificationToast implements Toast {
                 for (int i = 0; i < 2; i++) {
                     int idx = firstLineIndex + i;
                     if (0 <= idx && idx < size) {
-                        context.drawString(textRenderer, descList.get(idx), 30, y, this.color & 0x00FFFFFF | k, false);
+                        graphics.text(textRenderer, descList.get(idx), 30, y, this.color & 0x00FFFFFF | k, false);
                         y += lineHeight;
                     }
                 }
             }
         }
 
-        context.blit(RenderPipelines.GUI_TEXTURED, ICON, 8, 8, 0, 0, 16, 16, 16, 16, this.color & CommonColors.WHITE | 0xFF000000);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, ICON, 8, 8, 0, 0, 16, 16, 16, 16, this.color & CommonColors.WHITE | 0xFF000000);
     }
 }

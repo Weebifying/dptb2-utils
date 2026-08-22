@@ -68,11 +68,11 @@ public class WaypointManager {
     }
 
     public static void initializeEvents() {
-//        WorldRenderEvents.AFTER_ENTITIES.register((context) -> {
+//        WorldRenderEvents.AFTER_ENTITIES.register((graphics) -> {
 //            if (!DPTB2Utils.getInstance().isInDPTB2) return;
 //
-//            MatrixStack matrices = context.matrixStack();
-//            Camera camera = context.camera();
+//            MatrixStack matrices = graphics.matrixStack();
+//            Camera camera = graphics.camera();
 //            Vec3d cameraPos = camera.getPos();
 //            TextRenderer tr = MC.textRenderer;
 //            BufferBuilder buffer;

@@ -3,7 +3,7 @@ package weebify.dptb2utils.gui.widget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -47,14 +47,14 @@ public class DraggableItemCooldown extends AbstractWidget {
     }
 
     @Override
-    protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         Minecraft mc = Minecraft.getInstance();
         DPTB2Utils mod = DPTB2Utils.getInstance();
 
         boolean alignLeft = mod.getStringConfig("itemCooldown.textAlign").equals("left");
 
         if (mod.getBoolConfig("itemCooldown.renderBackground")) {
-            context.fill(
+            graphics.fill(
                     alignLeft ? getX() : getX() - getWidth(),
                     getY(),
                     alignLeft ? getX() + getWidth() : getX(),
@@ -71,7 +71,7 @@ public class DraggableItemCooldown extends AbstractWidget {
 
             int x = alignLeft ? getX() + padding : getX() - padding - 16;
             int y = getY() + padding + i * lineHeight;
-            context.blit(RenderPipelines.GUI_TEXTURED, item.texture, x, y, 0, 0, 16, 16, 16, 16);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, item.texture, x, y, 0, 0, 16, 16, 16, 16);
 
             int barWidth = (int) (0.2 * item.cooldown);
             int barHeight = 8;
@@ -81,14 +81,14 @@ public class DraggableItemCooldown extends AbstractWidget {
             float progress = (float)ticksLeft / total;
             int filled = (int)(barWidth * progress);
 
-            context.fill(barX, barY, barX + barWidth, barY + barHeight, 0xFF555555);
-            if (alignLeft) context.fill(barX, barY, barX + filled, barY + barHeight, lerpColor(0xFF55FF55, 0xFFFF5555, progress));
-            else context.fill(barX + barWidth - filled, barY, barX + barWidth, barY + barHeight, lerpColor(0xFF55FF55, 0xFFFF5555, progress));
+            graphics.fill(barX, barY, barX + barWidth, barY + barHeight, 0xFF555555);
+            if (alignLeft) graphics.fill(barX, barY, barX + filled, barY + barHeight, lerpColor(0xFF55FF55, 0xFFFF5555, progress));
+            else graphics.fill(barX + barWidth - filled, barY, barX + barWidth, barY + barHeight, lerpColor(0xFF55FF55, 0xFFFF5555, progress));
 
             int seconds = ticksLeft / 20;
             String text = seconds + "s";
             int textX = alignLeft ? barX + barWidth + 6 : barX - 6 - mc.font.width(text);
-            context.drawString(mc.font, text, textX, barY, 0xFFFFFFFF, mod.getBoolConfig("itemCooldown.textShadow"));
+            graphics.text(mc.font, text, textX, barY, 0xFFFFFFFF, mod.getBoolConfig("itemCooldown.textShadow"));
 
             i++;
         }

@@ -11,16 +11,33 @@ import org.java_websocket.handshake.ServerHandshake;
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.gui.widget.NotificationToast;
 
+import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.net.URI;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+
 public class DiscordWebSocketClient extends WebSocketClient {
     private static final Gson GSON = new Gson();
     private static final Minecraft MC = Minecraft.getInstance();
     private static final DPTB2Utils mod = DPTB2Utils.getInstance();
+    public static final SSLContext TRUSTED_CONTEXT;
+
+    static {
+        try {
+            TRUSTED_CONTEXT = buildTrustedContext();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public List<String> clientsList = new ArrayList<>();
 
     public static final float DEFAULT_PITCH = 1.0f;
@@ -35,6 +52,25 @@ public class DiscordWebSocketClient extends WebSocketClient {
 
     public static DiscordWebSocketClient getInstance() {
         return mod.websocketClient;
+    }
+
+    private static SSLContext buildTrustedContext() throws Exception {
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        Certificate cert;
+        try (InputStream in = DiscordWebSocketClient.class.getResourceAsStream("/assets/dptb2-utils/dptbot-ca.crt")) {
+            cert = cf.generateCertificate(in);
+        }
+
+        KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+        ks.load(null, null);
+        ks.setCertificateEntry("dptbot-ca", cert);
+
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init(ks);
+
+        SSLContext ctx = SSLContext.getInstance("TLS");
+        ctx.init(null, tmf.getTrustManagers(), null);
+        return ctx;
     }
 
     // run when the connection is established
@@ -114,7 +150,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
                     }
 
                     if (MC.player != null && mod.getBoolConfig("others.broadcastChat")) {
-                        MC.player.displayClientMessage(Component.literal(sb.toString()), false);
+                        MC.player.sendSystemMessage(Component.literal(sb.toString()));
                         if (!mod.getBoolConfig("others.broadcastToast") && mod.getBoolConfig("others.broadcastSounds")) {
                             MC.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_PLING.value(), currentPitch, 1));
                         }
@@ -208,8 +244,9 @@ public class DiscordWebSocketClient extends WebSocketClient {
                 String host = mod.getStringConfig("others.dptbotHost");
                 int port = mod.getIntConfig("others.dptbotPort");
 
-                DPTB2Utils.LOGGER.info("Attempting Websocket connection to ws://{}:{}", host, port);
-                mod.websocketClient = new DiscordWebSocketClient(String.format("ws://%s:%d", host, port));
+                DPTB2Utils.LOGGER.info("Attempting Websocket connection to wss://{}:{}", host, port);
+                mod.websocketClient = new DiscordWebSocketClient(String.format("wss://%s:%d", host, port));
+                mod.websocketClient.setSocketFactory(TRUSTED_CONTEXT.getSocketFactory());
                 mod.websocketClient.connect();
             }
         });

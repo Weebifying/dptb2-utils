@@ -1,9 +1,10 @@
 package weebify.dptb2utils.utils;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Component;
@@ -59,17 +60,14 @@ public class ButtonTimerManager {
             }
         });
 
-//        HudLayerRegistrationCallback.EVENT.register((drawer) -> {
-//            drawer.attachLayerAfter(
-//                    IdentifiedLayer.HOTBAR_AND_BARS,
-//                    Identifier.of(DPTB2Utils.MOD_ID, "button_timer"),
-//                    ButtonTimerManager::renderButtonTimer
-//            );
-//        });
-        HudRenderCallback.EVENT.register(ButtonTimerManager::renderButtonTimer);
+        HudElementRegistry.attachElementAfter(
+                VanillaHudElements.HOTBAR,
+                Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "buttonTimer"),
+                ButtonTimerManager::renderButtonTimer
+        );
     }
 
-    private static void renderButtonTimer(GuiGraphics drawContext, DeltaTracker renderTickCounter) {
+    private static void renderButtonTimer(GuiGraphicsExtractor drawContext, DeltaTracker renderTickCounter) {
         Minecraft mc = Minecraft.getInstance();
         DPTB2Utils mod = DPTB2Utils.getInstance();
 
@@ -91,7 +89,7 @@ public class ButtonTimerManager {
                 );
             }
 
-            drawContext.drawString(
+            drawContext.text(
                     mc.font, text,
                     posX + 4,
                     posY + 4,

@@ -1,6 +1,6 @@
 package weebify.dptb2utils.gui.screen;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
@@ -42,12 +42,12 @@ public class BootsListScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        context.fill(this.listWidget.getX(), this.listWidget.getY(),
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        graphics.fill(this.listWidget.getX(), this.listWidget.getY(),
                      this.listWidget.getX() + this.listWidget.getWidth(),
                      this.listWidget.getY() + this.listWidget.getHeight(), 0x33000000);
-        super.render(context, mouseX, mouseY, delta);
-        context.drawCenteredString(this.font, this.title, this.width/2, 20, CommonColors.WHITE);
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
+        graphics.centeredText(this.font, this.title, this.width/2, 20, CommonColors.WHITE);
     }
 
     @Override
