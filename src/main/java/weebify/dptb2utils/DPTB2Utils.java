@@ -219,7 +219,7 @@ public class DPTB2Utils implements ClientModInitializer {
 		});
 	}
 
-	public void dptb2Check(Minecraft client) throws InterruptedException {
+	public void 	dptb2Check(Minecraft client) throws InterruptedException {
 		ServerData serverEntry = client.getCurrentServer();
 		if (serverEntry == null) {
 			this.isInDPTB2 = false;

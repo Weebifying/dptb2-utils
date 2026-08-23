@@ -2,6 +2,7 @@ package weebify.dptb2utils.utils;
 
 import com.google.gson.Gson;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.User;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.network.chat.Component;
@@ -12,9 +13,13 @@ import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.gui.widget.NotificationToast;
 
 import java.io.InputStream;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +34,12 @@ public class DiscordWebSocketClient extends WebSocketClient {
     private static final Minecraft MC = Minecraft.getInstance();
     private static final DPTB2Utils mod = DPTB2Utils.getInstance();
     public static final SSLContext TRUSTED_CONTEXT;
+
+    // Used only to talk to sessionserver.mojang.com for joinServer - separate
+    // from the DPTBot websocket connection and its pinned trust store.
+    private static final HttpClient MOJANG_HTTP = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(5))
+            .build();
 
     static {
         try {
@@ -77,27 +88,64 @@ public class DiscordWebSocketClient extends WebSocketClient {
     @Override
     public void onOpen(ServerHandshake handshakedata) {
         mod.tryingToConnect = false;
-        if (MC.player != null) {
-            this.sendModMessage("greet", Map.of(
-                    "name", MC.player.getGameProfile().name(),
-                    "currentName", MC.player.getDisplayName().getString(),
-                    "id", MC.player.getGameProfile().id().toString().replace("-", ""),
-                    "version", DPTB2Utils.VERSION, "mc", MC.getLaunchedVersion(),
-                    "x", Double.toString(MC.player.getX()),
-                    "y", Double.toString(MC.player.getY()),
-                    "z", Double.toString(MC.player.getZ())
-            ));
-
-            this.sendModMessage("microEvents", Map.of(
-                        "eventTimer", MicroTimerManager.eventTimer,
-                        "trafficTimer", MicroTimerManager.trafficTimer,
-                        "doorTimer", MicroTimerManager.doorTimer,
-                        "lastEvent", MicroTimerManager.lastEvent,
-                        "currentTraffic", MicroTimerManager.currentTraffic,
-                        "currentDoor", MicroTimerManager.currentDoor
-            ));
-        }
         MC.execute(() -> MC.getToastManager().addToast(new NotificationToast("DPTBot", "Connected!", CommonColors.WHITE, SoundEvents.BAT_TAKEOFF)));
+    }
+
+    // handles server's session join challenge using mojang's sessionserver join endpoint
+    private void handleChallenge(String serverId) {
+        if (MC.player == null || serverId == null) return;
+
+        User user = MC.getUser();
+        String accessToken = user.getAccessToken();
+        String profileId = MC.player.getGameProfile().id().toString().replace("-", "");
+
+        String body = GSON.toJson(Map.of(
+                "accessToken", accessToken,
+                "selectedProfile", profileId,
+                "serverId", serverId
+        ));
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://sessionserver.mojang.com/session/minecraft/join"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+
+        MOJANG_HTTP.sendAsync(request, HttpResponse.BodyHandlers.discarding())
+                .thenAccept(response -> {
+                    if (response.statusCode() == 200 || response.statusCode() == 204) {
+                        sendGreet();
+                    } else {
+                        DPTB2Utils.LOGGER.error("Mojang joinServer call rejected with status {}", response.statusCode());
+                    }
+                })
+                .exceptionally(ex -> {
+                    DPTB2Utils.LOGGER.error("Mojang joinServer call failed", ex);
+                    return null;
+                });
+    }
+
+    private void sendGreet() {
+        if (MC.player == null) return;
+
+        this.sendModMessage("greet", Map.of(
+                "name", MC.player.getGameProfile().name(),
+                "currentName", MC.player.getDisplayName().getString(),
+                "id", MC.player.getGameProfile().id().toString().replace("-", ""),
+                "version", DPTB2Utils.VERSION, "mc", MC.getLaunchedVersion(),
+                "x", Double.toString(MC.player.getX()),
+                "y", Double.toString(MC.player.getY()),
+                "z", Double.toString(MC.player.getZ())
+        ));
+
+        this.sendModMessage("microEvents", Map.of(
+                "eventTimer", MicroTimerManager.eventTimer,
+                "trafficTimer", MicroTimerManager.trafficTimer,
+                "doorTimer", MicroTimerManager.doorTimer,
+                "lastEvent", MicroTimerManager.lastEvent,
+                "currentTraffic", MicroTimerManager.currentTraffic,
+                "currentDoor", MicroTimerManager.currentDoor
+        ));
     }
 
     // run when a message is received from the server
@@ -105,100 +153,106 @@ public class DiscordWebSocketClient extends WebSocketClient {
     public void onMessage(String message) {
         Map<?, ?> data = GSON.fromJson(message, Map.class);
         String type = (String) data.get("type");
+
+        if (type.equalsIgnoreCase("challenge")) {
+            handleChallenge((String) data.get("serverId"));
+            return;
+        }
+
         String text = (String) data.get("text");
         Integer col = (Integer) data.get("color");
         Minecraft.getInstance().execute(() -> {
-                if (type.equalsIgnoreCase("delegate")) {
-                    if (mod.getBoolConfig("others.consentRamper")) {
-                        MC.getToastManager().addToast(new NotificationToast("DPTBot", text, col != null ? col : 0xFFC8FFC8, SoundEvents.BAT_TAKEOFF));
-                        mod.isRamper = true;
-                        this.sendModMessage("confirm", Map.of("text", MC.player != null ? MC.player.getGameProfile().name() : "Unknown"));
-                    } else {
-                        MC.getToastManager().addToast(new NotificationToast("DPTBot", "Ramper request denied.", CommonColors.RED, SoundEvents.BAT_TAKEOFF));
-                        mod.isRamper = false;
-                        this.sendModMessage("deny", Map.of("text", MC.player != null ? MC.player.getGameProfile().name() : "Unknown"));
-                    }
-                } else if (type.equalsIgnoreCase("revoke")) {
-                    if (mod.getBoolConfig("others.discordRamper")) {
-                        MC.getToastManager().addToast(new NotificationToast("DPTBot", text, col != null ? col : 0xFFFFC8C8, SoundEvents.BAT_TAKEOFF));
-                        mod.isRamper = false;
-                    }
-                } else if (type.equalsIgnoreCase("broadcast")) {
-                    String source = data.get("source") != null ? (String) data.get("source") : "???";
-                    String name = data.get("name") != null ? (String) data.get("name") : "Unknown";
-
-                    StringBuilder sb = new StringBuilder("§8[");
-                    if (source.equalsIgnoreCase("DISC")) {
-                        sb.append("§xDISC§r").append("§8]§r ").append(String.format("§x%s§r", name));
-                    } else if (source.equalsIgnoreCase("WPTB")) {
-                        sb.append("§yWPTB§r").append("§8]§r ").append(String.format("§y%s§r", name));
-                    } else if (source.equalsIgnoreCase("CONSOLE")) {
-                        sb.append("§cCONSOLE§r").append("§8]§r ").append(String.format("§c%s§r", name));
-                    } else {
-                        sb.append("???").append("§8]§r ").append(name);
-                    }
-                    sb.append(": ").append(text);
-
-                    if (timer > 0) {
-                        currentPitch += PITCH_STEP;
-                    }
-                    timer = DEFAULT_TIME_THRESHOLD;
-
-                    if (mod.getBoolConfig("others.broadcastToast")) {
-                        int color = source.equalsIgnoreCase("DISC") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.discColor")) : (source.equalsIgnoreCase("WPTB") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.wptbColor")) : (source.equalsIgnoreCase("CONSOLE") ? 0xFFFF5555 : 0xFFFFFFFF));
-                        MC.getToastManager().addToast(new NotificationToast(String.format("[%s] %s", source, name), text, col != null ? col : color, mod.getBoolConfig("others.broadcastSounds") ? SoundEvents.NOTE_BLOCK_PLING.value() : null, currentPitch, 1));
-                    }
-
-                    if (MC.player != null && mod.getBoolConfig("others.broadcastChat")) {
-                        MC.player.sendSystemMessage(Component.literal(sb.toString()));
-                        if (!mod.getBoolConfig("others.broadcastToast") && mod.getBoolConfig("others.broadcastSounds")) {
-                            MC.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_PLING.value(), currentPitch, 1));
-                        }
-                    }
-                } else if (type.equalsIgnoreCase("askTabList")) {
-                    String id = (String) data.get("id");
-                    if (MC.getConnection() != null) {
-                        List<String> players = MC.getConnection().getOnlinePlayers().stream()
-                                .map(player -> player.getProfile().name())
-                                .toList();
-                        this.sendModMessage("tabList", Map.of("id", id, "players", players));
-                    }
-                } else if (type.equalsIgnoreCase("updateClients")) {
-                    this.clientsList = (List<String>) data.get("clients");
-                } else if (type.equalsIgnoreCase("queryIdResponse")) {
-                    String id = (String) data.get("id");
-                    String username = (String) data.get("username");
-                    String kind = (String) data.get("kind");
-                    if (!id.isBlank()) {
-                        if (kind.equalsIgnoreCase("DISC")) {
-                            BlockListManager.putDiscUsername(id, username);
-                        } else if (kind.equalsIgnoreCase("WPTB")) {
-                            BlockListManager.putWptbUsername(id, username);
-                        }
-                    } else {
-                        // error handling
-                    }
-                } else if (type.equalsIgnoreCase("queryNameResponse")) {
-                    String username = (String) data.get("username");
-                    String id = (String) data.get("id");
-                    String kind = (String) data.get("kind");
-                    if (!username.isBlank()) {
-                        if (kind.equalsIgnoreCase("DISC")) {
-                            BlockListManager.putDiscUsername(id, username);
-                        } else if (kind.equalsIgnoreCase("WPTB")) {
-                            BlockListManager.putWptbUsername(id, username);
-                        }
-                    } else {
-                        // error handling
-                    }
-                } else if (type.equalsIgnoreCase("microEvents")) {
-                    if (data.get("eventTimer") instanceof Double d) MicroTimerManager.eventTimer = d.intValue();
-                    if (data.get("trafficTimer") instanceof Double d) MicroTimerManager.trafficTimer = d.intValue();
-                    if (data.get("doorTimer") instanceof Double d) MicroTimerManager.doorTimer = d.intValue();
-                    if (data.get("lastEvent") instanceof String s) MicroTimerManager.lastEvent = s;
-                    if (data.get("currentTraffic") instanceof String s) MicroTimerManager.currentTraffic = s;
-                    if (data.get("currentDoor") instanceof String s) MicroTimerManager.currentDoor = s;
+            if (type.equalsIgnoreCase("delegate")) {
+                if (mod.getBoolConfig("others.consentRamper")) {
+                    MC.getToastManager().addToast(new NotificationToast("DPTBot", text, col != null ? col : 0xFFC8FFC8, SoundEvents.BAT_TAKEOFF));
+                    mod.isRamper = true;
+                    this.sendModMessage("confirm", Map.of("text", MC.player != null ? MC.player.getGameProfile().name() : "Unknown"));
+                } else {
+                    MC.getToastManager().addToast(new NotificationToast("DPTBot", "Ramper request denied.", CommonColors.RED, SoundEvents.BAT_TAKEOFF));
+                    mod.isRamper = false;
+                    this.sendModMessage("deny", Map.of("text", MC.player != null ? MC.player.getGameProfile().name() : "Unknown"));
                 }
+            } else if (type.equalsIgnoreCase("revoke")) {
+                if (mod.getBoolConfig("others.discordRamper")) {
+                    MC.getToastManager().addToast(new NotificationToast("DPTBot", text, col != null ? col : 0xFFFFC8C8, SoundEvents.BAT_TAKEOFF));
+                    mod.isRamper = false;
+                }
+            } else if (type.equalsIgnoreCase("broadcast")) {
+                String source = data.get("source") != null ? (String) data.get("source") : "???";
+                String name = data.get("name") != null ? (String) data.get("name") : "Unknown";
+
+                StringBuilder sb = new StringBuilder("§8[");
+                if (source.equalsIgnoreCase("DISC")) {
+                    sb.append("§xDISC§r").append("§8]§r ").append(String.format("§x%s§r", name));
+                } else if (source.equalsIgnoreCase("WPTB")) {
+                    sb.append("§yWPTB§r").append("§8]§r ").append(String.format("§y%s§r", name));
+                } else if (source.equalsIgnoreCase("CONSOLE")) {
+                    sb.append("§cCONSOLE§r").append("§8]§r ").append(String.format("§c%s§r", name));
+                } else {
+                    sb.append("???").append("§8]§r ").append(name);
+                }
+                sb.append(": ").append(text);
+
+                if (timer > 0) {
+                    currentPitch += PITCH_STEP;
+                }
+                timer = DEFAULT_TIME_THRESHOLD;
+
+                if (mod.getBoolConfig("others.broadcastToast")) {
+                    int color = source.equalsIgnoreCase("DISC") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.discColor")) : (source.equalsIgnoreCase("WPTB") ? DPTB2Utils.hexToInt(mod.getStringConfig("others.wptbColor")) : (source.equalsIgnoreCase("CONSOLE") ? 0xFFFF5555 : 0xFFFFFFFF));
+                    MC.getToastManager().addToast(new NotificationToast(String.format("[%s] %s", source, name), text, col != null ? col : color, mod.getBoolConfig("others.broadcastSounds") ? SoundEvents.NOTE_BLOCK_PLING.value() : null, currentPitch, 1));
+                }
+
+                if (MC.player != null && mod.getBoolConfig("others.broadcastChat")) {
+                    MC.player.sendSystemMessage(Component.literal(sb.toString()));
+                    if (!mod.getBoolConfig("others.broadcastToast") && mod.getBoolConfig("others.broadcastSounds")) {
+                        MC.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_PLING.value(), currentPitch, 1));
+                    }
+                }
+            } else if (type.equalsIgnoreCase("askTabList")) {
+                String id = (String) data.get("id");
+                if (MC.getConnection() != null) {
+                    List<String> players = MC.getConnection().getOnlinePlayers().stream()
+                            .map(player -> player.getProfile().name())
+                            .toList();
+                    this.sendModMessage("tabList", Map.of("id", id, "players", players));
+                }
+            } else if (type.equalsIgnoreCase("updateClients")) {
+                this.clientsList = (List<String>) data.get("clients");
+            } else if (type.equalsIgnoreCase("queryIdResponse")) {
+                String id = (String) data.get("id");
+                String username = (String) data.get("username");
+                String kind = (String) data.get("kind");
+                if (!id.isBlank()) {
+                    if (kind.equalsIgnoreCase("DISC")) {
+                        BlockListManager.putDiscUsername(id, username);
+                    } else if (kind.equalsIgnoreCase("WPTB")) {
+                        BlockListManager.putWptbUsername(id, username);
+                    }
+                } else {
+                    // error handling
+                }
+            } else if (type.equalsIgnoreCase("queryNameResponse")) {
+                String username = (String) data.get("username");
+                String id = (String) data.get("id");
+                String kind = (String) data.get("kind");
+                if (!username.isBlank()) {
+                    if (kind.equalsIgnoreCase("DISC")) {
+                        BlockListManager.putDiscUsername(id, username);
+                    } else if (kind.equalsIgnoreCase("WPTB")) {
+                        BlockListManager.putWptbUsername(id, username);
+                    }
+                } else {
+                    // error handling
+                }
+            } else if (type.equalsIgnoreCase("microEvents")) {
+                if (data.get("eventTimer") instanceof Double d) MicroTimerManager.eventTimer = d.intValue();
+                if (data.get("trafficTimer") instanceof Double d) MicroTimerManager.trafficTimer = d.intValue();
+                if (data.get("doorTimer") instanceof Double d) MicroTimerManager.doorTimer = d.intValue();
+                if (data.get("lastEvent") instanceof String s) MicroTimerManager.lastEvent = s;
+                if (data.get("currentTraffic") instanceof String s) MicroTimerManager.currentTraffic = s;
+                if (data.get("currentDoor") instanceof String s) MicroTimerManager.currentDoor = s;
+            }
         });
     }
 
