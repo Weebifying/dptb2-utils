@@ -1,7 +1,7 @@
 {
 	"schemaVersion": 1,
 	"id": "dptb2-utils",
-	"version": "${mod_version}",
+	"version": "${version}",
 	"name": "DPTB2 Utils",
 	"description": "An utility mod for the Hypixel Housing game Don't Press The Button 2",
 	"authors": [
