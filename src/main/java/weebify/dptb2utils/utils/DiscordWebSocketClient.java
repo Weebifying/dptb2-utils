@@ -35,11 +35,11 @@ public class DiscordWebSocketClient extends WebSocketClient {
     private static final DPTB2Utils mod = DPTB2Utils.getInstance();
     public static final SSLContext TRUSTED_CONTEXT;
 
-    // Used only to talk to sessionserver.mojang.com for joinServer - separate
-    // from the DPTBot websocket connection and its pinned trust store.
     private static final HttpClient MOJANG_HTTP = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(5))
             .build();
+
+    private volatile String currentServerId;
 
     static {
         try {
@@ -91,9 +91,9 @@ public class DiscordWebSocketClient extends WebSocketClient {
         MC.execute(() -> MC.getToastManager().addToast(new NotificationToast("DPTBot", "Connected!", CommonColors.WHITE, SoundEvents.BAT_TAKEOFF)));
     }
 
-    // handles server's session join challenge using mojang's sessionserver join endpoint
     private void handleChallenge(String serverId) {
         if (MC.player == null || serverId == null) return;
+        this.currentServerId = serverId;
 
         User user = MC.getUser();
         String accessToken = user.getAccessToken();
@@ -114,7 +114,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
         MOJANG_HTTP.sendAsync(request, HttpResponse.BodyHandlers.discarding())
                 .thenAccept(response -> {
                     if (response.statusCode() == 200 || response.statusCode() == 204) {
-                        sendGreet();
+                        sendGreet(serverId);
                     } else {
                         DPTB2Utils.LOGGER.error("Mojang joinServer call rejected with status {}", response.statusCode());
                     }
@@ -125,7 +125,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
                 });
     }
 
-    private void sendGreet() {
+    private void sendGreet(String serverId) {
         if (MC.player == null) return;
 
         this.sendModMessage("greet", Map.of(
@@ -135,7 +135,8 @@ public class DiscordWebSocketClient extends WebSocketClient {
                 "version", DPTB2Utils.VERSION, "mc", MC.getLaunchedVersion(),
                 "x", Double.toString(MC.player.getX()),
                 "y", Double.toString(MC.player.getY()),
-                "z", Double.toString(MC.player.getZ())
+                "z", Double.toString(MC.player.getZ()),
+                "serverId", serverId
         ));
 
         this.sendModMessage("microEvents", Map.of(
@@ -154,7 +155,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
         Map<?, ?> data = GSON.fromJson(message, Map.class);
         String type = (String) data.get("type");
 
-        if (type.equalsIgnoreCase("challenge")) {
+        if ("challenge".equalsIgnoreCase(type) || "challengeRequired".equalsIgnoreCase(type)) {
             handleChallenge((String) data.get("serverId"));
             return;
         }
