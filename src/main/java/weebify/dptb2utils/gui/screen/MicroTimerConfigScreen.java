@@ -45,6 +45,7 @@ public class MicroTimerConfigScreen extends Screen {
                 MicroTimerManager.eventTickToTime((!mod.isInDPTB2 || MicroTimerManager.eventTimer < 0) ? r.nextInt(7201) : MicroTimerManager.eventTimer),
                 MicroTimerManager.trafficTickToTime((!mod.isInDPTB2 || MicroTimerManager.trafficTimer < 0) ? r.nextInt(13201) : MicroTimerManager.trafficTimer, true),
                 MicroTimerManager.doorTickToTime((!mod.isInDPTB2 || MicroTimerManager.doorTimer < 0) ? r.nextInt(4801) : MicroTimerManager.doorTimer),
+                MicroTimerManager.blessingTickToTime((!mod.isInDPTB2 || MicroTimerManager.blessingTimer < 0) ? r.nextInt(201) : MicroTimerManager.blessingTimer),
                 (!mod.isInDPTB2 || MicroTimerManager.lastEvent.isBlank()) ? MicroTimerManager.EVENTS_LIST[new Random().nextInt(0, MicroTimerManager.EVENTS_LIST.length)] : MicroTimerManager.lastEvent
         );
         this.textWidget.updatePosition(this.width, this.height);

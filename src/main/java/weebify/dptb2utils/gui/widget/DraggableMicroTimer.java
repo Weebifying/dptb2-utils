@@ -13,24 +13,42 @@ import weebify.dptb2utils.utils.MicroTimerManager;
 
 public class DraggableMicroTimer extends AbstractWidget {
     private boolean dragging = false;
-    private String event;
+    private final String event;
+    private final String eventTime, trafficTime, doorTime, blessingTime;
     private int dragOffsetX, dragOffsetY;
     public float relX, relY;
 
-    public DraggableMicroTimer(float relX, float relY, String eventTime, String trafficTime, String doorTime, String event) {
+    public DraggableMicroTimer(float relX, float relY, String eventTime, String trafficTime, String doorTime, String blessingTime, String event) {
         super(0, 0,
-                Math.max(
-                        Minecraft.getInstance().font.width(String.format("%s%s§r (%s§r)", MicroTimerManager.eventPrefix, event, eventTime)),
-                        Math.max(
-                                Minecraft.getInstance().font.width(String.format("%s%s§r (%s§r))", MicroTimerManager.trafficPrefix, MicroTimerManager.LIGHTS_LIST[1], trafficTime)),
-                                Minecraft.getInstance().font.width(String.format("%s%s§r (%s§r)", MicroTimerManager.doorPrefix, "N/A", doorTime))
-                        )
-                ) + 8,
-                3 * Minecraft.getInstance().font.lineHeight + 14,
+                computeWidth(event, eventTime, trafficTime, doorTime, blessingTime),
+                computeHeight(),
                 Component.nullToEmpty(eventTime));
         this.relX = relX;
         this.relY = relY;
         this.event = event;
+        this.eventTime = eventTime;
+        this.trafficTime = trafficTime;
+        this.doorTime = doorTime;
+        this.blessingTime = blessingTime;
+    }
+
+    private static int computeWidth(String event, String eventTime, String trafficTime, String doorTime, String blessingTime) {
+        Font font = Minecraft.getInstance().font;
+        return Math.max(
+                Math.max(
+                        font.width(String.format("%s%s§r (%s§r)", MicroTimerManager.eventPrefix, event, eventTime)),
+                        font.width(String.format("%s%s§r (%s§r)", MicroTimerManager.trafficPrefix, MicroTimerManager.LIGHTS_LIST[1], trafficTime))
+                ),
+                Math.max(
+                        font.width(String.format("%s%s§r (%s§r)", MicroTimerManager.doorPrefix, "N/A", doorTime)),
+                        font.width(String.format("%s%s", MicroTimerManager.blessingPrefix, blessingTime))
+                )
+        ) + 8;
+    }
+
+    private static int computeHeight() {
+        int lineCount = 4;
+        return lineCount * (Minecraft.getInstance().font.lineHeight + 3) + 5;
     }
 
     public void updatePosition(int screenWidth, int screenHeight) {
@@ -40,7 +58,6 @@ public class DraggableMicroTimer extends AbstractWidget {
 
     @Override
     protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        // Draw centered text manually
         Font renderer = Minecraft.getInstance().font;
         DPTB2Utils mod = DPTB2Utils.getInstance();
         if (mod.getBoolConfig("microTimer.renderBackground")) {
@@ -57,7 +74,7 @@ public class DraggableMicroTimer extends AbstractWidget {
 
         // Event Line
         graphics.text(
-                renderer, String.format("%s00:00 (%s)", MicroTimerManager.eventPrefix, this.event),
+                renderer, String.format("%s%s§r (%s§r)", MicroTimerManager.eventPrefix, this.event, this.eventTime),
                 getX() + 4,
                 cursorY,
                 CommonColors.WHITE,
@@ -66,7 +83,7 @@ public class DraggableMicroTimer extends AbstractWidget {
 
         cursorY += renderer.lineHeight + 3;
         graphics.text(
-                renderer, String.format("%s00:00 (%s)", MicroTimerManager.trafficPrefix, MicroTimerManager.LIGHTS_LIST[0]),
+                renderer, String.format("%s%s", MicroTimerManager.blessingPrefix, this.blessingTime),
                 getX() + 4,
                 cursorY,
                 CommonColors.WHITE,
@@ -75,7 +92,16 @@ public class DraggableMicroTimer extends AbstractWidget {
 
         cursorY += renderer.lineHeight + 3;
         graphics.text(
-                renderer, String.format("%s00:00", MicroTimerManager.doorPrefix),
+                renderer, String.format("%s%s§r (%s§r)", MicroTimerManager.trafficPrefix, MicroTimerManager.LIGHTS_LIST[0], this.trafficTime),
+                getX() + 4,
+                cursorY,
+                CommonColors.WHITE,
+                mod.getBoolConfig("microTimer.textShadow")
+        );
+
+        cursorY += renderer.lineHeight + 3;
+        graphics.text(
+                renderer, String.format("%s%s§r (%s§r)", MicroTimerManager.doorPrefix, "N/A", this.doorTime),
                 getX() + 4,
                 cursorY,
                 CommonColors.WHITE,
@@ -119,7 +145,9 @@ public class DraggableMicroTimer extends AbstractWidget {
             int screenWidth = client.getWindow().getGuiScaledWidth();
             int screenHeight = client.getWindow().getGuiScaledHeight();
 
-            // Clamp to screen and update
+            newX = Math.max(0, Math.min(newX, screenWidth - this.getWidth()));
+            newY = Math.max(0, Math.min(newY, screenHeight - this.getHeight()));
+
             this.setX(newX);
             this.setY(newY);
             relX = (float)newX / screenWidth;

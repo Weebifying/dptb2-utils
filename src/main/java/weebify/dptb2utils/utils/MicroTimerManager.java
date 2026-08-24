@@ -9,8 +9,9 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonColors;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.gui.screen.MicroTimerConfigScreen;
@@ -163,19 +164,30 @@ public class MicroTimerManager {
             String trafficTime = MicroTimerManager.trafficTickToTime(MicroTimerManager.trafficTimer, !MicroTimerManager.currentTraffic.equals("§c§lRED"));
             String doorTime = MicroTimerManager.doorTickToTime(MicroTimerManager.doorTimer);
             String blessingTime = MicroTimerManager.blessingTickToTime(MicroTimerManager.blessingTimer);
-            int widgetWidth = Collections.max(Arrays.asList(
-                    mc.font.width(String.format("%s%s§r (%s§r)", doorPrefix, currentDoor, doorTime)),
-                    mc.font.width(String.format("%s%s", blessingPrefix, blessingTime)),
-                    mc.font.width(String.format("%s%s§r (%s§r)", trafficPrefix, currentTraffic, trafficTime)),
-                    mc.font.width(String.format("%s%s§r (%s§r)", doorPrefix, currentDoor, doorTime))
-            ));
+
+            boolean showBlessing = MicroTimerManager.blessingTimer >= 0;
+            boolean showTrafficDoor = mod.currentMap == 2;
+
+            List<Integer> lineWidths = new ArrayList<>();
+            lineWidths.add(mc.font.width(String.format("%s%s§r (%s§r)", eventPrefix, lastEvent, eventTime)));
+            if (showBlessing) {
+                lineWidths.add(mc.font.width(String.format("%s%s", blessingPrefix, blessingTime)));
+            }
+            if (showTrafficDoor) {
+                lineWidths.add(mc.font.width(String.format("%s%s§r (%s§r)", trafficPrefix, currentTraffic, trafficTime)));
+                lineWidths.add(mc.font.width(String.format("%s%s§r (%s§r)", doorPrefix, currentDoor, doorTime)));
+            }
+            int widgetWidth = Collections.max(lineWidths);
+            int lineCount = 1 + (showBlessing ? 1 : 0) + (showTrafficDoor ? 2 : 0);
+            int widgetHeight = lineCount * (mc.font.lineHeight + 3) + 5;
+
             if (mod.getBoolConfig("microTimer.renderBackground")) {
                 graphics.fill(
                         posX,
                         posY,
                         posX + widgetWidth + 8,
-                        posY + 21 + mc.font.lineHeight,
-                        0x63000000 // ballin it, worked ig
+                        posY + widgetHeight,
+                        0x63000000
                 );
             }
 
@@ -187,7 +199,7 @@ public class MicroTimerManager {
                     CommonColors.WHITE,
                     mod.getBoolConfig("microTimer.textShadow")
             );
-            if (MicroTimerManager.blessingTimer >= 0) {
+            if (showBlessing) {
                 cursorY += mc.font.lineHeight + 3;
                 graphics.text(
                         mc.font, String.format("%s%s", blessingPrefix, blessingTime),
@@ -198,7 +210,7 @@ public class MicroTimerManager {
                 );
             }
 
-            if (mod.currentMap == 2) {
+            if (showTrafficDoor) {
                 cursorY += mc.font.lineHeight + 3;
                 graphics.text(
                         mc.font, String.format("%s%s§r (%s§r)", trafficPrefix, currentTraffic, trafficTime),
@@ -219,4 +231,3 @@ public class MicroTimerManager {
         }
     }
 }
-
