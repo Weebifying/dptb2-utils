@@ -51,11 +51,12 @@ public class DPTB2Utils implements ClientModInitializer {
 	public boolean tryingToConnect = false;
 	public boolean isToggleBc = false;
 	public boolean dptb2RecheckScheduled = false;
+
 	public int currentMap = 0;
 	public static String[] MAPS_LIST = {
 			"N/A",
-			"City",
-			"Wild West"
+			"Wild West",
+			"City"
 	};
 
 	public List<DelayedTask> scheduledTasks = new ArrayList<>();
@@ -261,15 +262,17 @@ public class DPTB2Utils implements ClientModInitializer {
 
 			if (this.isInDPTB2 && !alreadyInDPTB2) {
 				client.getToastManager().addToast(new NotificationToast("DPTB2 Utils", "You are in Don't Press The Button 2!", 0xD2FFC8, SoundEvents.PLAYER_LEVELUP));
+				client.getConnection().sendCommand("ᴡᴇᴇʙ◆⚅⚀βΓγ-ΔδενΞo-oΨ");
+				// * [WPTB] 2 | 5,525 | 243,535 | Stargazer
 			}
 
 			if (this.isInDPTB2 != alreadyInDPTB2) {
 				this.refreshWptbStatus();
 			}
-			if (this.isInDPTB2) {
-				this.dptb2RecheckScheduled = true;
-				this.currentMap = checkMap(client.player.getX(), client.player.getY(), client.player.getZ());
-			}
+//			if (this.isInDPTB2) {
+//				this.dptb2RecheckScheduled = true;
+//				this.currentMap = checkMap(client.player.getX(), client.player.getY(), client.player.getZ());
+//			}
 		}
 	}
 

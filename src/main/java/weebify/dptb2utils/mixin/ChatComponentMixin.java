@@ -74,7 +74,7 @@ public class ChatComponentMixin {
         return codes.toString();
     }
 
-    @Inject(method = "addMessageToDisplayQueue(Lnet/minecraft/client/multiplayer/chat/GuiMessage;)V", at = @At("HEAD"))
+    @Inject(method = "addMessageToDisplayQueue(Lnet/minecraft/client/multiplayer/chat/GuiMessage;)V", at = @At("HEAD"), cancellable = true)
     private void addVisibleMessageInject(GuiMessage message, CallbackInfo ci) {
         DPTB2Utils mod = DPTB2Utils.getInstance();
         Minecraft mc = Minecraft.getInstance();
@@ -159,7 +159,7 @@ public class ChatComponentMixin {
             MicroTimerManager.trafficTimer = 3440;
             MicroTimerManager.currentTraffic = "§a§lGREEN";
         } else if (content.startsWith("* YAY! You choose the correct door!")) {
-            if (MicroTimerManager.currentDoor.equals("N/A")) {
+            if (MicroTimerManager.currentDoor.equals("N/A") && mc.player != null) {
                 double x = mc.player.getX();
                 double y = mc.player.getY();
                 double z = mc.player.getZ();
@@ -179,7 +179,7 @@ public class ChatComponentMixin {
 
             }
         } else if (content.startsWith("* RIP! That was the wrong door!")) {
-            if (MicroTimerManager.currentDoor.equals("N/A")) {
+            if (MicroTimerManager.currentDoor.equals("N/A") && mc.player != null) {
                 double x = mc.player.getX();
                 double y = mc.player.getY();
                 double z = mc.player.getZ();
@@ -206,9 +206,11 @@ public class ChatComponentMixin {
                 triggerNotif("Door Switch!", "The DOOR has cycled! Which one is it now?", 0xFFAA00, sound);
             }
         } else if (mod.getBoolConfig("others.autoCheer") && content.startsWith("* COMMUNITY GOAL!")) {
-            if (mc.getConnection() != null) {
-                mod.scheduleTask(rand.nextInt(26) + 5, () -> mc.getConnection().sendCommand("cheer"));
-            }
+                mod.scheduleTask(rand.nextInt(26) + 5, () -> {
+                    if (mc.getConnection() != null) {
+                        mc.getConnection().sendCommand("cheer");
+                    }
+                });
         } else if (content.startsWith("* ➜ The BUTTON was pressed")) {
             ButtonTimerManager.buttonTimer = 0; // reset the button timer
 
@@ -228,6 +230,25 @@ public class ChatComponentMixin {
             ButtonTimerManager.buttonTimer = 0;
             ButtonTimerManager.isChaos = true;
             ButtonTimerManager.chaosCounter = 33;
+        } else if (content.startsWith("* [WPTB]")) {
+            // * [WPTB] 2 | 5,525 | 243,535 | Stargazer
+            Pattern p = Pattern.compile("\\* \\[WPTB] (\\d) \\| ([\\d,]+) \\| ([\\d,]+) \\| (\\w+)");
+            Matcher m = p.matcher(content);
+            if (mod.websocketClient != null && m.find()) {
+                mod.currentMap = Integer.parseInt(m.group(1));
+                int pkCiv = Integer.parseInt(m.group(2).replace(",", ""));
+                int bank = Integer.parseInt(m.group(3).replace(",", ""));
+                String routeJp =  m.group(4);
+                mod.websocketClient.sendModMessage("gameVar", Map.of(
+                        "currentMap", mod.currentMap,
+                        "currentPkCiv", pkCiv,
+                        "currentBank", bank,
+                        "currentRouteJp", routeJp
+                ));
+                ci.cancel();
+            }
+        } else if (content.startsWith("* [!] A k Button Blessing k has spawned")) {
+            MicroTimerManager.blessingTimer = 1200;
         }
 
         if (content.startsWith("* Run started!") && (ItemCooldownManager.lastAdded.equals("Swap Crystal") || ItemCooldownManager.lastAdded.equals("Freeze Ray") || ItemCooldownManager.lastAdded.equals("Lasso"))) {

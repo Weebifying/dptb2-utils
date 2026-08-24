@@ -9,6 +9,9 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonColors;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.gui.screen.MicroTimerConfigScreen;
 
@@ -16,6 +19,7 @@ public class MicroTimerManager {
     public static int eventTimer = -1;
     public static int trafficTimer = -1;
     public static int doorTimer = -1;
+    public static int blessingTimer = -1;
     public static String lastEvent = "N/A";
     public static String currentTraffic = "N/A";
     public static String currentDoor = "N/A";
@@ -23,6 +27,7 @@ public class MicroTimerManager {
     public static final String eventPrefix = "Last event: ";
     public static final String trafficPrefix = "Traffic light: ";
     public static final String doorPrefix = "Door: ";
+    public static final String blessingPrefix = "Button Blessing: ";
     public static String[] EVENTS_LIST = {
             "§7§lMAYHEM",
             "§f§lDISABLED",
@@ -96,6 +101,25 @@ public class MicroTimerManager {
         return timeString;
     }
 
+    public static String blessingTickToTime(int ticks) {
+        if (ticks < 0) {
+            return "N/A";
+        }
+
+        int seconds = ticks / 20;
+        int minutes = seconds / 60;
+        seconds %= 60;
+        int hours = minutes / 60;
+        minutes %= 60;
+
+        String timeString = hours > 0 ? String.format("%02d:%02d:%02d", hours, minutes, seconds) : String.format("%02d:%02d", minutes, seconds);
+
+        if (ticks <= 60) return "§c" + timeString;
+        if (ticks <= 100) return "§6" + timeString;
+        if (ticks <= 200) return "§e" + timeString;
+        return timeString;
+    }
+
     public static void initialize() {
         ClientTickEvents.START_CLIENT_TICK.register((mc) -> {
             if (MicroTimerManager.eventTimer >= 0) {
@@ -112,6 +136,10 @@ public class MicroTimerManager {
             if (MicroTimerManager.doorTimer >= 0) {
                 MicroTimerManager.doorTimer += 1;
             }
+
+            if (MicroTimerManager.blessingTimer >= 0) {
+                MicroTimerManager.blessingTimer -= 1;
+            }
         });
 
         HudElementRegistry.attachElementAfter(
@@ -121,7 +149,7 @@ public class MicroTimerManager {
         );
     }
 
-    private static void renderMicroTimer(GuiGraphicsExtractor drawContext, DeltaTracker renderTickCounter) {
+    private static void renderMicroTimer(GuiGraphicsExtractor graphics, DeltaTracker renderTickCounter) {
         Minecraft mc = Minecraft.getInstance();
         DPTB2Utils mod = DPTB2Utils.getInstance();
 
@@ -134,14 +162,15 @@ public class MicroTimerManager {
             String eventTime = MicroTimerManager.eventTickToTime(MicroTimerManager.eventTimer);
             String trafficTime = MicroTimerManager.trafficTickToTime(MicroTimerManager.trafficTimer, !MicroTimerManager.currentTraffic.equals("§c§lRED"));
             String doorTime = MicroTimerManager.doorTickToTime(MicroTimerManager.doorTimer);
-            int widgetWidth = Math.max(
-                    mc.font.width(String.format("%s%s§r (%s§r)", eventPrefix, lastEvent, eventTime)),
-                    Math.max(
-                        mc.font.width(String.format("%s%s§r (%s§r)", trafficPrefix, currentTraffic, trafficTime)),
-                        mc.font.width(String.format("%s%s§r (%s§r)", doorPrefix, currentDoor, doorTime))
+            String blessingTime = MicroTimerManager.blessingTickToTime(MicroTimerManager.blessingTimer);
+            int widgetWidth = Collections.max(Arrays.asList(
+                    mc.font.width(String.format("%s%s§r (%s§r)", doorPrefix, currentDoor, doorTime)),
+                    mc.font.width(String.format("%s%s", blessingPrefix, blessingTime)),
+                    mc.font.width(String.format("%s%s§r (%s§r)", trafficPrefix, currentTraffic, trafficTime)),
+                    mc.font.width(String.format("%s%s§r (%s§r)", doorPrefix, currentDoor, doorTime))
             ));
             if (mod.getBoolConfig("microTimer.renderBackground")) {
-                drawContext.fill(
+                graphics.fill(
                         posX,
                         posY,
                         posX + widgetWidth + 8,
@@ -150,27 +179,36 @@ public class MicroTimerManager {
                 );
             }
 
-            // TODO: MOVE CITY TIMERS TO ITS OWN THING
-            // fuck mineguy lol
             int cursorY = posY + 4;
-            drawContext.text(
+            graphics.text(
                     mc.font, String.format("%s%s§r (%s§r)", eventPrefix, lastEvent, eventTime),
                     posX + 4,
                     cursorY,
                     CommonColors.WHITE,
                     mod.getBoolConfig("microTimer.textShadow")
             );
-            if (mod.currentMap == 1) {
-                cursorY +=  mc.font.lineHeight + 3;
-                drawContext.text(
+            if (MicroTimerManager.blessingTimer >= 0) {
+                cursorY += mc.font.lineHeight + 3;
+                graphics.text(
+                        mc.font, String.format("%s%s", blessingPrefix, blessingTime),
+                        posX + 4,
+                        cursorY,
+                        CommonColors.WHITE,
+                        mod.getBoolConfig("microTimer.textShadow")
+                );
+            }
+
+            if (mod.currentMap == 2) {
+                cursorY += mc.font.lineHeight + 3;
+                graphics.text(
                         mc.font, String.format("%s%s§r (%s§r)", trafficPrefix, currentTraffic, trafficTime),
                         posX + 4,
                         cursorY,
                         CommonColors.WHITE,
                         mod.getBoolConfig("microTimer.textShadow")
                 );
-                cursorY +=  mc.font.lineHeight + 3;
-                drawContext.text(
+                cursorY += mc.font.lineHeight + 3;
+                graphics.text(
                         mc.font, String.format("%s%s§r (%s§r)", doorPrefix, currentDoor, doorTime),
                         posX + 4,
                         cursorY,

@@ -132,10 +132,8 @@ public class DiscordWebSocketClient extends WebSocketClient {
                 "name", MC.player.getGameProfile().name(),
                 "currentName", MC.player.getDisplayName().getString(),
                 "id", MC.player.getGameProfile().id().toString().replace("-", ""),
-                "version", DPTB2Utils.VERSION, "mc", MC.getLaunchedVersion(),
-                "x", Double.toString(MC.player.getX()),
-                "y", Double.toString(MC.player.getY()),
-                "z", Double.toString(MC.player.getZ()),
+                "version", DPTB2Utils.VERSION,
+                "mc", MC.getLaunchedVersion(),
                 "serverId", serverId
         ));
 
@@ -253,6 +251,8 @@ public class DiscordWebSocketClient extends WebSocketClient {
                 if (data.get("lastEvent") instanceof String s) MicroTimerManager.lastEvent = s;
                 if (data.get("currentTraffic") instanceof String s) MicroTimerManager.currentTraffic = s;
                 if (data.get("currentDoor") instanceof String s) MicroTimerManager.currentDoor = s;
+            } else if (type.equalsIgnoreCase("askGameVar")) {
+                MC.getConnection().sendCommand("ᴡᴇᴇʙ◆⚅⚀βΓγ-ΔδενΞo-oΨ");
             }
         });
     }
