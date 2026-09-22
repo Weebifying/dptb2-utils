@@ -9,7 +9,9 @@
     "requireAnnotations": true
   },
   "client": [
+    "AbstractContainerScreenMixin",
     "ChatComponentMixin",
+    "ClientPacketListenerMixin",
     "GuiGraphicsExtractorInvoker",
     "LabelCommandRendererCommandsMixin",
     "PlayerTabOverlayMixin"

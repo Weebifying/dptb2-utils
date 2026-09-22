@@ -35,6 +35,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class DPTB2Utils implements ClientModInitializer {	
 	public static final String MOD_ID = "dptb2-utils";
@@ -51,6 +52,8 @@ public class DPTB2Utils implements ClientModInitializer {
 	public boolean tryingToConnect = false;
 	public boolean isToggleBc = false;
 	public boolean dptb2RecheckScheduled = false;
+	public boolean openBoots = false;
+	public boolean openRoutes = false;
 
 	public int currentMap = 0;
 	public static String[] MAPS_LIST = {
@@ -59,7 +62,7 @@ public class DPTB2Utils implements ClientModInitializer {
 			"City"
 	};
 
-	public List<DelayedTask> scheduledTasks = new ArrayList<>();
+	public List<DelayedTask> scheduledTasks = new CopyOnWriteArrayList<>(); // thread-safe now
 
 	private static final Minecraft mc = Minecraft.getInstance();
 	private static DPTB2Utils instance;
@@ -220,7 +223,7 @@ public class DPTB2Utils implements ClientModInitializer {
 		});
 	}
 
-	public void 	dptb2Check(Minecraft client) throws InterruptedException {
+	public void dptb2Check(Minecraft client) throws InterruptedException {
 		ServerData serverEntry = client.getCurrentServer();
 		if (serverEntry == null) {
 			this.isInDPTB2 = false;
@@ -281,6 +284,27 @@ public class DPTB2Utils implements ClientModInitializer {
 		ClientCommandRegistrationCallback.EVENT.register(this::commandBroadcast);
 //		ClientCommandRegistrationCallback.EVENT.register(this::commandAddWP);
 		ClientCommandRegistrationCallback.EVENT.register(this::commandToggleBc);
+
+		ClientCommandRegistrationCallback.EVENT.register(((dispatcher, buildContext) -> {
+			LiteralCommandNode<FabricClientCommandSource> c = dispatcher.register(
+					ClientCommands.literal("boots")
+							.executes(context -> {
+								this.openBoots = true;
+								mc.getConnection().sendCommand("backpack");
+								return 1;
+							})
+			);
+		}));
+		ClientCommandRegistrationCallback.EVENT.register(((dispatcher, buildContext) -> {
+			LiteralCommandNode<FabricClientCommandSource> c = dispatcher.register(
+					ClientCommands.literal("routes")
+							.executes(context -> {
+								this.openRoutes = true;
+								mc.getConnection().sendCommand("backpack");
+								return 1;
+							})
+			);
+		}));
 	}
 
 	private void onClientTick(Minecraft var) {
@@ -302,10 +326,10 @@ public class DPTB2Utils implements ClientModInitializer {
 		}
 	}
 
-	private void commandToggleBc(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
+	private void commandToggleBc(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext buildContext) {
 		LiteralCommandNode<FabricClientCommandSource> c = dispatcher.register(
 				ClientCommands.literal("togglebc")
-						.executes(graphics -> {
+						.executes(context -> {
 							this.isToggleBc = !this.isToggleBc;
 							if (mc.player != null) {
 								mc.player.sendSystemMessage(Component.nullToEmpty("Automatic chat broadcast is now " + (this.isToggleBc ? "§a§lenabled§r!" : "§c§ldisabled§r!")));
@@ -315,7 +339,7 @@ public class DPTB2Utils implements ClientModInitializer {
 		);
 	}
 
-	private void commandModMenu(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
+	private void commandModMenu(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext buildContext) {
 		LiteralCommandNode<FabricClientCommandSource> c = dispatcher.register(
 				ClientCommands.literal("dptb2")
 						.executes(graphics -> {
@@ -366,7 +390,7 @@ public class DPTB2Utils implements ClientModInitializer {
 		}
 	}
 
-	private void commandBroadcast(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
+	private void commandBroadcast(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext buildContext) {
 		LiteralCommandNode<FabricClientCommandSource> c = dispatcher.register(
 				ClientCommands.literal("broadcast")
 						.then(ClientCommands.argument("message", StringArgumentType.greedyString())

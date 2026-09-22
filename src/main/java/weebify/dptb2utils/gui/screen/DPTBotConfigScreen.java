@@ -107,6 +107,10 @@ public class DPTBotConfigScreen extends Screen {
             this.portInput.visible = this.showIPOptions;
         }).bounds(30, this.height - 30 - 10,150, 20).build());
 
+        this.addRenderableWidget(Button.builder(Component.nullToEmpty("Refetch DPTBot IP"), (btn) -> {
+            mod.fetchDPTBotIP();
+        }).bounds(30, this.height - 55 - 10,150, 20).build());
+
 //        this.addDrawableChild(ButtonWidget.builder(Text.of("Block List"), (btn) -> {
 //            assert this.client != null;
 //            this.client.setScreen(new BlockListScreen(this, mod));

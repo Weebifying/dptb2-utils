@@ -62,12 +62,12 @@ public class ButtonTimerManager {
 
         HudElementRegistry.attachElementAfter(
                 VanillaHudElements.HOTBAR,
-                Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "buttonTimer"),
+                Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "button_timer"),
                 ButtonTimerManager::renderButtonTimer
         );
     }
 
-    private static void renderButtonTimer(GuiGraphicsExtractor drawContext, DeltaTracker renderTickCounter) {
+    private static void renderButtonTimer(GuiGraphicsExtractor graphics, DeltaTracker renderTickCounter) {
         Minecraft mc = Minecraft.getInstance();
         DPTB2Utils mod = DPTB2Utils.getInstance();
 
@@ -80,7 +80,7 @@ public class ButtonTimerManager {
             Component text = ButtonTimerManager.tickToTime(ButtonTimerManager.buttonTimer);
             int textWidth = mc.font.width(text);
             if (mod.getBoolConfig("buttonTimer.renderBackground")) {
-                drawContext.fill(
+                graphics.fill(
                         posX,
                         posY,
                         posX + textWidth + 8,
@@ -89,7 +89,7 @@ public class ButtonTimerManager {
                 );
             }
 
-            drawContext.text(
+            graphics.text(
                     mc.font, text,
                     posX + 4,
                     posY + 4,

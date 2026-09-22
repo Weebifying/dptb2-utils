@@ -34,6 +34,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
     private static final Minecraft MC = Minecraft.getInstance();
     private static final DPTB2Utils mod = DPTB2Utils.getInstance();
     public static final SSLContext TRUSTED_CONTEXT;
+    public static final Map<String, String> TRUSTED_KEY = new HashMap<>();
 
     private static final HttpClient MOJANG_HTTP = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(5))
@@ -161,7 +162,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
         String text = (String) data.get("text");
         Integer col = (Integer) data.get("color");
         Minecraft.getInstance().execute(() -> {
-            if (type.equalsIgnoreCase("delegate")) {
+            if ("delegate".equalsIgnoreCase(type)) {
                 if (mod.getBoolConfig("others.consentRamper")) {
                     MC.getToastManager().addToast(new NotificationToast("DPTBot", text, col != null ? col : 0xFFC8FFC8, SoundEvents.BAT_TAKEOFF));
                     mod.isRamper = true;
@@ -171,12 +172,12 @@ public class DiscordWebSocketClient extends WebSocketClient {
                     mod.isRamper = false;
                     this.sendModMessage("deny", Map.of("text", MC.player != null ? MC.player.getGameProfile().name() : "Unknown"));
                 }
-            } else if (type.equalsIgnoreCase("revoke")) {
+            } else if ("revoke".equalsIgnoreCase(type)) {
                 if (mod.getBoolConfig("others.discordRamper")) {
                     MC.getToastManager().addToast(new NotificationToast("DPTBot", text, col != null ? col : 0xFFFFC8C8, SoundEvents.BAT_TAKEOFF));
                     mod.isRamper = false;
                 }
-            } else if (type.equalsIgnoreCase("broadcast")) {
+            } else if ("broadcast".equalsIgnoreCase(type)) {
                 String source = data.get("source") != null ? (String) data.get("source") : "???";
                 String name = data.get("name") != null ? (String) data.get("name") : "Unknown";
 
@@ -208,7 +209,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
                         MC.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_PLING.value(), currentPitch, 1));
                     }
                 }
-            } else if (type.equalsIgnoreCase("askTabList")) {
+            } else if ("askTabList".equalsIgnoreCase(type)) {
                 String id = (String) data.get("id");
                 if (MC.getConnection() != null) {
                     List<String> players = MC.getConnection().getOnlinePlayers().stream()
@@ -216,9 +217,9 @@ public class DiscordWebSocketClient extends WebSocketClient {
                             .toList();
                     this.sendModMessage("tabList", Map.of("id", id, "players", players));
                 }
-            } else if (type.equalsIgnoreCase("updateClients")) {
+            } else if ("updateClients".equalsIgnoreCase(type)) {
                 this.clientsList = (List<String>) data.get("clients");
-            } else if (type.equalsIgnoreCase("queryIdResponse")) {
+            } else if ("queryIdResponse".equalsIgnoreCase(type)) {
                 String id = (String) data.get("id");
                 String username = (String) data.get("username");
                 String kind = (String) data.get("kind");
@@ -231,7 +232,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
                 } else {
                     // error handling
                 }
-            } else if (type.equalsIgnoreCase("queryNameResponse")) {
+            } else if ("queryNameResponse".equalsIgnoreCase(type)) {
                 String username = (String) data.get("username");
                 String id = (String) data.get("id");
                 String kind = (String) data.get("kind");
@@ -244,14 +245,14 @@ public class DiscordWebSocketClient extends WebSocketClient {
                 } else {
                     // error handling
                 }
-            } else if (type.equalsIgnoreCase("microEvents")) {
+            } else if ("microEvents".equalsIgnoreCase(type)) {
                 if (data.get("eventTimer") instanceof Double d) MicroTimerManager.eventTimer = d.intValue();
                 if (data.get("trafficTimer") instanceof Double d) MicroTimerManager.trafficTimer = d.intValue();
                 if (data.get("doorTimer") instanceof Double d) MicroTimerManager.doorTimer = d.intValue();
                 if (data.get("lastEvent") instanceof String s) MicroTimerManager.lastEvent = s;
                 if (data.get("currentTraffic") instanceof String s) MicroTimerManager.currentTraffic = s;
                 if (data.get("currentDoor") instanceof String s) MicroTimerManager.currentDoor = s;
-            } else if (type.equalsIgnoreCase("askGameVar")) {
+            } else if ("askGameVar".equalsIgnoreCase(type)) {
                 MC.getConnection().sendCommand("ᴡᴇᴇʙ◆⚅⚀βΓγ-ΔδενΞo-oΨ");
             }
         });
@@ -264,7 +265,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
         }
         DPTB2Utils.LOGGER.error("WebSocket connection closed: {} (code:{}, remote:{})", reason, code, remote);
         this.clientsList = new ArrayList<>();
-        this.retryConnection();
+        MC.execute(this::retryConnection);
     }
 
     @Override
@@ -273,7 +274,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
             MC.execute(() -> MC.getToastManager().addToast(new NotificationToast("DPTBot", "Connecting to DPTBot failed!", CommonColors.RED, SoundEvents.BAT_TAKEOFF)));
         }
         ex.printStackTrace();
-        this.retryConnection();
+        MC.execute(this::retryConnection);
     }
 
 //    public void sendModMessage(String type, String message) {

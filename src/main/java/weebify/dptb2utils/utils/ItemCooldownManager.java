@@ -152,12 +152,12 @@ public class ItemCooldownManager {
 
         HudElementRegistry.attachElementAfter(
                 VanillaHudElements.HOTBAR,
-                Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "itemCooldowns"),
+                Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "item_cooldowns"),
                 ItemCooldownManager::renderItemCooldowns
         );
     }
 
-    private static void renderItemCooldowns(GuiGraphicsExtractor drawContext, DeltaTracker renderTickCounter) {
+    private static void renderItemCooldowns(GuiGraphicsExtractor graphics, DeltaTracker renderTickCounter) {
         Minecraft mc = Minecraft.getInstance();
         DPTB2Utils mod = DPTB2Utils.getInstance();
 
@@ -183,7 +183,7 @@ public class ItemCooldownManager {
             }
 
             if (mod.getBoolConfig("itemCooldown.renderBackground")) {
-                drawContext.fill(
+                graphics.fill(
                         alignLeft ? posX : posX - maxWidth,
                         posY,
                         alignLeft ? posX + maxWidth : posX,
@@ -200,7 +200,7 @@ public class ItemCooldownManager {
 
                 int x = alignLeft ? posX + padding : posX - padding - 16;
                 int y = posY + padding + i * lineHeight;
-                drawContext.blit(RenderPipelines.GUI_TEXTURED, item.texture, x, y, 0, 0, 16, 16, 16, 16);
+                graphics.blit(RenderPipelines.GUI_TEXTURED, item.texture, x, y, 0, 0, 16, 16, 16, 16);
 
                 int barWidth = (int) (0.2 * Items.NAME_MAP.get(itemName).cooldown);
                 int barHeight = 8;
@@ -209,14 +209,14 @@ public class ItemCooldownManager {
                 int total = item.cooldown;
                 float progress = (float)ticksLeft / total;
                 int filled = (int)(barWidth * progress);
-                drawContext.fill(barX, barY, barX + barWidth, barY + barHeight, 0xFF555555);
-                if (alignLeft) drawContext.fill(barX, barY, barX + filled, barY + barHeight, lerpColor(0xFF55FF55, 0xFFFF5555, progress));
-                else drawContext.fill(barX + barWidth - filled, barY, barX + barWidth, barY + barHeight, lerpColor(0xFF55FF55, 0xFFFF5555, progress));
+                graphics.fill(barX, barY, barX + barWidth, barY + barHeight, 0xFF555555);
+                if (alignLeft) graphics.fill(barX, barY, barX + filled, barY + barHeight, lerpColor(0xFF55FF55, 0xFFFF5555, progress));
+                else graphics.fill(barX + barWidth - filled, barY, barX + barWidth, barY + barHeight, lerpColor(0xFF55FF55, 0xFFFF5555, progress));
 
                 int seconds = ticksLeft / 20;
                 String text = seconds + "s";
                 int textX = alignLeft ? barX + barWidth + 6 : barX - 6 - mc.font.width(text);
-                drawContext.text(mc.font, text, textX, barY, 0xFFFFFFFF, mod.getBoolConfig("itemCooldown.textShadow"));
+                graphics.text(mc.font, text, textX, barY, 0xFFFFFFFF, mod.getBoolConfig("itemCooldown.textShadow"));
 
                 i++;
             }

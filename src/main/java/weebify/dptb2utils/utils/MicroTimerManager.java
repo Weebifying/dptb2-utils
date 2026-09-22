@@ -145,7 +145,7 @@ public class MicroTimerManager {
 
         HudElementRegistry.attachElementAfter(
                 VanillaHudElements.HOTBAR,
-                Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "microTimer"),
+                Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "micro_timer"),
                 MicroTimerManager::renderMicroTimer
         );
     }
@@ -165,20 +165,18 @@ public class MicroTimerManager {
             String doorTime = MicroTimerManager.doorTickToTime(MicroTimerManager.doorTimer);
             String blessingTime = MicroTimerManager.blessingTickToTime(MicroTimerManager.blessingTimer);
 
-            boolean showBlessing = MicroTimerManager.blessingTimer >= 0;
             boolean showTrafficDoor = mod.currentMap == 2;
 
             List<Integer> lineWidths = new ArrayList<>();
             lineWidths.add(mc.font.width(String.format("%s%s§r (%s§r)", eventPrefix, lastEvent, eventTime)));
-            if (showBlessing) {
-                lineWidths.add(mc.font.width(String.format("%s%s", blessingPrefix, blessingTime)));
-            }
+            lineWidths.add(mc.font.width(String.format("%s%s", blessingPrefix, blessingTime)));
+
             if (showTrafficDoor) {
                 lineWidths.add(mc.font.width(String.format("%s%s§r (%s§r)", trafficPrefix, currentTraffic, trafficTime)));
                 lineWidths.add(mc.font.width(String.format("%s%s§r (%s§r)", doorPrefix, currentDoor, doorTime)));
             }
             int widgetWidth = Collections.max(lineWidths);
-            int lineCount = 1 + (showBlessing ? 1 : 0) + (showTrafficDoor ? 2 : 0);
+            int lineCount = 2 + (showTrafficDoor ? 2 : 0);
             int widgetHeight = lineCount * (mc.font.lineHeight + 3) + 5;
 
             if (mod.getBoolConfig("microTimer.renderBackground")) {
@@ -199,16 +197,15 @@ public class MicroTimerManager {
                     CommonColors.WHITE,
                     mod.getBoolConfig("microTimer.textShadow")
             );
-            if (showBlessing) {
-                cursorY += mc.font.lineHeight + 3;
-                graphics.text(
-                        mc.font, String.format("%s%s", blessingPrefix, blessingTime),
-                        posX + 4,
-                        cursorY,
-                        CommonColors.WHITE,
-                        mod.getBoolConfig("microTimer.textShadow")
-                );
-            }
+
+            cursorY += mc.font.lineHeight + 3;
+            graphics.text(
+                    mc.font, String.format("%s%s", blessingPrefix, blessingTime),
+                    posX + 4,
+                    cursorY,
+                    CommonColors.WHITE,
+                    mod.getBoolConfig("microTimer.textShadow")
+            );
 
             if (showTrafficDoor) {
                 cursorY += mc.font.lineHeight + 3;
