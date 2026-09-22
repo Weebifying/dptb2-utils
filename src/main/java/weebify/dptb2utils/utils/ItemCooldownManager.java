@@ -14,7 +14,9 @@ import net.minecraft.resources.Identifier;
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.gui.screen.ItemCooldownConfigScreen;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ItemCooldownManager {
@@ -52,6 +54,8 @@ public class ItemCooldownManager {
 
     public static Map<String, Integer> currentCooldowns = new HashMap<>();
     public static String lastAdded = "";
+    public static String lastRaycast = "";
+    public static final List<String> RAYCAST_ITEMS = Arrays.asList("Freeze Ray", "Swap Crystal", "Lasso");
 
     public static boolean isInMap(double x, double y, double z) {
         // city: 124 7 -113 -> -1 72 140
@@ -102,6 +106,9 @@ public class ItemCooldownManager {
         if (Items.NAME_MAP.containsKey(itemName) && !currentCooldowns.containsKey(itemName)) {
             currentCooldowns.put(itemName, Items.NAME_MAP.get(itemName).cooldown);
             lastAdded = itemName;
+            if (ItemCooldownManager.RAYCAST_ITEMS.contains(itemName)) {
+                lastRaycast = itemName;
+            }
         }
     }
 
@@ -130,7 +137,7 @@ public class ItemCooldownManager {
                     double y = player.getY();
                     double z = player.getZ();
                     if (!isInPkCiv(x, y, z)) {
-                        if ((itemName.equals("Immune Apple") || !isInSpawn(x, y, z)) && isInMap(x, y, z)) {
+                        if ((itemName.equals("Immune Apple") || !isInSpawn(x, y, z)) && isInMap(x, y, z) && !RAYCAST_ITEMS.contains(itemName)) {
                             addCooldown(itemName);
                         }
                     }
@@ -146,6 +153,9 @@ public class ItemCooldownManager {
                     currentCooldowns.put(itemName, timeLeft - 1);
                 } else {
                     currentCooldowns.remove(itemName);
+                    if (ItemCooldownManager.RAYCAST_ITEMS.contains(itemName)) {
+                        lastRaycast = "";
+                    }
                 }
             }
         });

@@ -166,8 +166,8 @@ public class DPTB2Utils implements ClientModInitializer {
 				String address = sb.toString().trim();
 				String[] split = address.split(":");
 				if (split.length == 2) {
-					this.setStringConfig("others.dptbotHost", split[0]);
-					this.setIntConfig("others.dptbotPort", Integer.parseInt(split[1]));
+					this.setStringConfig("others.dptbotHost", split[0].strip());
+					this.setIntConfig("others.dptbotPort", Integer.parseInt(split[1].strip()));
 					LOGGER.info("Fetched DPTBot IP: {}:{}", this.getStringConfig("others.dptbotHost"), this.getIntConfig("others.dptbotPort"));
 				} else {
 					LOGGER.error("Failed to fetch DPTBot IP! Invalid format: {}", address);

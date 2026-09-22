@@ -52,6 +52,10 @@ public class ModMenuScreen extends Screen {
             mc.setScreen(new MicroTimerConfigScreen(this, mod));
         }).bounds(this.width/2 - 80 - 75, 150, 150, 20).build());
 
+        this.addRenderableWidget(Button.builder(Component.nullToEmpty(String.format("AutoWelcome: %s", mod.getBoolConfig("others.autoWelcome") ? "ON" : "OFF")), (btn) -> {
+            btn.setMessage(Component.nullToEmpty(String.format("AutoWelcome: %s", mod.toggleBoolConfig("others.autoWelcome") ? "ON" : "OFF")));
+        }).bounds(this.width/2 + 80 - 75, 150, 150, 20).build());
+
 //        this.addDrawableChild(ButtonWidget.builder(Text.of(String.format("Waypoints: %s", mod.getBoolConfig("waypoints.enabled") ? "ON" : "OFF")), (btn) -> {
 //            btn.setMessage(Text.of(String.format("Waypoints: %s", mod.toggleBoolConfig("waypoints.enabled") ? "ON" : "OFF")));
 //        }).dimensions(this.width/2 - 80 - 75, 150, 150, 20).build());

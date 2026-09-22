@@ -92,9 +92,21 @@ public class DiscordWebSocketClient extends WebSocketClient {
         MC.execute(() -> MC.getToastManager().addToast(new NotificationToast("DPTBot", "Connected!", CommonColors.WHITE, SoundEvents.BAT_TAKEOFF)));
     }
 
+    private String serverKey() {
+        String host = mod.getStringConfig("others.dptbotHost");
+        int port = mod.getIntConfig("others.dptbotPort");
+        return host + ":" + port;
+    }
+
     private void handleChallenge(String serverId) {
         if (MC.player == null || serverId == null) return;
         this.currentServerId = serverId;
+
+        String trustedKey = TRUSTED_KEY.get(serverKey());
+        if (trustedKey != null) {
+            sendTrustedGreet(trustedKey);
+            return;
+        }
 
         User user = MC.getUser();
         String accessToken = user.getAccessToken();
@@ -138,6 +150,25 @@ public class DiscordWebSocketClient extends WebSocketClient {
                 "serverId", serverId
         ));
 
+        sendMicroEvents();
+    }
+
+    private void sendTrustedGreet(String trustedKey) {
+        if (MC.player == null) return;
+
+        this.sendModMessage("greet", Map.of(
+                "name", MC.player.getGameProfile().name(),
+                "currentName", MC.player.getDisplayName().getString(),
+                "id", MC.player.getGameProfile().id().toString().replace("-", ""),
+                "version", DPTB2Utils.VERSION,
+                "mc", MC.getLaunchedVersion(),
+                "trustedKey", trustedKey
+        ));
+
+        sendMicroEvents();
+    }
+
+    private void sendMicroEvents() {
         this.sendModMessage("microEvents", Map.of(
                 "eventTimer", MicroTimerManager.eventTimer,
                 "trafficTimer", MicroTimerManager.trafficTimer,
@@ -155,7 +186,18 @@ public class DiscordWebSocketClient extends WebSocketClient {
         String type = (String) data.get("type");
 
         if ("challenge".equalsIgnoreCase(type) || "challengeRequired".equalsIgnoreCase(type)) {
+            if (Boolean.TRUE.equals(data.get("trustedKeyRejected"))) {
+                TRUSTED_KEY.remove(serverKey());
+            }
             handleChallenge((String) data.get("serverId"));
+            return;
+        }
+
+        if ("trustedKey".equalsIgnoreCase(type)) {
+            String key = (String) data.get("key");
+            if (key != null && !key.isBlank()) {
+                TRUSTED_KEY.put(serverKey(), key);
+            }
             return;
         }
 

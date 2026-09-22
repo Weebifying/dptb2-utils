@@ -32,6 +32,14 @@ import java.util.regex.Pattern;
 public class ChatComponentMixin {
     @Unique
     private static final Random rand = new Random();
+    @Unique
+    private static final List<Pattern> AUTOWELCOME_PATTERNS = Arrays.asList(
+            Pattern.compile("\\* + | >> \\[XI] ([\\w_]+) has joined! <"),
+            Pattern.compile("\\* + | >>> \\[Builder] ([\\w_]+) constructs a path into the world! <<<"),
+            Pattern.compile("\\* + | >>> \\[Staff] ([\\w_]+) arrives into the world! <<<"),
+            Pattern.compile("\\* + | >>> \\[Admin] ([\\w_]+) descends into the world! <<"),
+            Pattern.compile("\\* + | >>> The \\[Owner], ([\\w_]+) has joined! <<<")
+    );
 
     @Unique
     private static void triggerNotif(String title, String message, int color, SoundEvent sfx) {
@@ -78,6 +86,7 @@ public class ChatComponentMixin {
     private void addVisibleMessageInject(GuiMessage message, CallbackInfo ci) {
         DPTB2Utils mod = DPTB2Utils.getInstance();
         Minecraft mc = Minecraft.getInstance();
+        assert mc.player != null;
 
         String msg = toLegacyText(message.content());
         String content = msg.replaceAll("§[0-9a-fk-or]", "").trim();
@@ -123,9 +132,9 @@ public class ChatComponentMixin {
                 // placeholders in case shit goes down
                 String t = "Someone just found a rare boots!";
                 String b = "Boots";
-                Pattern pattern1 = Pattern.compile("\\* WOAH!? \\[([\\w-]+)] (\\w+) just found ([A-Z]+) (.+?)!");
-                Pattern pattern2 = Pattern.compile("\\* WOAH!? \\[([\\w-]+)] (\\w+) received (.+?) from an \\[Admin]");
-                Pattern pattern3 = Pattern.compile("\\* WOAH!? \\[([\\w-]+)] (\\w+) just found (.+?)!");
+                Pattern pattern1 = Pattern.compile("\\* WOAH!? \\[([\\w-]+)] ([\\w_]+) just found ([A-Z]+) (.+?)!");
+                Pattern pattern2 = Pattern.compile("\\* WOAH!? \\[([\\w-]+)] ([\\w_]+) received (.+?) from an \\[Admin]");
+                Pattern pattern3 = Pattern.compile("\\* WOAH!? \\[([\\w-]+)] ([\\w_]+) just found (.+?)!");
 
                 Matcher matcher1 = pattern1.matcher(content);
                 Matcher matcher2 = pattern2.matcher(content);
@@ -206,7 +215,7 @@ public class ChatComponentMixin {
                 triggerNotif("Door Switch!", "The DOOR has cycled! Which one is it now?", 0xFFAA00, sound);
             }
         } else if (mod.getBoolConfig("others.autoCheer") && content.startsWith("* COMMUNITY GOAL!")) {
-                mod.scheduleTask(rand.nextInt(26) + 5, () -> {
+                mod.scheduleTask(rand.nextInt(30) + 10, () -> {
                     if (mc.getConnection() != null) {
                         mc.getConnection().sendCommand("cheer");
                     }
@@ -231,27 +240,46 @@ public class ChatComponentMixin {
             ButtonTimerManager.isChaos = true;
             ButtonTimerManager.chaosCounter = 33;
         } else if (content.startsWith("* [WPTB]")) {
-            // * [WPTB] 2 | 5,525 | 243,535 | Stargazer
-            Pattern p = Pattern.compile("\\* \\[WPTB] (\\d) \\| ([\\d,]+) \\| ([\\d,]+) \\| (\\w+)");
-            Matcher m = p.matcher(content);
-            if (mod.websocketClient != null && m.find()) {
-                mod.currentMap = Integer.parseInt(m.group(1));
-                int pkCiv = Integer.parseInt(m.group(2).replace(",", ""));
-                int bank = Integer.parseInt(m.group(3).replace(",", ""));
-                String routeJp =  m.group(4);
-                mod.websocketClient.sendModMessage("gameVar", Map.of(
-                        "currentMap", mod.currentMap,
-                        "currentPkCiv", pkCiv,
-                        "currentBank", bank,
-                        "currentRouteJp", routeJp
-                ));
-                ci.cancel();
+            // * [WPTB] Raycast! ▒ <-- mini rao
+            if (content.contains("Raycast!")) {
+                if (ItemCooldownManager.RAYCAST_ITEMS.contains(ItemCooldownManager.lastRaycast)) {
+                    ItemCooldownManager.addCooldown(ItemCooldownManager.lastRaycast);
+                }
+            } else {
+                // * [WPTB] 2 | 5,525 | 243,535 | Stargazer
+                Pattern p = Pattern.compile("\\* \\[WPTB] (\\d) \\| ([\\d,]+) \\| ([\\d,]+) \\| (\\w+)");
+                Matcher m = p.matcher(content);
+                if (mod.websocketClient != null && m.find()) {
+                    mod.currentMap = Integer.parseInt(m.group(1));
+                    int pkCiv = Integer.parseInt(m.group(2).replace(",", ""));
+                    int bank = Integer.parseInt(m.group(3).replace(",", ""));
+                    String routeJp =  m.group(4);
+                    mod.websocketClient.sendModMessage("gameVar", Map.of(
+                            "currentMap", mod.currentMap,
+                            "currentPkCiv", pkCiv,
+                            "currentBank", bank,
+                            "currentRouteJp", routeJp
+                    ));
+                }
             }
+            ci.cancel();
         } else if (content.startsWith("* [!] A k Button Blessing k has spawned")) {
             MicroTimerManager.blessingTimer = 1200;
+        } else if (content.startsWith("* + | >>") && mod.getBoolConfig("others.autoWelcome")) {
+            for (Pattern p : AUTOWELCOME_PATTERNS) {
+                Matcher m = p.matcher(content);
+                if (m.find() && !m.group(1).equals(mc.player.getGameProfile().name())) {
+                    mod.scheduleTask(rand.nextInt(30) + 10, () -> {
+                        if (mc.getConnection() != null) {
+                            mc.getConnection().sendCommand("welcome");
+                        }
+                    });
+                    break;
+                }
+            }
         }
 
-        if (content.startsWith("* Run started!") && (ItemCooldownManager.lastAdded.equals("Swap Crystal") || ItemCooldownManager.lastAdded.equals("Freeze Ray") || ItemCooldownManager.lastAdded.equals("Lasso"))) {
+        if (content.startsWith("* Run started!") && (ItemCooldownManager.RAYCAST_ITEMS.contains(ItemCooldownManager.lastAdded))) {
             ItemCooldownManager.currentCooldowns.remove(ItemCooldownManager.lastAdded);
             ItemCooldownManager.lastAdded = "";
         }

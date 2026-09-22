@@ -196,9 +196,9 @@ public class DPTBotConfigScreen extends Screen {
     }
 
     private void saveIPSettings() {
-        mod.setStringConfig("others.dptbotHost", this.hostInput.getValue());
+        mod.setStringConfig("others.dptbotHost", this.hostInput.getValue().strip());
         try {
-            mod.setIntConfig("others.dptbotPort", Integer.parseInt(this.portInput.getValue()));
+            mod.setIntConfig("others.dptbotPort", Integer.parseInt(this.portInput.getValue().strip()));
         } catch (NumberFormatException e) {
             // Handle invalid port input
         }
