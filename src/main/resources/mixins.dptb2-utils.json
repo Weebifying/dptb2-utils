@@ -8,12 +8,12 @@
     "defaultRequire": 0
   },
   "client": [
+    "EntityPlayerSPMixin",
+    "FontRendererMixin",
     "GuiNewChatMixin",
     "GuiPlayerTabOverlayMixin",
-    "FontRendererMixin",
     "RendererLivingEntityMixin",
-    "compat.PolyPatcher_FontRendererHookMixin",
-    "EntityPlayerSPMixin",
-    "RenderMixin"
+    "RenderMixin",
+    "compat.PolyPatcher_FontRendererHookMixin"
   ]
 }

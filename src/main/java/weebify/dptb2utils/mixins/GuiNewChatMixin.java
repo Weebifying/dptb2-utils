@@ -126,7 +126,7 @@ public class GuiNewChatMixin {
             triggerNotif("Door Switch!", "The DOOR has cycled! Which one is it now?", 0xFFAA00, sound);
         } else if (mod.getBoolConfig("others.autoCheer") && content.startsWith("* COMMUNITY GOAL!")) {
             mod.scheduleTask(rand.nextInt(26) + 5, () -> mc.thePlayer.sendChatMessage("/cheer"));
-        } else if (content.startsWith("* ➜ The BUTTON was just clicked")) {
+        } else if (content.startsWith("* ➜ The BUTTON was pressed")) {
             ButtonTimerManager.buttonTimer = 0;
             if (content.endsWith("by CHAOS!")) {
                 if (ButtonTimerManager.isChaos) {

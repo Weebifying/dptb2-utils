@@ -159,6 +159,9 @@ public class GuiDPTBotConfig extends GuiScreen {
                 this.showError = false;
                 mod.scheduleTask(1, () -> new Thread(this::chooseFile).start());
                 break;
+            case 7:
+                button.displayString = String.format("Broadcast Sounds: %s", mod.toggleBoolConfig("others.broadcastSounds") ? "ON" : "OFF");
+                break;
             case 500:
                 this.showIPOptions = !this.showIPOptions;
                 button.displayString = String.format("Advanced Options: %s", this.showIPOptions ? "ON" : "OFF");

@@ -45,18 +45,25 @@ public class RendererLivingEntityMixin<T extends EntityLivingBase> {
                 Tessellator tessellator = Tessellator.getInstance();
                 WorldRenderer worldRenderer = tessellator.getWorldRenderer();
 
-                GlStateManager.enableTexture2D();
-                GlStateManager.enableBlend();
-                GlStateManager.color(1.0F, 1.0F, 1.0F, 0.5F);
+                try {
+                    GlStateManager.enableTexture2D();
+                    GlStateManager.enableBlend();
+                    GlStateManager.tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
+                    GlStateManager.depthMask(false);
+                    GlStateManager.color(1.0F, 1.0F, 1.0F, 0.5F);
 
-                worldRenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-                worldRenderer.pos(iconX, iconY + 9, 0). tex(0, 1).endVertex();
-                worldRenderer.pos(iconX + 9, iconY + 9, 0). tex(1, 1).endVertex();
-                worldRenderer.pos(iconX + 9, iconY, 0).tex(1, 0).endVertex();
-                worldRenderer.pos(iconX, iconY, 0).tex(0, 0). endVertex();
-                tessellator.draw();
-
-                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+                    worldRenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+                    worldRenderer.pos(iconX, iconY + 9, 0). tex(0, 1).endVertex();
+                    worldRenderer.pos(iconX + 9, iconY + 9, 0). tex(1, 1).endVertex();
+                    worldRenderer.pos(iconX + 9, iconY, 0).tex(1, 0).endVertex();
+                    worldRenderer.pos(iconX, iconY, 0).tex(0, 0). endVertex();
+                    tessellator.draw();
+                } finally {
+                    GlStateManager.depthMask(true);
+                    GlStateManager.enableDepth();
+                    GlStateManager.disableBlend();
+                    GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+                }
             }
         }
     }
