@@ -93,7 +93,7 @@ public class DPTBotConfigScreen extends Screen {
         this.hostInput.active = true;
         this.addRenderableWidget(this.hostInput);
 
-        this.portInput = new MultiLineEditBox(this.font, this.width / 2 + 80 - 75, 225, 150, 20, Component.nullToEmpty("Websocket Port"), Component.nullToEmpty(mod.getStringConfig("others.dptbotPort")));
+        this.portInput = new MultiLineEditBox(this.font, this.width / 2 + 80 - 75, 225, 150, 20, Component.nullToEmpty("Websocket Port"), Component.nullToEmpty(Integer.toString(mod.getIntConfig("others.dptbotPort"))));
         this.portInput.setValue(Integer.toString(mod.getIntConfig("others.dptbotPort")));
         this.portInput.visible = false;
         this.portInput.active = true;
