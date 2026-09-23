@@ -434,7 +434,7 @@ public class DPTB2Utils implements ClientModInitializer {
 			this.isRamper = false;
 			if (this.websocketClient != null && this.websocketClient.isOpen()) {
 				LOGGER.info("Closing Websocket connection to wss://{}:{}", host, port);
-				this.websocketClient.closeBlocking();
+				this.websocketClient.close();
 			}
 		}
 	}

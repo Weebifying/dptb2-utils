@@ -247,7 +247,7 @@ public class ChatComponentMixin {
                 }
             } else {
                 // * [WPTB] 2 | 5,525 | 243,535 | Stargazer
-                Pattern p = Pattern.compile("\\* \\[WPTB] (\\d) \\| ([\\d,]+) \\| ([\\d,]+) \\| (\\w+)");
+                Pattern p = Pattern.compile("\\* \\[WPTB] (\\d) \\| ([\\d,]+) \\| ([\\d,]+) \\| ([\\w\\s?!&]+)");
                 Matcher m = p.matcher(content);
                 if (mod.websocketClient != null && m.find()) {
                     mod.currentMap = Integer.parseInt(m.group(1));

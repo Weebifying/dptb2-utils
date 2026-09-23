@@ -106,9 +106,6 @@ public class ItemCooldownManager {
         if (Items.NAME_MAP.containsKey(itemName) && !currentCooldowns.containsKey(itemName)) {
             currentCooldowns.put(itemName, Items.NAME_MAP.get(itemName).cooldown);
             lastAdded = itemName;
-            if (ItemCooldownManager.RAYCAST_ITEMS.contains(itemName)) {
-                lastRaycast = itemName;
-            }
         }
     }
 
@@ -137,8 +134,12 @@ public class ItemCooldownManager {
                     double y = player.getY();
                     double z = player.getZ();
                     if (!isInPkCiv(x, y, z)) {
-                        if ((itemName.equals("Immune Apple") || !isInSpawn(x, y, z)) && isInMap(x, y, z) && !RAYCAST_ITEMS.contains(itemName)) {
-                            addCooldown(itemName);
+                        if ((itemName.equals("Immune Apple") || !isInSpawn(x, y, z)) && isInMap(x, y, z)) {
+                            if (RAYCAST_ITEMS.contains(itemName)) {
+                                lastRaycast = itemName;
+                            } else {
+                                addCooldown(itemName);
+                            }
                         }
                     }
                 }
@@ -154,7 +155,7 @@ public class ItemCooldownManager {
                 } else {
                     currentCooldowns.remove(itemName);
                     if (ItemCooldownManager.RAYCAST_ITEMS.contains(itemName)) {
-                        lastRaycast = "";
+                        lastRaycast = ""; // probably useless actually but i dont wanna think rn
                     }
                 }
             }
