@@ -268,7 +268,7 @@ public class ChatComponentMixin {
         } else if (content.startsWith("* + | >>") && mod.getBoolConfig("others.autoWelcome")) {
             for (Pattern p : AUTOWELCOME_PATTERNS) {
                 Matcher m = p.matcher(content);
-                if (m.find() && !m.group(1).equals(mc.player.getGameProfile().name())) {
+                if (m.find() && !m.group(1).equals(mc.player.getGameProfile().getName())) {
                     mod.scheduleTask(rand.nextInt(30) + 10, () -> {
                         if (mc.getConnection() != null) {
                             mc.getConnection().sendCommand("welcome");

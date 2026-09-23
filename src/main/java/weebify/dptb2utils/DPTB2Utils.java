@@ -377,7 +377,7 @@ public class DPTB2Utils implements ClientModInitializer {
 		if (mc.player != null) {
 			if (websocketClient != null && websocketClient.isOpen()) {
 				try {
-					websocketClient.sendModMessage("playerBroadcast", Map.of("text", msg, "name", mc.player.getGameProfile().name(), "private", this.getBoolConfig("others.incognito")));
+					websocketClient.sendModMessage("playerBroadcast", Map.of("text", msg, "name", mc.player.getGameProfile().getName(), "private", this.getBoolConfig("others.incognito")));
 					if (!this.getBoolConfig("others.broadcastChat")) {
 						mc.player.displayClientMessage(Component.literal("Broadcast message: " + msg).withStyle(ChatFormatting.GREEN), false);
 					}
@@ -444,7 +444,7 @@ public class DPTB2Utils implements ClientModInitializer {
 		LOGGER.info("isInDPTB2: {}, consentRamper: {}", this.isInDPTB2, this.getBoolConfig("others.consentRamper"));
 		if (this.isInDPTB2 && this.getBoolConfig("others.discordRamper")) {
 			if (websocketClient != null && websocketClient.isOpen()) {
-				websocketClient.sendModMessage("reassessConsent", Map.of("name", mc.player != null ? mc.player.getGameProfile().name() : "Unknown", "consent", this.getBoolConfig("others.consentRamper")));
+				websocketClient.sendModMessage("reassessConsent", Map.of("name", mc.player != null ? mc.player.getGameProfile().getName() : "Unknown", "consent", this.getBoolConfig("others.consentRamper")));
 			}
 		} else {
 			this.isRamper = false;

@@ -4,8 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-//import net.minecraft.client.gl.ShaderProgramKeys;
-import net.minecraft.client.renderer.entity.player.AvatarRenderer;
+//import net.minecraft.client.gl.ShaderProgramKeys;=
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.util.CommonColors;
 import net.minecraft.core.BlockPos;

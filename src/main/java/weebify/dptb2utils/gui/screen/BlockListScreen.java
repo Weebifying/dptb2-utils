@@ -1,7 +1,6 @@
 package weebify.dptb2utils.gui.screen;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -10,8 +9,6 @@ import net.minecraft.client.gui.components.AbstractScrollArea;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonColors;
-
-import org.jspecify.annotations.NonNull;
 
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.utils.BlockListManager;
@@ -327,10 +324,9 @@ public class BlockListScreen extends Screen {
     }
 
     @Override
-    public void render(@NonNull GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         int halfWidth = this.width / 2;
 
-        // ── list background fills ──
         if (discList != null) {
             graphics.fill(discList.getX(), discList.getY(),
                     discList.getX() + discList.getWidth(),
@@ -403,20 +399,18 @@ public class BlockListScreen extends Screen {
             graphics.enableScissor(getX(), getY(), getX() + getWidth(), getY() + getHeight());
             this.drawContent(graphics, mouseX, mouseY);
             graphics.disableScissor();
-            this.renderScrollbar(graphics, mouseX, mouseY);
+            this.renderScrollbar(graphics);
         }
 
         @Override
         protected void updateWidgetNarration(NarrationElementOutput builder) {}
 
         @Override
-        public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
-            double mouseX = click.x();
-            double mouseY = click.y();
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
 
             if (!this.isMouseOver(mouseX, mouseY)) return false;
 
-            if (updateScrolling(click)) {
+            if (updateScrolling(mouseX, mouseY, button)) {
                 return true;
             }
 
@@ -432,7 +426,7 @@ public class BlockListScreen extends Screen {
                     return true;
                 }
             }
-            return super.mouseClicked(click, doubled);
+            return super.mouseClicked(mouseX, mouseY, button);
         }
 
         @Override

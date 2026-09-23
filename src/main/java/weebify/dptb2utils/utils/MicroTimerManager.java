@@ -1,12 +1,12 @@
 package weebify.dptb2utils.utils;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
+import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.CommonColors;
 
 import java.util.ArrayList;
@@ -143,11 +143,13 @@ public class MicroTimerManager {
             }
         });
 
-        HudElementRegistry.attachElementAfter(
-                VanillaHudElements.HOTBAR,
-                Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "micro_timer"),
-                MicroTimerManager::renderMicroTimer
-        );
+        HudLayerRegistrationCallback.EVENT.register((drawer) -> {
+            drawer.attachLayerAfter(
+                    IdentifiedLayer.HOTBAR_AND_BARS,
+                    ResourceLocation.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "micro_timer"),
+                    MicroTimerManager::renderMicroTimer
+            );
+        });
     }
 
     private static void renderMicroTimer(GuiGraphics graphics, DeltaTracker renderTickCounter) {

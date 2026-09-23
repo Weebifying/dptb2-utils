@@ -2,7 +2,6 @@ package weebify.dptb2utils.gui.widget;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -110,11 +109,7 @@ public class DraggableMicroTimer extends AbstractWidget {
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
-        double mouseX = click.x();
-        double mouseY = click.y();
-        int button = click.button();
-
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (this.isMouseOver(mouseX, mouseY) && button == 0) {
             dragging = true;
             dragOffsetX = (int)(mouseX - this.getX());
@@ -125,8 +120,7 @@ public class DraggableMicroTimer extends AbstractWidget {
     }
 
     @Override
-    public boolean mouseReleased(MouseButtonEvent click) {
-        int button = click.button();
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (dragging && button == 0) {
             dragging = false;
             return true;
@@ -135,9 +129,7 @@ public class DraggableMicroTimer extends AbstractWidget {
     }
 
     @Override
-    public boolean mouseDragged(MouseButtonEvent click, double dx, double dy) {
-        double mouseX = click.x();
-        double mouseY = click.y();
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dx, double dy) {
         if (dragging) {
             Minecraft client = Minecraft.getInstance();
             int newX = (int)(mouseX - dragOffsetX);

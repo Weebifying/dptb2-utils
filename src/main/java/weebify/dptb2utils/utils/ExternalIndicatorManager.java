@@ -5,7 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.gui.widget.NotificationToast;
 
@@ -52,8 +52,8 @@ public class ExternalIndicatorManager {
             Files.copy(file.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
             NativeImage image = NativeImage.read((new FileInputStream(dest)));
-            Identifier id = Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, String.format("external/%s", fileName));
-            DynamicTexture texture = new DynamicTexture(id::toString, image);
+            ResourceLocation id = ResourceLocation.fromNamespaceAndPath(DPTB2Utils.MOD_ID, String.format("external/%s", fileName));
+            DynamicTexture texture = new DynamicTexture(image);
 
             registerTexture(id, texture);
             ExternalIndicatorManager.image = image;
@@ -67,13 +67,13 @@ public class ExternalIndicatorManager {
         }
     }
 
-    public static void registerTexture(Identifier id, AbstractTexture texture) {
+    public static void registerTexture(ResourceLocation id, AbstractTexture texture) {
         MC.execute(() -> {
             MC.getTextureManager().register(id, texture);
         });
     }
 
-    public static void unregisterTexture(Identifier id) {
+    public static void unregisterTexture(ResourceLocation id) {
         MC.execute(() -> {
             MC.getTextureManager().release(id);
         });

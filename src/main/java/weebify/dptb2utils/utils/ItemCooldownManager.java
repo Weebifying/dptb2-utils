@@ -1,16 +1,16 @@
 package weebify.dptb2utils.utils;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
+import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.gui.screen.ItemCooldownConfigScreen;
 
@@ -21,22 +21,22 @@ import java.util.Map;
 
 public class ItemCooldownManager {
     public enum Items {
-        BEAR_TRAP("Bear Trap", 600, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/trap.png")),
-        LANDMINE("Landmine", 600, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/landmine.png")),
-        BIRD("Bird", 400, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/bird.png")),
-        GROUND_POUND("Ground Pound", 600, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/pound.png")),
-        EXPLOSIVE_CAKE("Explosive Cake", 600, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/cake.png")),
-        REMOTE_ACTIVATION("Remote Activation", 400, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/remote.png")),
-        SMOKE_BOMB("Smoke Bomb", 400, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/smoke.png")),
-        FREEZE_RAY("Freeze Ray", 400, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/freeze.png")),
-        SWAP_CRYSTAL("Swap Crystal", 600, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/swap.png")),
-        IMMUNE_APPLE("Immune Apple", 600, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/immune.png")),
-        LASSO("Lasso", 400, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/lasso.png")),
-        FIREWORK("Firework", 600, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/firework.png"));
+        BEAR_TRAP("Bear Trap", 600, ResourceLocation.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/trap.png")),
+        LANDMINE("Landmine", 600, ResourceLocation.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/landmine.png")),
+        BIRD("Bird", 400, ResourceLocation.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/bird.png")),
+        GROUND_POUND("Ground Pound", 600, ResourceLocation.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/pound.png")),
+        EXPLOSIVE_CAKE("Explosive Cake", 600, ResourceLocation.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/cake.png")),
+        REMOTE_ACTIVATION("Remote Activation", 400, ResourceLocation.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/remote.png")),
+        SMOKE_BOMB("Smoke Bomb", 400, ResourceLocation.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/smoke.png")),
+        FREEZE_RAY("Freeze Ray", 400, ResourceLocation.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/freeze.png")),
+        SWAP_CRYSTAL("Swap Crystal", 600, ResourceLocation.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/swap.png")),
+        IMMUNE_APPLE("Immune Apple", 600, ResourceLocation.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/immune.png")),
+        LASSO("Lasso", 400, ResourceLocation.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/lasso.png")),
+        FIREWORK("Firework", 600, ResourceLocation.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/items/firework.png"));
 
         public final String name;
         public final int cooldown;
-        public final Identifier texture;
+        public final ResourceLocation texture;
         public static final Map<String, Items> NAME_MAP = new HashMap<>();
 
         static {
@@ -45,7 +45,7 @@ public class ItemCooldownManager {
             }
         }
 
-        Items(String name, int cooldown, Identifier texture) {
+        Items(String name, int cooldown, ResourceLocation texture) {
             this.name = name;
             this.cooldown = cooldown;
             this.texture = texture;
@@ -161,11 +161,13 @@ public class ItemCooldownManager {
             }
         });
 
-        HudElementRegistry.attachElementAfter(
-                VanillaHudElements.HOTBAR,
-                Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "item_cooldowns"),
-                ItemCooldownManager::renderItemCooldowns
-        );
+        HudLayerRegistrationCallback.EVENT.register((drawer) -> {
+            drawer.attachLayerAfter(
+                    IdentifiedLayer.HOTBAR_AND_BARS,
+                    ResourceLocation.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "item_cooldowns"),
+                    ItemCooldownManager::renderItemCooldowns
+            );
+        });
     }
 
     private static void renderItemCooldowns(GuiGraphics graphics, DeltaTracker renderTickCounter) {
@@ -211,7 +213,7 @@ public class ItemCooldownManager {
 
                 int x = alignLeft ? posX + padding : posX - padding - 16;
                 int y = posY + padding + i * lineHeight;
-                graphics.blit(RenderPipelines.GUI_TEXTURED, item.texture, x, y, 0, 0, 16, 16, 16, 16);
+                graphics.blit(RenderType::guiTextured, item.texture, x, y, 0, 0, 16, 16, 16, 16);
 
                 int barWidth = (int) (0.2 * Items.NAME_MAP.get(itemName).cooldown);
                 int barHeight = 8;

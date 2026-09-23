@@ -2,7 +2,6 @@ package weebify.dptb2utils.gui.widget;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.components.AbstractScrollArea;
@@ -43,7 +42,7 @@ public class ScrollableBootsList extends AbstractScrollArea {
     @Override
     protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         drawContent(graphics);
-        renderScrollbar(graphics, mouseX, mouseY);
+        renderScrollbar(graphics);
     }
 
     @Override
@@ -52,16 +51,16 @@ public class ScrollableBootsList extends AbstractScrollArea {
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
-        if (updateScrolling(click)) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (updateScrolling(mouseX, mouseY, button)) {
             return true;
         }
-        return super.mouseClicked(click, doubled);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
-    public void onRelease(MouseButtonEvent click) {
-        super.onRelease(click);
+    public void onRelease(double mouseX, double mouseY) {
+        super.onRelease(mouseX, mouseY);
     }
 
     @Override

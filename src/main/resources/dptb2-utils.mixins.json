@@ -13,7 +13,7 @@
     "ChatComponentMixin",
     "ClientPacketListenerMixin",
     "GuiGraphicsInvoker",
-    "LabelCommandRendererCommandsMixin",
+    "EntityRendererMixin",
     "PlayerTabOverlayMixin"
   ],
   "mixins": [

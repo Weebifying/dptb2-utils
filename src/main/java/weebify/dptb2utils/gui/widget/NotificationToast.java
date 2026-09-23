@@ -1,12 +1,9 @@
 package weebify.dptb2utils.gui.widget;
 
 import net.minecraft.client.Minecraft;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.toasts.Toast.Visibility;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
@@ -14,7 +11,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.CommonColors;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 import weebify.dptb2utils.DPTB2Utils;
@@ -22,8 +19,8 @@ import weebify.dptb2utils.DPTB2Utils;
 import java.util.List;
 
 public class NotificationToast implements Toast {
-    private static final Identifier TEXTURE = Identifier.withDefaultNamespace("toast/advancement");
-    private static final Identifier ICON = Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/notif.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.withDefaultNamespace("toast/advancement");
+    private static final ResourceLocation ICON = ResourceLocation.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "textures/notif.png");
     public static final float TITLE_PHASE_MS = 2500;
     public static final float DESC_PHASE_MS = 4000;
     public static final float FADE_DURATION = 300;
@@ -80,7 +77,7 @@ public class NotificationToast implements Toast {
 
     @Override
     public void render(GuiGraphics graphics, Font textRenderer, long startTime) {
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE, 0, 0, this.width(), this.height());
+        graphics.blitSprite(RenderType::guiTextured, TEXTURE, 0, 0, this.width(), this.height());
 
         List<FormattedCharSequence> titleList = textRenderer.split(FormattedText.of(this.title), 125);
         List<FormattedCharSequence> descList = textRenderer.split(FormattedText.of(this.description), 125);
@@ -116,6 +113,6 @@ public class NotificationToast implements Toast {
             }
         }
 
-        graphics.blit(RenderPipelines.GUI_TEXTURED, ICON, 8, 8, 0, 0, 16, 16, 16, 16, this.color & CommonColors.WHITE | 0xFF000000);
+        graphics.blit(RenderType::guiTextured, ICON, 8, 8, 0, 0, 16, 16, 16, 16, this.color & CommonColors.WHITE | 0xFF000000);
     }
 }

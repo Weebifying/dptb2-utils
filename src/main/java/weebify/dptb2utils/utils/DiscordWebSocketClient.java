@@ -110,7 +110,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
 
         User user = MC.getUser();
         String accessToken = user.getAccessToken();
-        String profileId = MC.player.getGameProfile().id().toString().replace("-", "");
+        String profileId = MC.player.getGameProfile().getId().toString().replace("-", "");
 
         String body = GSON.toJson(Map.of(
                 "accessToken", accessToken,
@@ -142,9 +142,9 @@ public class DiscordWebSocketClient extends WebSocketClient {
         if (MC.player == null) return;
 
         this.sendModMessage("greet", Map.of(
-                "name", MC.player.getGameProfile().name(),
+                "name", MC.player.getGameProfile().getName(),
                 "currentName", MC.player.getDisplayName().getString(),
-                "id", MC.player.getGameProfile().id().toString().replace("-", ""),
+                "id", MC.player.getGameProfile().getId().toString().replace("-", ""),
                 "version", DPTB2Utils.VERSION,
                 "mc", MC.getLaunchedVersion(),
                 "serverId", serverId
@@ -157,9 +157,9 @@ public class DiscordWebSocketClient extends WebSocketClient {
         if (MC.player == null) return;
 
         this.sendModMessage("greet", Map.of(
-                "name", MC.player.getGameProfile().name(),
+                "name", MC.player.getGameProfile().getName(),
                 "currentName", MC.player.getDisplayName().getString(),
-                "id", MC.player.getGameProfile().id().toString().replace("-", ""),
+                "id", MC.player.getGameProfile().getId().toString().replace("-", ""),
                 "version", DPTB2Utils.VERSION,
                 "mc", MC.getLaunchedVersion(),
                 "trustedKey", trustedKey
@@ -208,11 +208,11 @@ public class DiscordWebSocketClient extends WebSocketClient {
                 if (mod.getBoolConfig("others.consentRamper")) {
                     MC.getToastManager().addToast(new NotificationToast("DPTBot", text, col != null ? col : 0xFFC8FFC8, SoundEvents.BAT_TAKEOFF));
                     mod.isRamper = true;
-                    this.sendModMessage("confirm", Map.of("text", MC.player != null ? MC.player.getGameProfile().name() : "Unknown"));
+                    this.sendModMessage("confirm", Map.of("text", MC.player != null ? MC.player.getGameProfile().getName() : "Unknown"));
                 } else {
                     MC.getToastManager().addToast(new NotificationToast("DPTBot", "Ramper request denied.", CommonColors.RED, SoundEvents.BAT_TAKEOFF));
                     mod.isRamper = false;
-                    this.sendModMessage("deny", Map.of("text", MC.player != null ? MC.player.getGameProfile().name() : "Unknown"));
+                    this.sendModMessage("deny", Map.of("text", MC.player != null ? MC.player.getGameProfile().getName() : "Unknown"));
                 }
             } else if ("revoke".equalsIgnoreCase(type)) {
                 if (mod.getBoolConfig("others.discordRamper")) {
@@ -255,7 +255,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
                 String id = (String) data.get("id");
                 if (MC.getConnection() != null) {
                     List<String> players = MC.getConnection().getOnlinePlayers().stream()
-                            .map(player -> player.getProfile().name())
+                            .map(player -> player.getProfile().getName())
                             .toList();
                     this.sendModMessage("tabList", Map.of("id", id, "players", players));
                 }

@@ -1,15 +1,14 @@
 package weebify.dptb2utils.gui.screen;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineEditBox;
-import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonColors;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.SystemUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -76,11 +75,11 @@ public class DPTBotConfigScreen extends Screen {
 //            btn.setMessage(Text.of(String.format("Private Chat: %s", mod.toggleBoolConfig("others.incognito") ? "ON" : "OFF")));
 //        }).dimensions(this.width/2 - 80 - 75, 150, 150, 20).build());
 
-        this.discColorInput = MultiLineEditBox.builder().setX(this.width / 2 - 80 - 75).setY(150).setPlaceholder(Component.nullToEmpty("[DISC] Color")).build(this.font, 150, 20, Component.nullToEmpty(mod.getStringConfig("others.discColor")));
+        this.discColorInput = new MultiLineEditBox(this.font, this.width / 2 - 80 - 75, 150, 150, 20, Component.nullToEmpty("[DISC] Color"), Component.nullToEmpty(mod.getStringConfig("others.discColor")));
         this.discColorInput.setValue(mod.getStringConfig("others.discColor"));
         this.addRenderableWidget(this.discColorInput);
 
-        this.wptbColorInput = MultiLineEditBox.builder().setX(this.width / 2 - 80 - 75).setY(175).setPlaceholder(Component.nullToEmpty("[WPTB] Color")).build(this.font, 150, 20, Component.nullToEmpty(mod.getStringConfig("others.wptbColor")));
+        this.wptbColorInput = new MultiLineEditBox(this.font, this.width / 2 - 80 - 75, 175, 150, 20, Component.nullToEmpty("[WPTB] Color"), Component.nullToEmpty(mod.getStringConfig("others.wptbColor")));
         this.wptbColorInput.setValue(mod.getStringConfig("others.wptbColor"));
         this.addRenderableWidget(this.wptbColorInput);
 
@@ -88,13 +87,13 @@ public class DPTBotConfigScreen extends Screen {
             btn.setMessage(Component.nullToEmpty(String.format("Broadcast Sounds: %s", mod.toggleBoolConfig("others.broadcastSounds") ? "ON" : "OFF")));
         }).bounds(this.width/2 - 80 - 75, 200, 150, 20).build());
 
-        this.hostInput = MultiLineEditBox.builder().setX(this.width / 2 - 80 - 75).setY(225).setPlaceholder(Component.nullToEmpty("Websocket Host")).build(this.font, 150, 20, Component.nullToEmpty(mod.getStringConfig("others.dptbotHost")));
+        this.hostInput = new MultiLineEditBox(this.font, this.width / 2 - 80 - 75, 225, 150, 20, Component.nullToEmpty("Websocket Host"), Component.nullToEmpty(mod.getStringConfig("others.dptbotHost")));
         this.hostInput.setValue(mod.getStringConfig("others.dptbotHost"));
         this.hostInput.visible = false;
         this.hostInput.active = true;
         this.addRenderableWidget(this.hostInput);
 
-        this.portInput = MultiLineEditBox.builder().setX(this.width / 2 + 80 - 75).setY(225).setPlaceholder(Component.nullToEmpty("Websocket Port")).build(this.font, 150, 20, Component.nullToEmpty(Integer.toString(mod.getIntConfig("others.dptbotPort"))));
+        this.portInput = new MultiLineEditBox(this.font, this.width / 2 + 80 - 75, 225, 150, 20, Component.nullToEmpty("Websocket Port"), Component.nullToEmpty(mod.getStringConfig("others.dptbotPort")));
         this.portInput.setValue(Integer.toString(mod.getIntConfig("others.dptbotPort")));
         this.portInput.visible = false;
         this.portInput.active = true;
@@ -149,7 +148,7 @@ public class DPTBotConfigScreen extends Screen {
                 DPTB2Utils.LOGGER.info("Successfully registered external indicator image.");
                 String name = finalSelected.getName();
                 if (mod.getStringConfig("others.indicatorPath").startsWith("external/") && !mod.getStringConfig("others.indicatorPath").equals("external/" + name)) {
-                    ExternalIndicatorManager.unregisterTexture(Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, mod.getStringConfig("others.indicatorPath")));
+                    ExternalIndicatorManager.unregisterTexture(ResourceLocation.fromNamespaceAndPath(DPTB2Utils.MOD_ID, mod.getStringConfig("others.indicatorPath")));
                 }
                 this.mod.setStringConfig("others.indicatorPath", "external/" + name);
                 DPTB2Utils.LOGGER.info("Updated indicator path in config to: {}", "external/" + name);
@@ -173,8 +172,8 @@ public class DPTBotConfigScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(KeyEvent input) {
-        boolean res = super.keyPressed(input);
+        public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        boolean res = super.keyPressed(keyCode, scanCode, modifiers);
         this.saveIPSettings();
         return res;
     }
@@ -192,7 +191,7 @@ public class DPTBotConfigScreen extends Screen {
             graphics.drawCenteredString(this.font, Component.nullToEmpty("Error loading custom indicator image:" + ExternalIndicatorManager.errorMessage), this.width/2, this.height - 70, CommonColors.RED);
         }
 
-        ((GuiGraphicsInvoker)graphics).invokeInnerBlit(RenderPipelines.GUI_TEXTURED, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, this.mod.getStringConfig("others.indicatorPath")), this.width/2 + 160, this.width/2 + 180, 125, 145, 0.f, 1.f, 0.f, 1.f, CommonColors.WHITE);
+        ((GuiGraphicsInvoker)graphics).invokeInnerBlit(RenderType::guiTextured, ResourceLocation.fromNamespaceAndPath(DPTB2Utils.MOD_ID, this.mod.getStringConfig("others.indicatorPath")), this.width/2 + 160, this.width/2 + 180, 125, 145, 0.f, 1.f, 0.f, 1.f, CommonColors.WHITE);
     }
 
     private void saveIPSettings() {

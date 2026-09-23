@@ -1,8 +1,8 @@
 package weebify.dptb2utils.utils;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
+import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.DeltaTracker;
@@ -10,7 +10,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonColors;
 import net.minecraft.ChatFormatting;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import weebify.dptb2utils.DPTB2Utils;
 import weebify.dptb2utils.gui.screen.ButtonTimerConfigScreen;
 
@@ -60,11 +60,13 @@ public class ButtonTimerManager {
             }
         });
 
-        HudElementRegistry.attachElementAfter(
-                VanillaHudElements.HOTBAR,
-                Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "button_timer"),
-                ButtonTimerManager::renderButtonTimer
-        );
+        HudLayerRegistrationCallback.EVENT.register((drawer) -> {
+            drawer.attachLayerAfter(
+                    IdentifiedLayer.HOTBAR_AND_BARS,
+                    ResourceLocation.fromNamespaceAndPath(DPTB2Utils.MOD_ID, "button_timer"),
+                    ButtonTimerManager::renderButtonTimer
+            );
+        });
     }
 
     private static void renderButtonTimer(GuiGraphics graphics, DeltaTracker renderTickCounter) {
