@@ -3,7 +3,7 @@ package weebify.dptb2utils.gui.widget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.network.chat.Component;
@@ -30,7 +30,7 @@ public class DraggableButtonTimer extends AbstractWidget {
     }
 
     @Override
-    protected void extractWidgetRenderState(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(@NonNull GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         // Draw centered text manually
         Font renderer = Minecraft.getInstance().font;
         DPTB2Utils mod = DPTB2Utils.getInstance();
@@ -43,7 +43,7 @@ public class DraggableButtonTimer extends AbstractWidget {
                     0x63000000
             );
         }
-        graphics.text(
+        graphics.drawString(
                 renderer, getMessage(),
                 getX() + 4,
                 getY() + 4,

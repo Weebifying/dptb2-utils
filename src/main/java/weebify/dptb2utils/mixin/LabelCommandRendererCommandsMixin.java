@@ -2,6 +2,7 @@ package weebify.dptb2utils.mixin;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.feature.NameTagFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -9,12 +10,11 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonColors;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -49,7 +49,7 @@ public class LabelCommandRendererCommandsMixin {
                 vc.addVertex(matrix4f, x + 9, yOffset, 0).setUv(1, 0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(lightCoords).setNormal(0.f, 1.f, 0.f).setColor(0x80FFFFFF);
 
                 if (seeThrough) {
-                    int brightLight = LightCoordsUtil.lightCoordsWithEmission(lightCoords, 2);
+                    int brightLight = LightTexture.lightCoordsWithEmission(lightCoords, 2);
                     RenderType rl2 = RenderTypes.text(id);
                     VertexConsumer vc2 = vertexConsumers.getBuffer(rl2);
 

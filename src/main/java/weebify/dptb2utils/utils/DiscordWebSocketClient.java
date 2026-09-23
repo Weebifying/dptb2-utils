@@ -246,7 +246,7 @@ public class DiscordWebSocketClient extends WebSocketClient {
                 }
 
                 if (MC.player != null && mod.getBoolConfig("others.broadcastChat")) {
-                    MC.player.sendSystemMessage(Component.literal(sb.toString()));
+                    MC.player.displayClientMessage(Component.literal(sb.toString()), false);
                     if (!mod.getBoolConfig("others.broadcastToast") && mod.getBoolConfig("others.broadcastSounds")) {
                         MC.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_PLING.value(), currentPitch, 1));
                     }

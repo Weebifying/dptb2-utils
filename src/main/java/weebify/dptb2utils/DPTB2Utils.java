@@ -8,7 +8,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.api.ClientModInitializer;
 
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
@@ -288,7 +288,7 @@ public class DPTB2Utils implements ClientModInitializer {
 
 		ClientCommandRegistrationCallback.EVENT.register(((dispatcher, buildContext) -> {
 			LiteralCommandNode<FabricClientCommandSource> c = dispatcher.register(
-					ClientCommands.literal("boots")
+					ClientCommandManager.literal("boots")
 							.executes(context -> {
 								this.openBoots = true;
 								mc.getConnection().sendCommand("backpack");
@@ -298,7 +298,7 @@ public class DPTB2Utils implements ClientModInitializer {
 		}));
 		ClientCommandRegistrationCallback.EVENT.register(((dispatcher, buildContext) -> {
 			LiteralCommandNode<FabricClientCommandSource> c = dispatcher.register(
-					ClientCommands.literal("routes")
+					ClientCommandManager.literal("routes")
 							.executes(context -> {
 								this.openRoutes = true;
 								mc.getConnection().sendCommand("backpack");
@@ -329,11 +329,11 @@ public class DPTB2Utils implements ClientModInitializer {
 
 	private void commandToggleBc(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext buildContext) {
 		LiteralCommandNode<FabricClientCommandSource> c = dispatcher.register(
-				ClientCommands.literal("togglebc")
+				ClientCommandManager.literal("togglebc")
 						.executes(context -> {
 							this.isToggleBc = !this.isToggleBc;
 							if (mc.player != null) {
-								mc.player.sendSystemMessage(Component.nullToEmpty("Automatic chat broadcast is now " + (this.isToggleBc ? "§a§lenabled§r!" : "§c§ldisabled§r!")));
+								mc.player.displayClientMessage(Component.nullToEmpty("Automatic chat broadcast is now " + (this.isToggleBc ? "§a§lenabled§r!" : "§c§ldisabled§r!")), false);
 							}
 							return 1;
 						})
@@ -342,7 +342,7 @@ public class DPTB2Utils implements ClientModInitializer {
 
 	private void commandModMenu(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext buildContext) {
 		LiteralCommandNode<FabricClientCommandSource> c = dispatcher.register(
-				ClientCommands.literal("dptb2")
+				ClientCommandManager.literal("dptb2")
 						.executes(graphics -> {
 							this.displayScreen = true; // necessary to open the config screen 1 tick late, stupid shit idk why
 							return 1;
@@ -379,22 +379,22 @@ public class DPTB2Utils implements ClientModInitializer {
 				try {
 					websocketClient.sendModMessage("playerBroadcast", Map.of("text", msg, "name", mc.player.getGameProfile().name(), "private", this.getBoolConfig("others.incognito")));
 					if (!this.getBoolConfig("others.broadcastChat")) {
-						mc.player.sendSystemMessage(Component.literal("Broadcast message: " + msg).withStyle(ChatFormatting.GREEN));
+						mc.player.displayClientMessage(Component.literal("Broadcast message: " + msg).withStyle(ChatFormatting.GREEN), false);
 					}
 				} catch (Exception e) {
 					LOGGER.error("Failed to send broadcast message!", e);
-					mc.player.sendSystemMessage(Component.literal("Failed to send broadcast message!").withStyle(ChatFormatting.RED));
+					mc.player.displayClientMessage(Component.literal("Failed to send broadcast message!").withStyle(ChatFormatting.RED), false);
 				}
 			} else {
-				mc.player.sendSystemMessage(Component.literal("Not connected to DPTBot!").withStyle(ChatFormatting.RED));
+				mc.player.displayClientMessage(Component.literal("Not connected to DPTBot!").withStyle(ChatFormatting.RED), false);
 			}
 		}
 	}
 
 	private void commandBroadcast(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext buildContext) {
 		LiteralCommandNode<FabricClientCommandSource> c = dispatcher.register(
-				ClientCommands.literal("broadcast")
-						.then(ClientCommands.argument("message", StringArgumentType.greedyString())
+				ClientCommandManager.literal("broadcast")
+						.then(ClientCommandManager.argument("message", StringArgumentType.greedyString())
 								// could be faulty, need urgent testing
 								.suggests((ctx, builder) -> {
 									int lastSpace = builder.getRemaining().lastIndexOf(' ');
@@ -408,8 +408,8 @@ public class DPTB2Utils implements ClientModInitializer {
 					)
 		);
 		dispatcher.register(
-				ClientCommands.literal("bc")
-						.then(ClientCommands.argument("message", StringArgumentType.greedyString())
+				ClientCommandManager.literal("bc")
+						.then(ClientCommandManager.argument("message", StringArgumentType.greedyString())
 								.suggests((ctx, builder) -> {
 									int lastSpace = builder.getRemaining().lastIndexOf(' ');
 									SuggestionsBuilder sb = builder.createOffset(builder.getStart() + lastSpace + 1);

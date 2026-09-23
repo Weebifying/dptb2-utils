@@ -12,7 +12,7 @@
     "AbstractContainerScreenMixin",
     "ChatComponentMixin",
     "ClientPacketListenerMixin",
-    "GuiGraphicsExtractorInvoker",
+    "GuiGraphicsInvoker",
     "LabelCommandRendererCommandsMixin",
     "PlayerTabOverlayMixin"
   ],

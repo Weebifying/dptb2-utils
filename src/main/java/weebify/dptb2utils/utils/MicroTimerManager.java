@@ -4,7 +4,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonColors;
@@ -150,7 +150,7 @@ public class MicroTimerManager {
         );
     }
 
-    private static void renderMicroTimer(GuiGraphicsExtractor graphics, DeltaTracker renderTickCounter) {
+    private static void renderMicroTimer(GuiGraphics graphics, DeltaTracker renderTickCounter) {
         Minecraft mc = Minecraft.getInstance();
         DPTB2Utils mod = DPTB2Utils.getInstance();
 
@@ -190,7 +190,7 @@ public class MicroTimerManager {
             }
 
             int cursorY = posY + 4;
-            graphics.text(
+            graphics.drawString(
                     mc.font, String.format("%s%s§r (%s§r)", eventPrefix, lastEvent, eventTime),
                     posX + 4,
                     cursorY,
@@ -199,7 +199,7 @@ public class MicroTimerManager {
             );
 
             cursorY += mc.font.lineHeight + 3;
-            graphics.text(
+            graphics.drawString(
                     mc.font, String.format("%s%s", blessingPrefix, blessingTime),
                     posX + 4,
                     cursorY,
@@ -209,7 +209,7 @@ public class MicroTimerManager {
 
             if (showTrafficDoor) {
                 cursorY += mc.font.lineHeight + 3;
-                graphics.text(
+                graphics.drawString(
                         mc.font, String.format("%s%s§r (%s§r)", trafficPrefix, currentTraffic, trafficTime),
                         posX + 4,
                         cursorY,
@@ -217,7 +217,7 @@ public class MicroTimerManager {
                         mod.getBoolConfig("microTimer.textShadow")
                 );
                 cursorY += mc.font.lineHeight + 3;
-                graphics.text(
+                graphics.drawString(
                         mc.font, String.format("%s%s§r (%s§r)", doorPrefix, currentDoor, doorTime),
                         posX + 4,
                         cursorY,

@@ -3,7 +3,7 @@ package weebify.dptb2utils.gui.widget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.network.chat.Component;
@@ -57,7 +57,7 @@ public class DraggableMicroTimer extends AbstractWidget {
     }
 
     @Override
-    protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         Font renderer = Minecraft.getInstance().font;
         DPTB2Utils mod = DPTB2Utils.getInstance();
         if (mod.getBoolConfig("microTimer.renderBackground")) {
@@ -73,7 +73,7 @@ public class DraggableMicroTimer extends AbstractWidget {
         int cursorY = getY() + 4;
 
         // Event Line
-        graphics.text(
+        graphics.drawString(
                 renderer, String.format("%s%s§r (%s§r)", MicroTimerManager.eventPrefix, this.event, this.eventTime),
                 getX() + 4,
                 cursorY,
@@ -82,7 +82,7 @@ public class DraggableMicroTimer extends AbstractWidget {
         );
 
         cursorY += renderer.lineHeight + 3;
-        graphics.text(
+        graphics.drawString(
                 renderer, String.format("%s%s", MicroTimerManager.blessingPrefix, this.blessingTime),
                 getX() + 4,
                 cursorY,
@@ -91,7 +91,7 @@ public class DraggableMicroTimer extends AbstractWidget {
         );
 
         cursorY += renderer.lineHeight + 3;
-        graphics.text(
+        graphics.drawString(
                 renderer, String.format("%s%s§r (%s§r)", MicroTimerManager.trafficPrefix, MicroTimerManager.LIGHTS_LIST[0], this.trafficTime),
                 getX() + 4,
                 cursorY,
@@ -100,7 +100,7 @@ public class DraggableMicroTimer extends AbstractWidget {
         );
 
         cursorY += renderer.lineHeight + 3;
-        graphics.text(
+        graphics.drawString(
                 renderer, String.format("%s%s§r (%s§r)", MicroTimerManager.doorPrefix, "N/A", this.doorTime),
                 getX() + 4,
                 cursorY,

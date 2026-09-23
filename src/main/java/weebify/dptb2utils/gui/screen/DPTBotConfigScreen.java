@@ -2,7 +2,7 @@ package weebify.dptb2utils.gui.screen;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineEditBox;
@@ -15,7 +15,7 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import weebify.dptb2utils.DPTB2Utils;
-import weebify.dptb2utils.mixin.GuiGraphicsExtractorInvoker;
+import weebify.dptb2utils.mixin.GuiGraphicsInvoker;
 import weebify.dptb2utils.utils.ExternalIndicatorManager;
 
 import java.io.File;
@@ -180,19 +180,19 @@ public class DPTBotConfigScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
-        graphics.centeredText(this.font, this.title, this.width/2, 20, CommonColors.WHITE);
-        graphics.centeredText(this.font, String.format("isRamper: %b", mod.isRamper), this.width/2, this.height - 45 - 10, mod.isRamper ? 0xFF55FF55 : 0xFFFF5555);
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+        super.render(graphics, mouseX, mouseY, delta);
+        graphics.drawCenteredString(this.font, this.title, this.width/2, 20, CommonColors.WHITE);
+        graphics.drawCenteredString(this.font, String.format("isRamper: %b", mod.isRamper), this.width/2, this.height - 45 - 10, mod.isRamper ? 0xFF55FF55 : 0xFFFF5555);
 
-        graphics.text(this.font, Component.nullToEmpty("§8[§xDISC§8] §xWeebify§f: Example Discord broadcast!"), this.width/2 + 5, 154, DPTB2Utils.hexToInt(this.discColorInput.getValue()));
-        graphics.text(this.font, Component.nullToEmpty("§8[§yWPTB§8] §yWeebify§f: Example WPTB client broadcast!"), this.width/2 + 5, 179, DPTB2Utils.hexToInt(this.wptbColorInput.getValue()));
+        graphics.drawString(this.font, Component.nullToEmpty("§8[§xDISC§8] §xWeebify§f: Example Discord broadcast!"), this.width/2 + 5, 154, DPTB2Utils.hexToInt(this.discColorInput.getValue()));
+        graphics.drawString(this.font, Component.nullToEmpty("§8[§yWPTB§8] §yWeebify§f: Example WPTB client broadcast!"), this.width/2 + 5, 179, DPTB2Utils.hexToInt(this.wptbColorInput.getValue()));
 
         if (this.showError) {
-            graphics.centeredText(this.font, Component.nullToEmpty("Error loading custom indicator image:" + ExternalIndicatorManager.errorMessage), this.width/2, this.height - 70, CommonColors.RED);
+            graphics.drawCenteredString(this.font, Component.nullToEmpty("Error loading custom indicator image:" + ExternalIndicatorManager.errorMessage), this.width/2, this.height - 70, CommonColors.RED);
         }
 
-        ((GuiGraphicsExtractorInvoker)graphics).invokeInnerBlit(RenderPipelines.GUI_TEXTURED, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, this.mod.getStringConfig("others.indicatorPath")), this.width/2 + 160, this.width/2 + 180, 125, 145, 0.f, 1.f, 0.f, 1.f, CommonColors.WHITE);
+        ((GuiGraphicsInvoker)graphics).invokeInnerBlit(RenderPipelines.GUI_TEXTURED, Identifier.fromNamespaceAndPath(DPTB2Utils.MOD_ID, this.mod.getStringConfig("others.indicatorPath")), this.width/2 + 160, this.width/2 + 180, 125, 145, 0.f, 1.f, 0.f, 1.f, CommonColors.WHITE);
     }
 
     private void saveIPSettings() {

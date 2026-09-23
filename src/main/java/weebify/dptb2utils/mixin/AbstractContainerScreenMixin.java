@@ -2,11 +2,11 @@ package weebify.dptb2utils.mixin;
 
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonColors;
@@ -24,8 +24,8 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     @Unique
     private boolean opened = false;
 
-    @Inject(method = "extractRenderState", at = @At("TAIL"))
-    private void renderInject(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, CallbackInfo ci) {
+    @Inject(method = "render", at = @At("TAIL"))
+    private void renderInject(GuiGraphics graphics, int mouseX, int mouseY, float a, CallbackInfo ci) {
         AbstractContainerScreen that = (AbstractContainerScreen) (Object) this;
         Minecraft mc = Minecraft.getInstance();
         String title = that.getTitle().getString();
@@ -36,10 +36,10 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 
                 if (mod.openBoots) {
                     mod.openBoots = false;
-                    mc.gameMode.handleContainerInput(mc.player.containerMenu.containerId, 2, 0, ContainerInput.PICKUP, mc.player);
+                    mc.gameMode.handleInventoryMouseClick(mc.player.containerMenu.containerId, 2, 0, ClickType.PICKUP, mc.player);
                 } else if (mod.openRoutes) {
                     mod.openRoutes = false;
-                    mc.gameMode.handleContainerInput(mc.player.containerMenu.containerId, 3, 0, ContainerInput.PICKUP, mc.player);
+                    mc.gameMode.handleInventoryMouseClick(mc.player.containerMenu.containerId, 3, 0, ClickType.PICKUP, mc.player);
                 }
             }
         }
