@@ -6,7 +6,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.InteractionResult;
@@ -168,7 +168,7 @@ public class ItemCooldownManager {
         );
     }
 
-    private static void renderItemCooldowns(GuiGraphicsExtractor graphics, DeltaTracker renderTickCounter) {
+    private static void renderItemCooldowns(GuiGraphics graphics, DeltaTracker renderTickCounter) {
         Minecraft mc = Minecraft.getInstance();
         DPTB2Utils mod = DPTB2Utils.getInstance();
 
@@ -227,7 +227,7 @@ public class ItemCooldownManager {
                 int seconds = ticksLeft / 20;
                 String text = seconds + "s";
                 int textX = alignLeft ? barX + barWidth + 6 : barX - 6 - mc.font.width(text);
-                graphics.text(mc.font, text, textX, barY, 0xFFFFFFFF, mod.getBoolConfig("itemCooldown.textShadow"));
+                graphics.drawString(mc.font, text, textX, barY, 0xFFFFFFFF, mod.getBoolConfig("itemCooldown.textShadow"));
 
                 i++;
             }

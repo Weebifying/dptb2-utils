@@ -3,7 +3,7 @@ package weebify.dptb2utils.gui.widget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.components.AbstractScrollArea;
 import net.minecraft.util.FormattedCharSequence;
@@ -20,7 +20,7 @@ public class ScrollableBootsList extends AbstractScrollArea {
     private final int padding;
 
     public ScrollableBootsList(int x, int y, int width, int height, int lineHeight, int padding, List<Component> lines, Font textRenderer) {
-        super(x, y, width, height, Component.empty(), AbstractScrollArea.defaultSettings(10));
+        super(x, y, width, height, Component.empty());
         this.textRenderer = textRenderer;
         this.lineSpacing = lineHeight;
         this.padding = padding;
@@ -41,9 +41,9 @@ public class ScrollableBootsList extends AbstractScrollArea {
     }
 
     @Override
-    protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         drawContent(graphics);
-        extractScrollbar(graphics, mouseX, mouseY);
+        renderScrollbar(graphics, mouseX, mouseY);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class ScrollableBootsList extends AbstractScrollArea {
         return super.mouseScrolled(mx, my, 0, dy);
     }
 
-    private void drawContent(GuiGraphicsExtractor graphics) {
+    private void drawContent(GuiGraphics graphics) {
         int startY = getY() + padding;
         int yOffset = startY - (int) scrollAmount();
 
@@ -79,7 +79,7 @@ public class ScrollableBootsList extends AbstractScrollArea {
             // only draw visible lines
             if (drawY + textRenderer.lineHeight >= getY()
                     && drawY <= getY() + height) {
-                graphics.text(
+                graphics.drawString(
                         textRenderer,
                         lines.get(i),
                         getX() + 2,

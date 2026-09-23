@@ -3,7 +3,7 @@ package weebify.dptb2utils.gui.widget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -47,7 +47,7 @@ public class DraggableItemCooldown extends AbstractWidget {
     }
 
     @Override
-    protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         Minecraft mc = Minecraft.getInstance();
         DPTB2Utils mod = DPTB2Utils.getInstance();
 
@@ -88,7 +88,7 @@ public class DraggableItemCooldown extends AbstractWidget {
             int seconds = ticksLeft / 20;
             String text = seconds + "s";
             int textX = alignLeft ? barX + barWidth + 6 : barX - 6 - mc.font.width(text);
-            graphics.text(mc.font, text, textX, barY, 0xFFFFFFFF, mod.getBoolConfig("itemCooldown.textShadow"));
+            graphics.drawString(mc.font, text, textX, barY, 0xFFFFFFFF, mod.getBoolConfig("itemCooldown.textShadow"));
 
             i++;
         }

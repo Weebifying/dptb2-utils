@@ -3,7 +3,7 @@ package weebify.dptb2utils.mixin;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.client.multiplayer.chat.GuiMessage;
+import net.minecraft.client.GuiMessage;
 import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -82,7 +82,7 @@ public class ChatComponentMixin {
         return codes.toString();
     }
 
-    @Inject(method = "addMessageToDisplayQueue(Lnet/minecraft/client/multiplayer/chat/GuiMessage;)V", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "addMessageToDisplayQueue(Lnet/minecraft/client/GuiMessage;)V", at = @At("HEAD"), cancellable = true)
     private void addVisibleMessageInject(GuiMessage message, CallbackInfo ci) {
         DPTB2Utils mod = DPTB2Utils.getInstance();
         Minecraft mc = Minecraft.getInstance();

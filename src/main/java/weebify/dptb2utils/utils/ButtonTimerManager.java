@@ -4,7 +4,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Component;
@@ -67,7 +67,7 @@ public class ButtonTimerManager {
         );
     }
 
-    private static void renderButtonTimer(GuiGraphicsExtractor graphics, DeltaTracker renderTickCounter) {
+    private static void renderButtonTimer(GuiGraphics graphics, DeltaTracker renderTickCounter) {
         Minecraft mc = Minecraft.getInstance();
         DPTB2Utils mod = DPTB2Utils.getInstance();
 
@@ -89,7 +89,7 @@ public class ButtonTimerManager {
                 );
             }
 
-            graphics.text(
+            graphics.drawString(
                     mc.font, text,
                     posX + 4,
                     posY + 4,
