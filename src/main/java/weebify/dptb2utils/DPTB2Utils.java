@@ -43,7 +43,7 @@ import java.util.*;
 @Mod(modid = DPTB2Utils.MOD_ID, version = DPTB2Utils.VERSION)
 public class DPTB2Utils {
     public static final String MOD_ID = "dptb2-utils";
-    public static final String VERSION = "1.2.2";
+    public static final String VERSION = "1.2.3-rc1";
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
     public ModConfigs config;
@@ -56,8 +56,17 @@ public class DPTB2Utils {
     public boolean checkedJoin = false;
     public boolean isToggleBc = false;
     public boolean dptb2RecheckScheduled = false;
+    public boolean openBoots = false;
+    public boolean openRoutes = false;
 
-    public List<DelayedTask> scheduledTasks = new ArrayList<>();
+    public int currentMap = 0;
+    public static String[] MAPS_LIST = {
+            "N/A",
+            "Wild West",
+            "City"
+    };
+
+    public List<DelayedTask> scheduledTasks = new java.util.concurrent.CopyOnWriteArrayList<>(); // thread-safe now
 
     private static final Minecraft mc = Minecraft.getMinecraft();
     private static DPTB2Utils instance;
@@ -77,6 +86,7 @@ public class DPTB2Utils {
         this.config = new ModConfigs();
         this.saveFile = new File(mc.mcDataDir + "/config", "weebify_dptb2utils.json");
         try {
+            this.saveFile.getParentFile().mkdirs();
             if (this.saveFile.createNewFile()) {
                 try (FileWriter fw = new FileWriter(this.saveFile)) {
                     GSON.toJson(this.config, fw);
@@ -104,6 +114,19 @@ public class DPTB2Utils {
         } catch (Exception e) {
             LOGGER.error("Failed to set Swing look and feel!", e);
         }
+    }
+
+    public static int checkMap(double x, double y, double z) {
+        // city: 124 7 -113 -> -1 72 140
+        if (x >= -1 && x <= 124 && y >= 7 && y <= 72 && z >= -113 && z <= 140) {
+            return 1;
+        }
+        // wild west: -18 120 -108 -> -105 195 138
+        if (x >= -105 && x <= -18 && y >= 120 && y <= 195 && z >= -108 && z <= 138) {
+            return 2;
+        }
+
+        return 0;
     }
 
     public static int hexToInt(String hex) {
@@ -145,8 +168,8 @@ public class DPTB2Utils {
                 String address = sb.toString().trim();
                 String[] split = address.split(":");
                 if (split.length == 2) {
-                    this.setStringConfig("others.dptbotHost", split[0]);
-                    this.setIntConfig("others.dptbotPort", Integer.parseInt(split[1]));
+                    this.setStringConfig("others.dptbotHost", split[0].trim());
+                    this.setIntConfig("others.dptbotPort", Integer.parseInt(split[1].trim()));
                     LOGGER.info("Fetched DPTBot IP: {}:{}", this.getStringConfig("others.dptbotHost"), this.getIntConfig("others.dptbotPort"));
                 } else {
                     LOGGER.error("Failed to fetch DPTBot IP! Invalid format: {}", address);
@@ -228,10 +251,15 @@ public class DPTB2Utils {
 
             if (this.isInDPTB2 && !alreadyInDPTB2) {
                 NotificationManager.getInstance().add("DPTB2 Utils", "You are in Don't Press The Button 2!", 0xD2FFC8, "random.levelup");
+                if (mc.thePlayer != null) {
+                    mc.thePlayer.sendChatMessage("/ᴡᴇᴇʙ◆⚅⚀βΓγ-ΔδενΞo-oΨ");
+                }
+                // * [WPTB] 2 | 5,525 | 243,535 | Stargazer
             }
-            if (this.isInDPTB2) {
-                this.dptb2RecheckScheduled = true;
-            }
+//            if (this.isInDPTB2) {
+//                this.dptb2RecheckScheduled = true;
+//                this.currentMap = checkMap(mc.thePlayer.posX, mc.thePlayer.posY, mc.thePlayer.posZ);
+//            }
         }
     }
 
@@ -249,6 +277,54 @@ public class DPTB2Utils {
         ClientCommandHandler.instance.registerCommand(new CommandModMenu());
         ClientCommandHandler.instance.registerCommand(new CommandBroadcast());
         ClientCommandHandler.instance.registerCommand(new CommandTogglebc());
+        ClientCommandHandler.instance.registerCommand(new CommandBoots());
+        ClientCommandHandler.instance.registerCommand(new CommandRoutes());
+    }
+
+    public static class CommandBoots extends CommandBase {
+        @Override
+        public String getCommandName() {
+            return "boots";
+        }
+        @Override
+        public String getCommandUsage(ICommandSender sender) {
+            return "/" + getCommandName();
+        }
+        @Override
+        public void processCommand(ICommandSender sender, String[] args) {
+            DPTB2Utils mod = DPTB2Utils.getInstance();
+            mod.openBoots = true;
+            Minecraft.getMinecraft().thePlayer.sendChatMessage("/backpack");
+        }
+        public int getRequiredPermissionLevel() {
+            return 0;
+        }
+        public boolean canCommandSenderUseCommand(ICommandSender sender) {
+            return true;
+        }
+    }
+
+    public static class CommandRoutes extends CommandBase {
+        @Override
+        public String getCommandName() {
+            return "routes";
+        }
+        @Override
+        public String getCommandUsage(ICommandSender sender) {
+            return "/" + getCommandName();
+        }
+        @Override
+        public void processCommand(ICommandSender sender, String[] args) {
+            DPTB2Utils mod = DPTB2Utils.getInstance();
+            mod.openRoutes = true;
+            Minecraft.getMinecraft().thePlayer.sendChatMessage("/backpack");
+        }
+        public int getRequiredPermissionLevel() {
+            return 0;
+        }
+        public boolean canCommandSenderUseCommand(ICommandSender sender) {
+            return true;
+        }
     }
 
     public static class CommandModMenu extends CommandBase {
@@ -299,6 +375,18 @@ public class DPTB2Utils {
         public boolean canCommandSenderUseCommand(ICommandSender sender) {
             return true;
         }
+        @Override
+        public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, net.minecraft.util.BlockPos pos) {
+            // could be faulty, need urgent testing
+            if (args.length > 0 && Minecraft.getMinecraft().getNetHandler() != null) {
+                List<String> names = new ArrayList<>();
+                for (net.minecraft.client.network.NetworkPlayerInfo info : Minecraft.getMinecraft().getNetHandler().getPlayerInfoMap()) {
+                    names.add(info.getGameProfile().getName());
+                }
+                return getListOfStringsMatchingLastWord(args, names.toArray(new String[0]));
+            }
+            return null;
+        }
     }
 
     public void handleBroadcast(String[] args) {
@@ -346,13 +434,14 @@ public class DPTB2Utils {
         String host = this.getStringConfig("others.dptbotHost");
         int port = this.getIntConfig("others.dptbotPort");
         if (this.isInDPTB2 && this.getBoolConfig("others.discordRamper") && (this.websocketClient == null || !this.websocketClient.isOpen())) {
-            LOGGER.info("Attempting Websocket connection to ws://{}:{}", host, port);
-            websocketClient = new DiscordWebSocketClient(String.format("ws://%s:%s", host, port));
+            LOGGER.info("Attempting Websocket connection to wss://{}:{}", host, port);
+            websocketClient = new DiscordWebSocketClient(String.format("wss://%s:%s", host, port));
+            websocketClient.setSocketFactory(DiscordWebSocketClient.TRUSTED_CONTEXT.getSocketFactory());
             websocketClient.connect();
         } else {
             this.isRamper = false;
             if (websocketClient != null && websocketClient.isOpen()) {
-                LOGGER.info("Closing Websocket connection to ws://{}:{}", host, port);
+                LOGGER.info("Closing Websocket connection to wss://{}:{}", host, port);
                 websocketClient.close();
             }
         }

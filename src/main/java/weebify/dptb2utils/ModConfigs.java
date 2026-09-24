@@ -86,6 +86,7 @@ public class ModConfigs {
         createNewConfig("notifs.dontDelaySfx", "false", Boolean.class);
 
         createNewConfig("others.autoCheer", "false", Boolean.class);
+        createNewConfig("others.autoWelcome", "false", Boolean.class);
 
         // mistakes were made.
         createNewConfig("others.discordRamper", "true", Boolean.class);

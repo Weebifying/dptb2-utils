@@ -31,7 +31,8 @@ public class ItemCooldownManager {
         FREEZE_RAY("Freeze Ray", 400, new ResourceLocation(DPTB2Utils.MOD_ID, "textures/items/freeze.png")),
         SWAP_CRYSTAL("Swap Crystal", 600, new ResourceLocation(DPTB2Utils.MOD_ID, "textures/items/swap.png")),
         IMMUNE_APPLE("Immune Apple", 600, new ResourceLocation(DPTB2Utils.MOD_ID, "textures/items/immune.png")),
-        LASSO("Lasso", 400, new ResourceLocation(DPTB2Utils.MOD_ID, "textures/items/lasso.png"));
+        LASSO("Lasso", 400, new ResourceLocation(DPTB2Utils.MOD_ID, "textures/items/lasso.png")),
+        FIREWORK("Firework", 600, new ResourceLocation(DPTB2Utils.MOD_ID, "textures/items/firework.png"));
 
         public final String name;
         public final int cooldown;
@@ -53,6 +54,8 @@ public class ItemCooldownManager {
 
     public static Map<String, Integer> currentCooldowns = new HashMap<>();
     public static String lastAdded = "";
+    public static String lastRaycast = "";
+    public static final List<String> RAYCAST_ITEMS = java.util.Arrays.asList("Freeze Ray", "Swap Crystal", "Lasso");
 
     public static ItemCooldownManager instance;
 
@@ -156,9 +159,13 @@ public class ItemCooldownManager {
 
             if (! isInPkCiv(x, y, z)) {
                 if ((itemName.equals("Immune Apple") || !isInSpawn(x, y, z)) && isInMap(x, y, z)) {
-                    DPTB2Utils.LOGGER.info("added cooldown {}", itemName);
-                    addCooldown(itemName);
-                    DPTB2Utils.LOGGER.info("added cooldown {}", itemName);
+                    if (RAYCAST_ITEMS.contains(itemName)) {
+                        lastRaycast = itemName;
+                    } else {
+                        DPTB2Utils.LOGGER.info("added cooldown {}", itemName);
+                        addCooldown(itemName);
+                        DPTB2Utils.LOGGER.info("added cooldown {}", itemName);
+                    }
                 }
             }
         }
@@ -176,6 +183,9 @@ public class ItemCooldownManager {
                 currentCooldowns.put(itemName, timeLeft - 1);
             } else {
                 currentCooldowns.remove(itemName);
+                if (RAYCAST_ITEMS.contains(itemName)) {
+                    lastRaycast = ""; // probably useless actually but i dont wanna think rn
+                }
             }
         }
     }

@@ -57,7 +57,8 @@ public class GuiDPTBotConfig extends GuiScreen {
         this.portInput.setVisible(false);
 
         this.buttonList.add(new GuiButton(500, 30, this.height - 30 - 10,150, 20, String.format("Advanced Options: %s", this.showIPOptions ? "ON" : "OFF")));
-        
+        this.buttonList.add(new GuiButton(501, 30, this.height - 55 - 10,150, 20, "Refetch DPTBot IP"));
+
         this.buttonList.add(new GuiButton(999, width / 2 - 75, height - 30 - 10, 150, 20, I18n.format("gui.done")));
     }
 
@@ -168,6 +169,9 @@ public class GuiDPTBotConfig extends GuiScreen {
                 this.hostInput.setVisible(this.showIPOptions);
                 this.portInput.setVisible(this.showIPOptions);
                 break;
+            case 501:
+                mod.fetchDPTBotIP();
+                break;
             case 999:
                 this.saveIPSettings();
                 this.mc.displayGuiScreen(this.parent);
@@ -243,9 +247,9 @@ public class GuiDPTBotConfig extends GuiScreen {
     }
 
     private void saveIPSettings() {
-        mod.setStringConfig("others.dptbotHost", this.hostInput.getText());
+        mod.setStringConfig("others.dptbotHost", this.hostInput.getText().trim());
         try {
-            mod.setIntConfig("others.dptbotPort", Integer.parseInt(this.portInput.getText()));
+            mod.setIntConfig("others.dptbotPort", Integer.parseInt(this.portInput.getText().trim()));
         } catch (NumberFormatException e) {
             // Handle invalid port input
         }

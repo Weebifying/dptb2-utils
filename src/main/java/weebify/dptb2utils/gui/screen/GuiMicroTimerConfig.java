@@ -27,10 +27,16 @@ public class GuiMicroTimerConfig extends GuiScreen {
         this.buttonList.add(new GuiButton(1, width / 2 - 80 - 75, height / 2 - 100 - 10, 150, 20, String.format("Enabled: %s", mod.getBoolConfig("microTimer.enabled") ? "ON" : "OFF")));
         this.buttonList.add(new GuiButton(2, width / 2 + 80 - 75, height / 2 - 100 - 10, 150, 20, String.format("Text Shadow: %s", mod.getBoolConfig("microTimer.textShadow") ? "ON" : "OFF")));
         this.buttonList.add(new GuiButton(3, width / 2 - 80 - 75, height / 2 - 75 - 10, 150, 20, String.format("Render Background: %s", mod.getBoolConfig("microTimer.renderBackground") ? "ON" : "OFF")));
+
+        Random r = new Random();
+
         this.textWidget = new DraggableMicroTimer(
                 mod.getFloatConfig("microTimer.posX"),
                 mod.getFloatConfig("microTimer.posY"),
-                MicroTimerManager.tickToTime(this.mod.isInDPTB2 && MicroTimerManager.microTimer >= 0 ? MicroTimerManager.microTimer : (new Random()).nextInt(8401)),
+                MicroTimerManager.eventTickToTime((!mod.isInDPTB2 || MicroTimerManager.eventTimer < 0) ? r.nextInt(7201) : MicroTimerManager.eventTimer),
+                MicroTimerManager.trafficTickToTime((!mod.isInDPTB2 || MicroTimerManager.trafficTimer < 0) ? r.nextInt(13201) : MicroTimerManager.trafficTimer, true),
+                MicroTimerManager.doorTickToTime((!mod.isInDPTB2 || MicroTimerManager.doorTimer < 0) ? r.nextInt(4801) : MicroTimerManager.doorTimer),
+                MicroTimerManager.blessingTickToTime((!mod.isInDPTB2 || MicroTimerManager.blessingTimer < 0) ? r.nextInt(201) : MicroTimerManager.blessingTimer),
                 (!mod.isInDPTB2 || MicroTimerManager.lastEvent.isEmpty()) ? MicroTimerManager.eventsList[new Random().nextInt(MicroTimerManager.eventsList.length)] : MicroTimerManager.lastEvent
         );
         this.textWidget.updatePosition(width, height);

@@ -8,15 +8,39 @@ import weebify.dptb2utils.utils.MicroTimerManager;
 
 public class DraggableMicroTimer extends GuiButton {
     private boolean dragging = false;
-    private String event;
+    private final String event;
+    private final String eventTime, trafficTime, doorTime, blessingTime;
     private int dragOffsetX, dragOffsetY;
     public float relX, relY;
 
-    public DraggableMicroTimer(float relX, float relY, String text, String event) {
-        super(-1, 0, 0, Math.max(Minecraft.getMinecraft().fontRendererObj.getStringWidth(text), Minecraft.getMinecraft().fontRendererObj.getStringWidth(MicroTimerManager.prefix + event)) + 8, 21 + Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT, text);
+    public DraggableMicroTimer(float relX, float relY, String eventTime, String trafficTime, String doorTime, String blessingTime, String event) {
+        super(-1, 0, 0, computeWidth(event, eventTime, trafficTime, doorTime, blessingTime), computeHeight(), eventTime);
         this.relX = relX;
         this.relY = relY;
         this.event = event;
+        this.eventTime = eventTime;
+        this.trafficTime = trafficTime;
+        this.doorTime = doorTime;
+        this.blessingTime = blessingTime;
+    }
+
+    private static int computeWidth(String event, String eventTime, String trafficTime, String doorTime, String blessingTime) {
+        net.minecraft.client.gui.FontRenderer font = Minecraft.getMinecraft().fontRendererObj;
+        return Math.max(
+                Math.max(
+                        font.getStringWidth(String.format("%s%s§r (%s§r)", MicroTimerManager.eventPrefix, event, eventTime)),
+                        font.getStringWidth(String.format("%s%s§r (%s§r)", MicroTimerManager.trafficPrefix, MicroTimerManager.lightsList[1], trafficTime))
+                ),
+                Math.max(
+                        font.getStringWidth(String.format("%s%s§r (%s§r)", MicroTimerManager.doorPrefix, "N/A", doorTime)),
+                        font.getStringWidth(String.format("%s%s", MicroTimerManager.blessingPrefix, blessingTime))
+                )
+        ) + 8;
+    }
+
+    private static int computeHeight() {
+        int lineCount = 4;
+        return lineCount * (Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT + 3) + 5;
     }
 
     public void updatePosition(int screenWidth, int screenHeight) {
@@ -38,18 +62,39 @@ public class DraggableMicroTimer extends GuiButton {
                 );
             }
 
+            int cursorY = this.yPosition + 4;
+
             mc.fontRendererObj.drawString(
-                    this.displayString,
+                    String.format("%s%s§r (%s§r)", MicroTimerManager.eventPrefix, this.event, this.eventTime),
                     this.xPosition + 4,
-                    this.yPosition + 4,
+                    cursorY,
                     0xFFFFFFFF,
                     mod.getBoolConfig("microTimer.textShadow")
             );
 
+            cursorY += mc.fontRendererObj.FONT_HEIGHT + 3;
             mc.fontRendererObj.drawString(
-                    MicroTimerManager.prefix + this.event,
+                    String.format("%s%s", MicroTimerManager.blessingPrefix, this.blessingTime),
                     this.xPosition + 4,
-                    this.yPosition + 4 + mc.fontRendererObj.FONT_HEIGHT + 3,
+                    cursorY,
+                    0xFFFFFFFF,
+                    mod.getBoolConfig("microTimer.textShadow")
+            );
+
+            cursorY += mc.fontRendererObj.FONT_HEIGHT + 3;
+            mc.fontRendererObj.drawString(
+                    String.format("%s%s§r (%s§r)", MicroTimerManager.trafficPrefix, MicroTimerManager.lightsList[0], this.trafficTime),
+                    this.xPosition + 4,
+                    cursorY,
+                    0xFFFFFFFF,
+                    mod.getBoolConfig("microTimer.textShadow")
+            );
+
+            cursorY += mc.fontRendererObj.FONT_HEIGHT + 3;
+            mc.fontRendererObj.drawString(
+                    String.format("%s%s§r (%s§r)", MicroTimerManager.doorPrefix, "N/A", this.doorTime),
+                    this.xPosition + 4,
+                    cursorY,
                     0xFFFFFFFF,
                     mod.getBoolConfig("microTimer.textShadow")
             );

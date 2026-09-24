@@ -23,6 +23,7 @@ public class GuiModMenu extends GuiScreen {
         this.buttonList.add(new GuiButton(5, this.width / 2 - 80 - 75, 125, 150, 20, "DPTBot Config"));
         this.buttonList.add(new GuiButton(6, this.width / 2 + 80 - 75, 125, 150, 20, "Item Cooldown HUD"));
         this.buttonList.add(new GuiButton(7, this.width / 2 - 80 - 75, 150, 150, 20, "Micro Event Timer HUD"));
+        this.buttonList.add(new GuiButton(8, this.width / 2 + 80 - 75, 150, 150, 20, String.format("AutoWelcome: %s", mod.getBoolConfig("others.autoWelcome") ? "ON" : "OFF")));
 
         this.buttonList.add(new GuiButton(999, this.width / 2 - 75, this.height - 30 - 10, 150, 20, I18n.format("gui.done")));
         this.checkBtn = new GuiButton(1000, 30, this.height - 30 - 10, 150, 20, "Run DPTB2 Check");
@@ -64,16 +65,14 @@ public class GuiModMenu extends GuiScreen {
             case 7:
                 this.mc.displayGuiScreen(new GuiMicroTimerConfig(this, this.mod));
                 break;
+            case 8:
+                button.displayString = String.format("AutoWelcome: %s", mod.toggleBoolConfig("others.autoWelcome") ? "ON" : "OFF");
+                break;
             case 999:
                 this.mc.displayGuiScreen(null);
                 break;
             case 1000:
                 this.mod.dptb2Check();
-                this.checkBtn.enabled = false;
-                this.mod.scheduleTask(25, () -> {
-                    this.checkBtn.enabled = true;
-//                    this.checkBtn.visible = !mod.isInDPTB2;
-                });
                 break;
         }
 
@@ -83,7 +82,8 @@ public class GuiModMenu extends GuiScreen {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         this.drawDefaultBackground();
         this.drawCenteredString(this.fontRendererObj, "DPTB2 Utils", this.width/2, 20, 0xFFFFFF);
-        this.drawCenteredString(this.fontRendererObj, String.format("isInDPTB2: %b", mod.isInDPTB2), this.width/2, this.height - 45 - 10, mod.isInDPTB2 ? 0x55FF55 : 0xFF5555);
+        this.drawCenteredString(this.fontRendererObj, String.format("isInDPTB2: %b", mod.isInDPTB2), this.width/2, this.height - 55 - 10, mod.isInDPTB2 ? 0x55FF55 : 0xFF5555);
+        this.drawCenteredString(this.fontRendererObj, String.format("currentMap: %s", DPTB2Utils.MAPS_LIST[mod.currentMap]), this.width/2, this.height - 45 - 10, mod.currentMap == 0 ? 0xFF5555 : 0xFFFFFF);
 
         super.drawScreen(mouseX, mouseY, partialTicks);
     }

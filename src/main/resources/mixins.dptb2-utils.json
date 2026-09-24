@@ -10,6 +10,7 @@
   "client": [
     "EntityPlayerSPMixin",
     "FontRendererMixin",
+    "GuiChestMixin",
     "GuiNewChatMixin",
     "GuiPlayerTabOverlayMixin",
     "RendererLivingEntityMixin",
